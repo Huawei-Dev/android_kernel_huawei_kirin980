@@ -344,7 +344,7 @@ struct vm_area_struct {
 	struct mempolicy *vm_policy;	/* NUMA policy for the VMA */
 #endif
 	struct vm_userfaultfd_ctx vm_userfaultfd_ctx;
-};
+} __randomize_layout;
 
 struct core_thread {
 	struct task_struct *task;
@@ -518,7 +518,7 @@ struct mm_struct {
 	/* HMM needs to track a few things per mm */
 	struct hmm *hmm;
 #endif
-};
+} __randomize_layout;
 
 extern struct mm_struct init_mm;
 
