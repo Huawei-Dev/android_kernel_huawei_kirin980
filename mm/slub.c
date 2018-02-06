@@ -1429,7 +1429,7 @@ static inline void kmalloc_large_node_hook(void *ptr, size_t size, gfp_t flags)
 	kasan_kmalloc_large(ptr, size, flags);
 }
 
-static inline void kfree_hook(const void *x)
+static inline void kfree_hook(void *x)
 {
 	kmemleak_free(x);
 	kasan_kfree_large(x);
@@ -4015,15 +4015,14 @@ void kfree(const void *x)
 	page = virt_to_head_page(x);
 	if (unlikely(!PageSlab(page))) {
 		BUG_ON(!PageCompound(page));
-		kfree_hook(x);
-		kmalloc_trace_hook((unsigned char)MEM_FREE, _RET_IP_, (unsigned long long)x,/*lint !e571*/
+		kfree_hook(object);
+		kmalloc_trace_hook((unsigned char)MEM_FREE, _RET_IP_, (unsigned long long)x,
 			(unsigned long long)virt_to_phys(x),
 			(unsigned int)(PAGE_SIZE << compound_order(page)));
-
 		__free_pages(page, compound_order(page));
 		return;
 	}
-	kmalloc_trace_hook((unsigned char)MEM_FREE, _RET_IP_, (unsigned long long)x,/*lint !e571*/
+	kmalloc_trace_hook((unsigned char)MEM_FREE, _RET_IP_, (unsigned long long)x,
 		(unsigned long long)virt_to_phys(x),
 		(unsigned int)page->slab_cache->object_size);
 	slab_free(page->slab_cache, page, object, NULL, 1, _RET_IP_);
