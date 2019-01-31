@@ -579,6 +579,10 @@ ifneq ($(filter install,$(MAKECMDGOALS)),)
         endif
 endif
 
+ifneq ($(LLVM),)
+KBUILD_CFLAGS += -fuse-ld=lld
+endif
+
 ifeq ($(mixed-targets),1)
 # ===========================================================================
 # We're called with mixed targets (*config and build targets).
