@@ -703,6 +703,10 @@ int dpm_sysfs_add(struct device *dev)
 {
 	int rc;
 
+	/* No need to create PM sysfs if explicitly disabled. */
+	if (device_pm_not_required(dev))
+		return 0;
+
 	rc = sysfs_create_group(&dev->kobj, &pm_attr_group);
 	if (rc)
 		return rc;
@@ -792,6 +796,8 @@ void rpm_sysfs_remove(struct device *dev)
 
 void dpm_sysfs_remove(struct device *dev)
 {
+	if (device_pm_not_required(dev))
+		return;
 #ifdef CONFIG_HISI_FREQ_STATS_COUNTING_IDLE
 	sysfs_unmerge_group(&dev->kobj, &time_in_state_attr_group);
 #endif
