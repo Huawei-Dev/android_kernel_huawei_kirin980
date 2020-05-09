@@ -45,6 +45,9 @@ extern void sched_hwstatus_qos_enqueue(struct task_struct *task, int qos_type);
 extern void sched_hwstatus_qos_dequeue(struct task_struct *task, int qos_type);
 #endif
 
+extern int bpf_iter_init_seq_net(void *priv_data);
+extern void bpf_iter_fini_seq_net(void *priv_data);
+
 #else /* CONFIG_PROC_FS */
 
 static inline void proc_root_init(void)
