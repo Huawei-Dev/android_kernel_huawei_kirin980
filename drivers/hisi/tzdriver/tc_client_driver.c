@@ -370,41 +370,57 @@ static int tee_calc_task_hash(unsigned char *digest, bool cfc_rehash,
 	bool check_value = false;
 	struct mm_struct *mm = NULL;
 	int rc;
-	struct {
+	struct sdesc {
 		struct shash_desc shash;
-		char ctx[crypto_shash_descsize(g_tee_shash_tfm)];
-	} desc;
+		char ctx[];
+	};
+	struct sdesc *desc;
 
 	if (digest == NULL) {
 		tloge("tee hash: input param is error!\n");
 		return -2;
 	}
+	
+	desc = kmalloc(sizeof(struct shash_desc)
+			+ crypto_shash_descsize(g_tee_shash_tfm), GFP_KERNEL);
+	if (!desc) {
+		TCERR("alloc desc failed\n");
+		return -ENOMEM;
+	}
+	
 	mm = get_task_mm(cur_struct);
 	if (mm == NULL) {
 		errno_t sret;
 
 		sret = memset_s(digest, MAX_SHA_256_SZ, 0, MAX_SHA_256_SZ);
-		if (sret != EOK)
-			return -2;
+		if (EOK != sret) {
+			rc = -2;
+			goto out;
+		}
 		if (cfc_is_enabled && cfc_rehash)
 			CFC_SEND_DATA(tee_calc_task_hash_fix_val, 0);
-		return 0;
+		rc = 0;
+		goto out;
 	}
-	desc.shash.tfm = g_tee_shash_tfm;
-	desc.shash.flags = 0;
-	rc = crypto_shash_init(&desc.shash);
+	desc->shash.tfm = g_tee_shash_tfm;
+	desc->shash.flags = 0;
+	rc = crypto_shash_init(&desc->shash);
 	if (rc != 0)
-		return rc;
-	rc = update_task_hash(mm, cur_struct, digest, &desc.shash);
+		goto out;
+
+	rc = update_task_hash(mm, cur_struct, digest, &desc->shash);
 	up_read(&mm->mmap_sem);
 	mmput(mm);
 	if (!rc) {
-		rc = crypto_shash_final(&desc.shash, digest);
+		rc = crypto_shash_final(&desc->shash, digest);
 		check_value = rc || !cfc_is_enabled || !cfc_rehash;
 		if (check_value == true)
-			return rc;
-		rc = tee_cfc_rehash(&desc.shash, digest);
+			goto out;
+		rc = tee_cfc_rehash(&desc->shash, digest);
 	}
+
+out:
+	kfree(desc);
 	return rc;
 }
 
