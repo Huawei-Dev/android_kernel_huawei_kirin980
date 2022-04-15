@@ -4843,8 +4843,8 @@ CONFIG_HISI_TIMEKEEPER=y
 #
 # Hisi lowmem killer
 #
-CONFIG_HISI_LOWMEM=y
-CONFIG_HISI_LOWMEM_DBG=y
+# CONFIG_HISI_LOWMEM is not set
+# CONFIG_HISI_LOWMEM_DBG is not set
 
 #
 # Hisi lpm3_debug options
