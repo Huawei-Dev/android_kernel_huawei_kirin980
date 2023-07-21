@@ -51,7 +51,7 @@ struct hw_ois_info {
 	int ois_support;
 };
 
-typedef struct _tag_hw_ois_intf
+struct _tag_hw_ois_intf
 {
 	hw_ois_vtbl_t *vtbl;
     struct v4l2_subdev *subdev;
