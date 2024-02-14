@@ -9,6 +9,7 @@
 
 #include <linux/debugfs.h>
 #include <linux/skbuff.h>
+#include "plat_type.h"
 
 /*****************************************************************************
   2 CHR????????
@@ -86,18 +87,6 @@ enum CHR_ID_ENUM {
     CHR_GNSS = 910,
     CHR_ENUM
 };
-
-/*****************************************************************************
-  3 ????????????
-*****************************************************************************/
-typedef unsigned char uint8;
-typedef char int8;
-typedef unsigned short uint16;
-typedef short int16;
-typedef unsigned int uint32;
-typedef int int32;
-typedef unsigned long uint64;
-typedef long int64;
 
 /*****************************************************************************
   4 ????????????
