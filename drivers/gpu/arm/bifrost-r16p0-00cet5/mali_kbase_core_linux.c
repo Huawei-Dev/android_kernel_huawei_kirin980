@@ -24,7 +24,6 @@
 #pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Wunknown-pragmas"
 #pragma GCC diagnostic ignored "-Wunknown-warning-option"
-#pragma GCC diagnostic ignored "-Wformat="
 #pragma GCC diagnostic ignored "-Wdeclaration-after-statement"
 
 #include <mali_kbase.h>
