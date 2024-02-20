@@ -57,18 +57,8 @@ extern "C" {
 #endif
 
 #include "nv_id_drv.h"
+#include <asm-generic/int-ll64.h>
 
-#ifndef __u8_defined
-#define __u8_defined
-typedef signed char          s8;//lint !e761
-typedef unsigned char        u8;//lint !e761
-typedef signed short         s16;//lint !e761
-typedef unsigned short       u16;//lint !e761
-typedef signed int           s32;//lint !e761
-typedef unsigned int         u32;//lint !e761
-typedef signed long long     s64;//lint !e761
-typedef unsigned long long   u64;//lint !e761
-#endif
 /*lint --e{959}*/
 /*****************************************************************************
  ??????    : nv_protocol_base_type
