@@ -947,8 +947,10 @@ KBUILD_CFLAGS   += $(call cc-option,-Werror=strict-prototypes)
 # Prohibit date/time macros, which would make the build non-deterministic
 #KBUILD_CFLAGS   += $(call cc-option,-Werror=date-time)
 
-# enforce correct pointer usage
-KBUILD_CFLAGS   += $(call cc-option,-Werror=incompatible-pointer-types)
+ifneq ($(strip $(clang)), true)
+# Relax correct pointer usage
+KBUILD_CFLAGS   += $(call cc-option,-Wno=incompatible-pointer-types)
+endif
 
 # use the deterministic mode of AR if available
 KBUILD_ARFLAGS := $(call ar-option,D)
