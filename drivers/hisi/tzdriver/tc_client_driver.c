@@ -65,7 +65,6 @@
 #include <linux/crc32.h>
 #include "security_auth_enhance.h"
 
-#include <linux/random.h>
 #include "dynamic_mem.h"
 
 #define TEEC_PARAM_TYPES(param0_type, param1_type, param2_type, param3_type) \
@@ -284,24 +283,9 @@ static int check_process_access(struct task_struct *ca_task, int type)
 	return ret;
 }
 
-static int tee_cfc_rehash(struct shash_desc *shash, unsigned char *digest)
+static inline int tee_cfc_rehash(struct shash_desc *shash, unsigned char *digest)
 {
-	int rc;
-	unsigned int rand_val;
-
-	rc = crypto_shash_init(shash);
-	if (rc)
-		return rc;
-	rc = crypto_shash_update(shash, digest, MAX_SHA_256_SZ);
-	if (rc)
-		return rc;
-	get_random_bytes((void *)&rand_val, sizeof(unsigned int));
-	rc = crypto_shash_update(shash, (void *)&rand_val, sizeof(unsigned int));
-	CFC_SEND_DATA(tee_calc_task_hash_rand_val, rand_val);
-	rand_val = 0;
-	if (rc)
-		return rc;
-	return crypto_shash_final(shash, digest);
+	return 0;
 }
 
 static int update_task_hash(struct mm_struct *mm,
