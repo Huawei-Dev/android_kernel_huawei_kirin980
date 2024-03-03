@@ -4999,9 +4999,7 @@ CONFIG_HISPIPP_V200=y
 # Hisilicon ISP FD
 #
 # CONFIG_HISPFD is not set
-# CONFIG_HISI_ENGINEER_MODE is not set
 
-#
 # Hisilicon Performace Control
 #
 CONFIG_HISI_PERF_CTRL=y
