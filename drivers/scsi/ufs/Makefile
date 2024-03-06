@@ -21,7 +21,6 @@ obj-$(CONFIG_SCSI_UFS_BLOCK_TEST) += ufs_block_test.o
 obj-$(CONFIG_SCSI_UFS_TEST) += ufs_test.o
 obj-$(CONFIG_HISI_DEBUG_FS) += ufs_debugfs.o
 obj-$(CONFIG_HUAWEI_UFS_DSM) += dsm_ufs.o
-obj-$(CONFIG_HISI_AB_PARTITION) += ufs-kirin-lib.o
 obj-$(CONFIG_HISI_BOOTDEVICE) += ufs-rpmb.o
 obj-$(CONFIG_HISI_UFS_MANUAL_BKOPS) += hisi_ufs_bkops.o
 

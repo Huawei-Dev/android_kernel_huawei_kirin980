@@ -19,6 +19,4 @@ obj-$(CONFIG_HISI_DEBUG_FS)	+= hisi_mmc_sysfs.o
 obj-$(CONFIG_HISI_BOOTDEVICE) 	+= emmc-rpmb.o
 obj-$(CONFIG_MMC_CQ_HCI) 	+= hisi_cmdq_core.o
 obj-$(CONFIG_HISI_MMC) 		+= hisi_core_mmc.o
-obj-$(CONFIG_HISI_AB_PARTITION) += mmc-kirin-lib.o
 obj-$(CONFIG_HISI_MMC_MANUAL_BKOPS) += hisi_mmc_bkops.o
-
