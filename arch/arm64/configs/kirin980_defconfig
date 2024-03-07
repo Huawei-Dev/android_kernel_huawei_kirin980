@@ -4916,7 +4916,6 @@ CONFIG_IVP_IVPV200=y
 # CONFIG_IVP_IVPV120 is not set
 # CONFIG_IVP_IVPV210 is not set
 # CONFIG_IVP_IVPV250 is not set
-# CONFIG_HISI_PAGE_EXT is not set
 
 #
 # Hisi lpm3_debug options
