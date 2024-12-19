@@ -5008,11 +5008,6 @@ CONFIG_HISI_DDR_PERF_CTRL=y
 CONFIG_HISI_DRG=y
 
 #
-# NPU Drivers
-#
-# CONFIG_NPU_DEVDRV is not set
-
-#
 # HISI RPMB support
 #
 CONFIG_HISI_RPMB=y
