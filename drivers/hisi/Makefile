@@ -51,9 +51,6 @@ obj-$(CONFIG_HISI_TIMEKEEPER) += timekeeper/
 obj-$(CONFIG_TLB_CONFLICT_WORKAROUND) += tlb_conflict/
 obj-$(CONFIG_HISI_ICS_IPU_PLATFORM) += ics/
 obj-y += hisi_lmk/
-ifeq ($(TARGET_VERSION_MODE),factory)
-obj-$(CONFIG_HISI_DIEID) += dieid/
-endif
 obj-$(CONFIG_HISPIPP) += ipp/
 obj-$(CONFIG_TLB_CONFLICT_WORKAROUND) += tlb_conflict/
 obj-$(CONFIG_HISPFD)  += hispfd/
