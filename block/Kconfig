@@ -225,17 +225,6 @@ config HISI_STORAGE
 		help
 			HISI Kirin Storage related change of Linux source code
 
-config MMC_BLOCK_IOMMU_64BIT
-	bool "Block bounce limit"
-	depends on BLOCK
-	default n
-	help
-	Blk-setting will use address >4G for IOMMU.
-
-config HISI_PARTITION
-	bool "hisi partition"
-	default n
-
 menu "Partition Types"
 
 source "block/partitions/Kconfig"
