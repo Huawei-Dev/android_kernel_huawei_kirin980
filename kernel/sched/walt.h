@@ -100,10 +100,6 @@ static inline void walt_update_task_avg_sleep(struct task_struct *p, u64 sleep_t
 
 #endif /* CONFIG_SCHED_WALT */
 
-#ifdef CONFIG_SCHED_HISI_WALT_WINDOW_SIZE_TUNABLE
-extern bool walt_disabled;
-#else
 extern const bool walt_disabled;
-#endif
 
 #endif
