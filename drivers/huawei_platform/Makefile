@@ -29,7 +29,6 @@ obj-y   += touch_key/
 obj-y   += usb/
 obj-$(CONFIG_HW_VOLTAGE_DETECTION) += voltage_detection/
 obj-$(CONFIG_ANTENNA_BOARDID_GPIO_DETECT) += antenna_board_gpio_match/
-obj-$(CONFIG_HUAWEI_VIBRATOR) += vibrator/
 obj-$(CONFIG_MADAPT) += madapt/
 obj-$(CONFIG_HUAWEI_IO_TRACING) += iotrace/
 obj-$(CONFIG_HUAWEI_EMCOM) += emcom/
