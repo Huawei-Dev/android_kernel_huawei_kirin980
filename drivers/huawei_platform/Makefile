@@ -10,9 +10,6 @@ obj-y   += connectivity/
 obj-$(CONFIG_HUAWEI_HW_DEV_DCT)  += devdetect/
 obj-$(CONFIG_HUAWEI_DEV_SELFCHECK)  += dev_selfcheck/
 
-ifneq ($(strip $(OBB_SEPARATE)),true)
-obj-$(CONFIG_VIACBP82D_3RD_MODEM) += ext_modem/
-endif
 obj-y   += inputhub/
 
 obj-$(CONFIG_MAXQ616_POWER_SWITCH) += irda/
