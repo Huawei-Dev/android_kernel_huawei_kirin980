@@ -835,12 +835,6 @@ int __init hi_ipc_init(void)
 	}
 	return ret;
 }
-static void  bsp_ipc_exit(void)
-{
-	platform_driver_unregister(&balong_ipc_driver);
- 	platform_device_unregister(&balong_ipc_device);
-}
-
 
 void bsp_ipc_debug_show(void)
 {
