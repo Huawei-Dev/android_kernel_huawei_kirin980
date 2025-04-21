@@ -21,13 +21,6 @@ config TEELOG
 	help
 	  TEEOS log
 
-config TEE_KTRACE
-	tristate "TEEOS kernel event log driver"
-	default y
-	depends on TEELOG
-	help
-	  TEEOS event trace
-
 config TEE_TUI
 	tristate "Trusted user interface driver"
 	default n

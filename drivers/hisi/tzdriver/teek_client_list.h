@@ -1,22 +1,33 @@
+/**
+ * @file tee_client_list.h
+ *
+ * Copyright(C), 2008-2013, Huawei Tech. Co., Ltd. ALL RIGHTS RESERVED. \n
+ *
+ * 描述：定义链表数据类型和基本操作\n
+*/
 
-
+/** @defgroup TEEC_List 链表数据类型和基本操作
+ *@ingroup TEEC_API
+ */
 
 #ifndef _TEE_CLIENT_LIST_H_
 #define _TEE_CLIENT_LIST_H_
-/*
+
+/**
  * @ingroup TEEC_List
  * 链表类型定义
  */
 struct list_node {
 	struct list_node *next;
-	/* < 指向next节点   */
+	/**< 指向next节点	*/
 	struct list_node *prev;
-	/* < 指向prev节点   */
+	/**< 指向prev节点	*/
 };
 
-/*
+/**
  * @ingroup TEEC_List
  * @brief 定义一个链表节点
+ *
  * @par 描述:
  * 宏定义，定义一个链表节点，并对其初始化
  * @param name [IN] 定义的链表名称
@@ -27,19 +38,19 @@ struct list_node {
 		.prev = &name, \
 	}
 
-/*
+/**
  * @ingroup TEEC_List
  * 获取链表list的prev节点
  */
 #define LIST_TAIL(list) ((list)->prev)
 
-/*
+/**
  * @ingroup TEEC_List
  * 判断链表list是否为空
  */
 #define LIST_EMPTY(list) ((list) == (list)->next)
 
-/*
+/**
  * @ingroup  TEEC_List
  * @brief 从链表头部插入新节点
  *
@@ -59,7 +70,7 @@ struct list_node {
  * @since V100R002C00B301
  */
 static inline void list_insert_head(struct list_node *list,
-	struct list_node *entry)
+				    struct list_node *entry)
 {
 	list->next->prev = entry;
 	entry->next = list->next;
@@ -67,7 +78,7 @@ static inline void list_insert_head(struct list_node *list,
 	list->next = entry;
 }
 
-/*
+/**
  * @ingroup  TEEC_List
  * @brief 从链表尾部插入新节点
  *
@@ -87,7 +98,7 @@ static inline void list_insert_head(struct list_node *list,
  * @since V100R002C00B301
  */
 static inline void list_insert_tail(struct list_node *list,
-	struct list_node *entry)
+				    struct list_node *entry)
 {
 	entry->next = list;
 	entry->prev = list->prev;
@@ -95,7 +106,7 @@ static inline void list_insert_tail(struct list_node *list,
 	list->prev = entry;
 }
 
-/*
+/**
  * @ingroup  TEEC_List
  * @brief 删除节点
  *
@@ -119,7 +130,7 @@ static inline void list_remove(struct list_node *entry)
 	entry->next->prev = entry->prev;
 }
 
-/*
+/**
  * @ingroup  TEEC_List
  * @brief 删除链表头结点
  *
@@ -141,6 +152,7 @@ static inline void list_remove(struct list_node *entry)
 static inline struct list_node *list_remove_head(struct list_node *list)
 {
 	struct list_node *entry = NULL;
+
 	if (!LIST_EMPTY(list)) {
 		entry = list->next;
 		list_remove(entry);
@@ -148,7 +160,7 @@ static inline struct list_node *list_remove_head(struct list_node *list)
 	return entry;
 }
 
-/*
+/**
  * @ingroup  TEEC_List
  * @brief 删除链表尾结点
  *
@@ -170,6 +182,7 @@ static inline struct list_node *list_remove_head(struct list_node *list)
 static inline struct list_node *list_remove_tail(struct list_node *list)
 {
 	struct list_node *entry = NULL;
+
 	if (!LIST_EMPTY(list)) {
 		entry = list->prev;
 		list_remove(entry);
@@ -177,3 +190,4 @@ static inline struct list_node *list_remove_tail(struct list_node *list)
 	return entry;
 }
 #endif
+

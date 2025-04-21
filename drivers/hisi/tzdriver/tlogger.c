@@ -113,11 +113,6 @@ uint32_t g_lastread_offset = 0;
 #define TEELOGGER_SET_READERPOS_CUR		_IO(__TEELOGGERIO, 6)
 #define TEELOGGER_SET_TLOGCAT_STAT _IO(__TEELOGGERIO, 7)
 #define TEELOGGER_GET_TLOGCAT_STAT _IO(__TEELOGGERIO, 8)
-
-#define TEELOGGER_GET_EVENT_KTRACE	_IOR(__TEELOGGERIO, 9, char *)
-#define TEEOS_KEVENT_TRACE_SIZE (8 * 2048)
-char *event_buffer_start = NULL;
-
 int g_tlogcat_f = 0;
 
 #define LOG_PATH_TEE_LOG_FILE	"/data/log/tee/last_teemsg"
@@ -209,6 +204,34 @@ static inline struct logger_log *file_get_log(struct file *file)
 
 }
 
+
+static uint16_t logitem_calc_crc16(uint8_t *pChar, int32_t lCount)
+{
+	uint16_t usCrc;
+	uint16_t usTmp ;
+	uint8_t *pTmp ;
+
+	if (NULL == pChar)
+		return 0;
+
+	usCrc = 0 ;
+	pTmp = pChar ;
+
+	while (--lCount >= 0) {
+		usCrc = usCrc ^ ((uint16_t)(*pTmp++) << 8);
+
+		for (usTmp = 0 ; usTmp < 8 ; ++usTmp) {
+			if (usCrc & 0x8000) {
+				usCrc = (usCrc << 1) ^ 0x1021 ;
+			} else {
+				usCrc = usCrc << 1 ;
+			}
+		}
+	}
+
+	return (usCrc & 0xFFFF) ;
+}
+
 static struct logger_log *g_log;
 /*
  * logger_read - our log's read() method
@@ -227,6 +250,7 @@ static LOG_ITEM_T*	logitem_getnext(const uint8_t *buffer_start, uint32_t max_len
 	uint32_t i = 0;
 	LOG_ITEM_T	*logitem_next = NULL;
 	uint32_t 	item_max_size = 0;
+	uint16_t	item_crc;
 
 	if (buffer_start == NULL)
 		return NULL;
@@ -252,7 +276,15 @@ static LOG_ITEM_T*	logitem_getnext(const uint8_t *buffer_start, uint32_t max_len
 			&& (logitem_next->log_buffer_len - logitem_next->log_real_len) < LOG_ITEM_LEN_ALIGN
 			&& logitem_next->log_buffer_len + sizeof(LOG_ITEM_T) <= item_max_size) {
 
+			item_crc = logitem_calc_crc16((uint8_t *)&logitem_next->serial_no, logitem_next->log_real_len + sizeof(LOG_ITEM_T) - offsetof(LOG_ITEM_T, serial_no));
+			if (item_crc == logitem_next->log_buffer_crc) {
+
 				break;
+			} else {
+				tlogd("crc error\n");
+			}
+
+
 		}
 
 		i += LOG_ITEM_LEN_ALIGN;
@@ -269,6 +301,7 @@ static uint32_t logitem_parse(char __user *buf, size_t count, const uint8_t	*buf
 {
 	LOG_ITEM_T	*logitem_next = NULL;
 	uint32_t 	buf_left, buf_written, item_len;
+	int ret = 0;
 
 	buf_written = 0;
 	buf_left    = count;
@@ -298,8 +331,9 @@ static uint32_t logitem_parse(char __user *buf, size_t count, const uint8_t	*buf
 
 		start_pos += item_len;
 
-		if (copy_to_user(buf + buf_written, (void *)logitem_next, item_len) != 0) {
-			tloge("copy failed, item_len %d \n",  item_len); /*lint !e559 */
+		ret = copy_to_user(buf + buf_written, (void *)logitem_next, item_len);
+		if (ret != 0) {
+			tloge("copy failed ret %d, item_len %d \n", ret, item_len); /*lint !e559 */
 		}
 
 		buf_written += item_len;
@@ -321,6 +355,7 @@ static ssize_t tlogger_read(struct file *file, char __user *buf, size_t count, l
 	uint32_t 	buf_written, userbuffer_left;
 	uint32_t	log_last_pos;
 	errno_t ret_s;
+	uint16_t	item_crc;
 	uint32_t log_buffer_maxlen = m_rdr_mem_len - sizeof(LOG_BUFFER_T);
 
 	LOG_BUFFER_FLAG_T	bufferflag;
@@ -363,6 +398,14 @@ static ssize_t tlogger_read(struct file *file, char __user *buf, size_t count, l
 	}
 
 	/* check the buffer flag crc */
+
+	item_crc = logitem_calc_crc16((uint8_t *)&bufferflag + sizeof(bufferflag.crc), sizeof(LOG_BUFFER_T) - sizeof(bufferflag.crc));
+	if (item_crc != bufferflag.crc) {
+		tloge("buffer flag check %x %x\n", item_crc, bufferflag.crc);
+		ret = 0;
+		return LOG_READ_STATUS_ERROR;
+	}
+
 	log_last_pos = bufferflag.last_pos;
 
 	if (log_last_pos == reader->r_off && bufferflag.write_loops == reader->r_loops) {
@@ -661,100 +704,63 @@ static int tlogger_get_tlogcat_f(void)
 	tlogi("get tlogcat_f-%u\n", g_tlogcat_f);
 	return g_tlogcat_f;
 }
-
-static int tlogger_get_version(unsigned int cmd, unsigned long arg)
+static long tlogger_ioctl(struct file *file, unsigned int cmd,
+			  unsigned long arg)
 {
-    int ret = -EINVAL;
-    if (_IOC_DIR(cmd) & _IOC_READ) {
-        ret = access_ok(VERIFY_WRITE, (void __user *)arg, sizeof(m_logbuffer->flag.version_info));
-        if (ret) {
-            if (copy_to_user((void __user *)arg, (void *)m_logbuffer->flag.version_info,
-                              sizeof(m_logbuffer->flag.version_info)) != 0) {
-                ret = -EINVAL;
-                tloge("ver copy failed ret %d\n", ret);
-            } else {
-                ret = 0;
-            }
-        } else {
-            ret = -EINVAL;
-        }
-    }
-    return ret;
-}
+	struct logger_log *log = NULL;
+	long ret = -EINVAL;
 
-static int tlogger_get_event_trace(unsigned int cmd, unsigned long arg)
-{
-    int ret = -EINVAL;
-    if (_IOC_DIR(cmd) & _IOC_READ) {
-        ret = access_ok(VERIFY_WRITE, (void __user *)arg, TEEOS_KEVENT_TRACE_SIZE);
-        if (ret && event_buffer_start != NULL) {
-            if (copy_to_user((void __user *)arg, (void *)event_buffer_start, TEEOS_KEVENT_TRACE_SIZE) != 0) {
-                ret = -EINVAL;
-                tloge("kernel trace copy failed ret %d\n", ret);
-            } else {
-                ret = 0;
-            }
-        } else {
-            ret = -EINVAL;
-            tloge("invalid event buffer or accesss buffer failed\n");
-        }
-    }
-    return ret;
-}
+	if (file == NULL)
+		return -1;
 
-static long tlogger_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
-{
-    struct logger_log *log = NULL;
-    long ret = -EINVAL;
+	log	= file_get_log(file);
 
-    if (file == NULL) {
-        return -1;
-    }
-
-    log = file_get_log(file);
 	if (m_logbuffer == NULL) {
-        tloge("log buffer is null \n");
-        return -1;
+		tloge("log buffer is null \n");
+		return -1;
 	}
 
-    if (log == NULL){
-        tloge("log is null \n");
-        return -1;
+	if (log == NULL){
+		tloge("log is null \n");
+		return -1;
 	}
 
-    tlogd("logger_ioctl start ++\n");
-    mutex_lock(&log->mutex);
+	tlogd("logger_ioctl start ++\n");
+	mutex_lock(&log->mutex);
 
-    switch (cmd) {
-    case TEELOGGER_GET_VERSION:
-        if (tlogger_get_version(cmd, arg) == 0){
-            ret = 0;
-        }
+	switch (cmd) {
+
+	case TEELOGGER_GET_VERSION:
+		if (_IOC_DIR(cmd) & _IOC_READ) {
+			ret = !access_ok(VERIFY_WRITE, (void __user *)arg, sizeof(m_logbuffer->flag.version_info));
+			if (!ret) {
+				ret = copy_to_user((void __user *)arg, (void *)m_logbuffer->flag.version_info, sizeof(m_logbuffer->flag.version_info));
+				if (ret != 0) {
+					tloge("ver copy failed ret %ld\n", ret);
+				}
+
+			}
+		}
 		break;
 	case TEELOGGER_SET_READERPOS_CUR:
-        tlogger_setreaderpos_cur(file);
-        ret = 0;
-        break;
-	case TEELOGGER_SET_TLOGCAT_STAT:
-        tlogger_set_tlogcat_f(file);
-        ret = 0;
-        break;
-	case TEELOGGER_GET_TLOGCAT_STAT:
-        ret = tlogger_get_tlogcat_f();
-        break;
-    case TEELOGGER_GET_EVENT_KTRACE:
-        if (tlogger_get_event_trace(cmd, arg) == 0){
-            ret = 0;
-        }
+		tlogger_setreaderpos_cur(file);
+		ret = 0;
 		break;
-    default:
-        tloge("ioctl error default\n");
-        break;
-    }
+	case TEELOGGER_SET_TLOGCAT_STAT:
+		tlogger_set_tlogcat_f(file);
+		ret = 0;
+		break;
+	case TEELOGGER_GET_TLOGCAT_STAT:
+		ret = tlogger_get_tlogcat_f();
+		break;
+	default:
+		tloge("ioctl error default\n");
+		break;
+	}
 
-    mutex_unlock(&log->mutex);
+	mutex_unlock(&log->mutex);
 
-    return ret;
+	return ret;
 }
 
 static long tlogger_compat_ioctl(struct file *file, unsigned int cmd,
@@ -1009,9 +1015,10 @@ static int __init tlogger_init(void)
 	int ret;
 	unsigned long rdr_mem_addr;
 
-	m_rdr_mem_len	= tc_ns_get_rdr_mem_len();
-	rdr_mem_addr 	= tc_ns_get_rdr_mem_addr();
-	if (m_rdr_mem_len < TEMP_RDR_MEM_SIZE || m_rdr_mem_len - TEMP_RDR_MEM_SIZE < TEEOS_KEVENT_TRACE_SIZE)  {
+	m_rdr_mem_len	= TC_NS_get_rdr_mem_len();
+	rdr_mem_addr 	= TC_NS_get_rdr_mem_addr();
+
+	if (m_rdr_mem_len < TEMP_RDR_MEM_SIZE) {
 		tloge("rdr mem init failed!!! rdr len is too small 0x%x\n", m_rdr_mem_len);
 		return -1;
 	}
@@ -1026,9 +1033,7 @@ static int __init tlogger_init(void)
 		return -ENOMEM;
 	}
 
-	m_rdr_mem_len = m_rdr_mem_len - TEEOS_KEVENT_TRACE_SIZE;
-	event_buffer_start = ((char *)m_logbuffer) + m_rdr_mem_len;
-	m_logbuffer->flag.max_len	= m_rdr_mem_len - sizeof(LOG_BUFFER_T);
+	m_logbuffer->flag.max_len 	= m_rdr_mem_len - sizeof(LOG_BUFFER_T);
 
 	tloge("tlogcat verison 1.0.0\n");
 	tlogd("11-29 tlogcat:start=0x%lx\t len=0x%x\n", (unsigned long)m_logbuffer->buffer_start, m_logbuffer->flag.max_len);
@@ -1036,7 +1041,6 @@ static int __init tlogger_init(void)
 	if(ret) {
 		hisi_bbox_unmap((void *)m_logbuffer);
 		m_logbuffer = NULL;
-		event_buffer_start = NULL;
 		m_rdr_mem_len = 0;
 	}
 	return ret;
@@ -1058,7 +1062,6 @@ static void __exit tlogger_exit(void)
 	hisi_bbox_unmap(m_logbuffer);
 	m_logbuffer = NULL;
 	m_rdr_mem_len = 0;
-	event_buffer_start = NULL;
 }
 
 device_initcall(tlogger_init);

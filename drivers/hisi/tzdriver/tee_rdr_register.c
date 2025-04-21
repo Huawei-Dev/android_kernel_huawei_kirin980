@@ -1,9 +1,13 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2016-2019. All rights reserved.
- * Description: Function definition for rdr memory register.
- * Author: qiqingchao  q00XXXXXX
- * Create: 2016-06-21
+ * register rdr buffer for TEEOS. (RDR: kernel run data recorder.)
+ *
+ * Copyright (c) 2013 Hisilicon Technologies CO., Ltd.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
  */
+
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/sysfs.h>
@@ -30,8 +34,11 @@
 struct rdr_register_module_result current_rdr_info;
 static const u64 current_core_id = RDR_TEEOS;
 
-void tee_fn_dump(u32 modid, u32 etype, u64 coreid, char *pathname,
-	pfn_cb_dump_done pfn_cb)
+void tee_fn_dump(u32 modid,
+		 u32 etype,
+		 u64 coreid,
+		 char *pathname,
+		 pfn_cb_dump_done pfn_cb)
 {
 	u32 l_modid = 0;
 
@@ -49,10 +56,13 @@ int tee_rdr_register_core(void)
 
 	s_module_ops.ops_dump = tee_fn_dump;
 	s_module_ops.ops_reset = NULL;
+
 	ret = rdr_register_module_ops(current_core_id,
-		&s_module_ops, &current_rdr_info);
-	if (ret)
-		tloge("register rdr mem failed.\n");
+				      &s_module_ops, &current_rdr_info);
+	if (ret) {
+	    tloge("register rdr mem failed.\n");
+	}
+
 	return ret;
 }
 
@@ -65,63 +75,67 @@ int teeos_register_exception(void)
 	const char tee_module_desc[] = "RDR_TEEOS crash";
 
 	ret_s = memset_s(&einfo, sizeof(struct rdr_exception_info_s),
-		0, sizeof(struct rdr_exception_info_s));
+			0, sizeof(struct rdr_exception_info_s));
 	if (ret_s) {
-		tloge("memset einfo failed.\n");
-		return ret_s;
+	    tloge("memset einfo failed.\n");
+	    return ret_s;
 	}
 
-	einfo.e_modid = (unsigned int)TEEOS_MODID;
-	einfo.e_modid_end = (unsigned int)TEEOS_MODID_END;
+/*lint -save -e570*/
+	einfo.e_modid = TEEOS_MODID;
+	einfo.e_modid_end = TEEOS_MODID_END;
 	einfo.e_process_priority = RDR_ERR;
 	einfo.e_reboot_priority = RDR_REBOOT_WAIT;
 	einfo.e_notify_core_mask = RDR_TEEOS | RDR_AP;
 	einfo.e_reset_core_mask = RDR_TEEOS | RDR_AP;
-	einfo.e_reentrant = (unsigned int)RDR_REENTRANT_ALLOW;
+	einfo.e_reentrant = RDR_REENTRANT_ALLOW;
 	einfo.e_exce_type = TEE_S_EXCEPTION;
 	einfo.e_from_core = RDR_TEEOS;
-	einfo.e_upload_flag = (unsigned int)RDR_UPLOAD_YES;
+	einfo.e_upload_flag = RDR_UPLOAD_YES;
+/*lint -restore*/
 	ret_s = memcpy_s(einfo.e_from_module, sizeof(einfo.e_from_module),
-		tee_module_name, sizeof(tee_module_name));
+			tee_module_name, sizeof(tee_module_name));
 	if (ret_s) {
-		tloge("memcpy einfo.e_from_module failed.\n");
-		return ret_s;
+	    tloge("memcpy einfo.e_from_module failed.\n");
+	    return ret_s;
 	}
+
 	ret_s = memcpy_s(einfo.e_desc, sizeof(einfo.e_desc),
-		tee_module_desc, sizeof(tee_module_desc));
+			tee_module_desc, sizeof(tee_module_desc));
 	if (ret_s) {
-		tloge("memcpy einfo.e_desc failed.\n");
-		return ret_s;
+	    tloge("memcpy einfo.e_desc failed.\n");
+	    return ret_s;
 	}
+
 	ret = rdr_register_exception(&einfo);
-	if (ret == 0) {
-		tloge("register exception mem failed.");
-		ret = -1;
-	} else {
-		ret = 0;
+	if (ret) {
+	    tloge("register exception mem failed.");
 	}
+
 	return ret;
 }
 
-/* Register rdr memory */
-int tc_ns_register_rdr_mem(void)
+/*Register rdr memory*/
+int TC_NS_register_rdr_mem(void)
 {
-	tc_ns_smc_cmd smc_cmd = {0};
+	TC_NS_SMC_CMD smc_cmd = {0};
 	int ret = 0;
 	u64 rdr_mem_addr;
 	unsigned int rdr_mem_len;
 	struct mb_cmd_pack *mb_pack = NULL;
-	ret = tee_rdr_register_core();
 
+	ret = tee_rdr_register_core();
 	if (ret) {
 		current_rdr_info.log_addr = 0x0;
 		current_rdr_info.log_len = 0;
 		return ret;
 	}
+
 	rdr_mem_addr = current_rdr_info.log_addr;
 	rdr_mem_len = current_rdr_info.log_len;
+
 	mb_pack = mailbox_alloc_cmd_pack();
-	if (mb_pack == NULL) {
+	if (NULL == mb_pack) {
 		current_rdr_info.log_addr = 0x0;
 		current_rdr_info.log_len = 0;
 		return -ENOMEM;
@@ -129,28 +143,33 @@ int tc_ns_register_rdr_mem(void)
 
 	mb_pack->uuid[0] = 1;
 	smc_cmd.uuid_phys = virt_to_phys(mb_pack->uuid);
-	smc_cmd.uuid_h_phys = virt_to_phys(mb_pack->uuid) >> 32;
+	smc_cmd.uuid_h_phys = virt_to_phys(mb_pack->uuid) >> 32; /*lint !e572*/
 	smc_cmd.cmd_id = GLOBAL_CMD_ID_REGISTER_RDR_MEM;
-	mb_pack->operation.paramtypes = TEE_PARAM_TYPE_VALUE_INPUT |
-		TEE_PARAM_TYPE_VALUE_INPUT << 4;
+
+	mb_pack->operation.paramTypes = TEE_PARAM_TYPE_VALUE_INPUT | TEE_PARAM_TYPE_VALUE_INPUT << 4;
 	mb_pack->operation.params[0].value.a = rdr_mem_addr;
 	mb_pack->operation.params[0].value.b = rdr_mem_addr >> 32;
 	mb_pack->operation.params[1].value.a = rdr_mem_len;
+
 	smc_cmd.operation_phys = virt_to_phys(&mb_pack->operation);
-	smc_cmd.operation_h_phys = virt_to_phys(&mb_pack->operation) >> 32;
-	ret = tc_ns_smc(&smc_cmd);
+	smc_cmd.operation_h_phys = virt_to_phys(&mb_pack->operation) >> 32; /*lint !e572*/
+
+	ret = (int)TC_NS_SMC(&smc_cmd, 0);
 	mailbox_free(mb_pack);
-	if (ret)
-		tloge("Send rdr mem info failed.\n");
+	if (ret) {
+	    tloge("Send rdr mem info failed.\n");
+	}
+
 	return ret;
 }
 
-unsigned long tc_ns_get_rdr_mem_addr(void)
+unsigned long TC_NS_get_rdr_mem_addr(void)
 {
+
 	return current_rdr_info.log_addr;
 }
 
-unsigned int tc_ns_get_rdr_mem_len(void)
+unsigned int TC_NS_get_rdr_mem_len(void)
 {
 	return current_rdr_info.log_len;
 }

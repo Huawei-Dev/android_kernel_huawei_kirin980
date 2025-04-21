@@ -1,4 +1,4 @@
-#include <linux/fs.h>
+﻿#include <linux/fs.h>
 #include <linux/mmc/ioctl.h>	/* for struct mmc_ioc_rpmb */
 #include <linux/mmc/card.h>	/* for struct mmc_card */
 #include <linux/list.h>
@@ -119,7 +119,7 @@ static struct rpmb_agent_lock_info lock_info = { 0 };
 
 static int process_rpmb_lock(struct tee_agent_kernel_ops *agent_instance)
 {
-	struct smc_event_data *event_data = NULL;
+	struct __smc_event_data *event_data;
 
 	if (NULL == agent_instance)
 		return -1;
@@ -188,6 +188,33 @@ static void send_ioccmd(struct tee_agent_kernel_ops *agent_instance)
 
 /*lint -save -e679 -e713 -e715 -e732 -e734 -e747 -e754 -e776 -e826 -e834 -e838 */
 
+static uint16_t tee_calc_crc16(uint8_t *pChar, int32_t lCount)
+{
+	uint16_t usCrc;
+	uint16_t usTmp ;
+	uint8_t *pTmp = NULL;
+
+	if (NULL == pChar)
+		return 0;
+
+	usCrc = 0 ;
+	pTmp = pChar ;
+
+	while (--lCount >= 0) {
+		usCrc = usCrc ^ ((uint16_t)(*pTmp++) << 8);
+
+		for (usTmp = 0 ; usTmp < 8 ; ++usTmp) {
+			if (usCrc & 0x8000) {
+				usCrc = (usCrc << 1) ^ 0x1021 ;
+			} else {
+				usCrc = usCrc << 1 ;
+			}
+		}
+	}
+
+	return (usCrc & 0xFFFF) ;
+}
+
 static void dump_memory(uint8_t *data, uint32_t count)
 {
 	uint32_t i;
@@ -202,12 +229,12 @@ static void dump_memory(uint8_t *data, uint32_t count)
 
 	for (i = 0; i < count / 16 ; i++) {
 
-		j = snprintf_s((char *)buffer, sizeof(buffer), 64, "%x: ", (i * 16));
+		j = snprintf_s((char *)buffer, 256, 64, "%x: ", (i * 16));
 
 		if (j < 0)
 			break;
 
-		j = snprintf_s((char *)(buffer + j), sizeof(buffer) - j, 64, "%08x %08x %08x %08x ",
+		j = snprintf_s((char *)(buffer + j), 256 - j, 64, "%08x %08x %08x %08x ",
 			       *p, *(p + 1), *(p + 2), *(p + 3));
 		if (j < 0)
 			break;
@@ -219,13 +246,13 @@ static void dump_memory(uint8_t *data, uint32_t count)
 	}
 
 	if (count % 16) {
-		j = snprintf_s((char *)buffer, sizeof(buffer), 64, "%x: ", ((count / 16) * 16));
+		j = snprintf_s((char *)buffer, 256, 64, "%x: ", ((count / 16) * 16));
 
 		for (i = 0; i < 4; i++) {
 			if (j < 0)
 				break;
 
-			j += snprintf_s((char *)(buffer + j), sizeof(buffer) - j, 64, "%08x ", *p++);
+			j += snprintf_s((char *)(buffer + j), 256 - j, 64, "%08x ", *p++);
 
 		}
 		tloge("%s\n", (char *)buffer);
@@ -236,6 +263,9 @@ static void dump_memory(uint8_t *data, uint32_t count)
 
 static int rpmb_check_data(struct rpmb_ctrl_t *trans_ctrl)
 {
+	uint16_t obj_crc;
+	size_t buf_crc_start_offset;
+
 	if (NULL == trans_ctrl)
 		return 0;
 
@@ -245,27 +275,57 @@ static int rpmb_check_data(struct rpmb_ctrl_t *trans_ctrl)
 		return -1;
 	}
 
+	obj_crc = tee_calc_crc16((uint8_t *)trans_ctrl,	(uint32_t)(offsetof(struct rpmb_ctrl_t, head_crc)));
+	if (obj_crc != trans_ctrl->head_crc) {
+		tloge("rpmb head crc error, should be 0x%x, now is 0x%x, offset %zd, size is %zd\n",
+		      obj_crc, trans_ctrl->head_crc, offsetof(struct rpmb_ctrl_t, head_crc),
+		      sizeof(struct rpmb_ctrl_t)); /*lint !e559 */
+		dump_memory((uint8_t *)trans_ctrl, (uint32_t)sizeof(struct rpmb_ctrl_t));
+
+		return -1;
+	}
+
+
+	buf_crc_start_offset = offsetof(struct rpmb_ctrl_t, buf_crc) + sizeof(trans_ctrl->buf_crc);
+	obj_crc =  tee_calc_crc16((uint8_t *)trans_ctrl + buf_crc_start_offset,
+				  (uint32_t)(offsetof(struct rpmb_ctrl_t, buf_start)
+					     - buf_crc_start_offset + trans_ctrl->buf_len));
+
+	if (obj_crc != trans_ctrl->buf_crc) {
+		tloge("rpmb check buf crc error, should be 0x%x, now is 0x%x, offset %zd, size is %zd\n",
+		      obj_crc, trans_ctrl->buf_crc, buf_crc_start_offset ,
+		      offsetof(struct rpmb_ctrl_t, buf_start)
+		      - buf_crc_start_offset + trans_ctrl->buf_len);
+		dump_memory((uint8_t *)trans_ctrl, (uint32_t)(sizeof(struct rpmb_ctrl_t) +  trans_ctrl->buf_len));
+
+		return -1;
+	}
+
+
 	return 0;
+
 }
 static uint32_t m_cmd_sn;
 u64  g_ioctl_start_time = 0;
 u64  g_ioctl_end_time = 0;
 struct timeval tv;
 
-/*lint -e613*/
+
 static int rpmb_agent_work(struct tee_agent_kernel_ops *agent_instance)
 {
 	struct rpmb_ctrl_t *trans_ctrl = NULL;
 	errno_t rc = EOK;
 	uint32_t copy_len;
-	bool check_value = (agent_instance == NULL || agent_instance->agent_buffer == NULL ||
-                        agent_instance->agent_buffer->kernel_addr == NULL);
-	if (check_value == true) {
+
+
+
+	if (NULL == agent_instance || NULL == agent_instance->agent_buffer
+	    || NULL == agent_instance->agent_buffer->kernel_addr)
 		return -1;
-    }
 
 	trans_ctrl = (struct rpmb_ctrl_t *)agent_instance->agent_buffer->kernel_addr;
 
+	/* check crc */
 	if (0 == rpmb_check_data(trans_ctrl)) {
 
 		if (m_cmd_sn != trans_ctrl->cmd_sn) {
@@ -351,7 +411,7 @@ static int rpmb_agent_work(struct tee_agent_kernel_ops *agent_instance)
 
 	return 0;
 }
-/*lint +e613*/
+
 static int rpmb_agent_exit(struct tee_agent_kernel_ops *agent_instance)
 {
 	tloge("rpmb agent is exit is being invoked\n");
@@ -366,7 +426,7 @@ static int rpmb_agent_exit(struct tee_agent_kernel_ops *agent_instance)
 
 
 static int rpmb_agent_crash_work(struct tee_agent_kernel_ops *agent_instance,
-	tc_ns_client_context *context,
+	TC_NS_ClientContext *context,
 	unsigned int dev_file_id)
 {
 	tlogd("check free lock or not, dev_id=%d\n", dev_file_id);
@@ -393,6 +453,7 @@ static struct tee_agent_kernel_ops rpmb_agent_ops = {
 int rpmb_agent_register(void)
 {
 	tee_agent_kernel_register(&rpmb_agent_ops);
+
 	return 0;
 }
 
