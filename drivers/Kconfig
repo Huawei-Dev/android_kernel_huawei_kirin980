@@ -2,10 +2,10 @@ menu "Device Drivers"
 
 source "drivers/amba/Kconfig"
 
+source "drivers/base/Kconfig"
+
 source "drivers/bootdevice/Kconfig"
 
-source "drivers/base/Kconfig"
-source "drivers/bootdevice/Kconfig"
 source "drivers/bus/Kconfig"
 
 source "drivers/connector/Kconfig"
@@ -233,8 +233,11 @@ source "drivers/hwusb/Kconfig"
 source "drivers/hwbfm/Kconfig"
 
 source "drivers/hwzerohung/Kconfig"
+
 source "drivers/hwfdleak/Kconfig"
+
 source "drivers/hwerecovery/Kconfig"
+
 source "drivers/hwnet/Kconfig"
 
 source "drivers/devkit/audiokit/Kconfig"
