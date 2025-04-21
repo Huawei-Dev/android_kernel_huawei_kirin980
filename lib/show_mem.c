@@ -49,11 +49,4 @@ void show_mem(unsigned int filter)
 #ifdef CONFIG_MEMORY_FAILURE
 	printk("%lu pages hwpoisoned\n", atomic_long_read(&num_poisoned_pages));
 #endif
-#ifdef CONFIG_HUAWEI_SLAB_UNRECLAIMABLE_THRESHOLD
-	if (is_exceed_slab_unreclaimable_threshold(filter)) {
-		pr_warn("slab_unreclaimable exceeds the threshold!\n");
-		print_all_slabinfo();
-		WARN_ON(1);
-	}
-#endif
 }

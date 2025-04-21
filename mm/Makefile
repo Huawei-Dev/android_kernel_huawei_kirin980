@@ -106,4 +106,3 @@ obj-$(CONFIG_HISI_MM) += hisi/
 obj-$(CONFIG_HISI_PAGECACHE_HELPER) += pagecache_manage.o
 obj-$(CONFIG_HISI_PAGECACHE_DEBUG) += pagecache_debug.o
 obj-$(CONFIG_HUAWEI_UNMOVABLE_ISOLATE) += unmovable_isolate.o
-obj-$(CONFIG_HUAWEI_SLAB_UNRECLAIMABLE_THRESHOLD) += slab_unreclaimable_test.o
