@@ -5000,12 +5000,12 @@ CONFIG_HISPIPP_V200=y
 #
 # CONFIG_HISPFD is not set
 
+#
 # Hisilicon Performace Control
 #
 CONFIG_HISI_PERF_CTRL=y
 CONFIG_HISI_DDR_PERF_CTRL=y
 CONFIG_HISI_DRG=y
-# CONFIG_HISI_DUMMY_KO is not set
 
 #
 # NPU Drivers
