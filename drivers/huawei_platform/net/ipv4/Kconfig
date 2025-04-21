@@ -40,7 +40,3 @@ config HW_WIFIPRO_PROC
 config WIFI_DELAY_STATISTIC
 	bool "wifi delay statistic"
 	default n
-
-config HW_SNIFFER
-	bool "hw sniffer"
-	default n
