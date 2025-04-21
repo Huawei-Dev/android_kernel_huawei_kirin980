@@ -1,1 +1,1 @@
-obj-y += default/
+obj-y += $(TARGET_BOARD_PLATFORM)/

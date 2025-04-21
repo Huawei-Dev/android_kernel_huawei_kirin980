@@ -197,7 +197,6 @@ obj-$(CONFIG_HUAWEI_BFM) += hwbfm/
 obj-$(CONFIG_HW_ZEROHUNG) += hwzerohung/
 obj-$(CONFIG_HW_FDLEAK) += hwfdleak/
 obj-$(CONFIG_HW_ERECOVERY) += hwerecovery/
-obj-$(CONFIG_HW_WIFI)       += hwnet/
 obj-y += devkit/tpkit/
 obj-$(CONFIG_AUDIOKIT) += devkit/audiokit/
 obj-$(CONFIG_HW_CPULOAD_NOTI) += cpuload/
