@@ -25,8 +25,8 @@ config VCODEC_PLATFORM_HIVCODECV500
         default n
 
 if VCODEC_PLATFORM_HI3660
-source "drivers/vcodec/hi_vcodec/vdec/Kconfig"
-source "drivers/vcodec/hi_vcodec/venc/drv/venc/Kconfig"
+#source "drivers/vcodec/hi_vcodec/vdec/Kconfig"
+#source "drivers/vcodec/hi_vcodec/venc/drv/venc/Kconfig"
 endif
 
 if VCODEC_PLATFORM_HIVCODECV210
