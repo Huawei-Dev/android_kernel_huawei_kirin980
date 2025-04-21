@@ -159,9 +159,9 @@ static void hisi_media_common_clear(struct hisi_fb_data_type *hisifd,
 		return;
 	}
 
-	pov_h_block_infos = (dss_overlay_block_t *)(uintptr_t)pov_req->ov_block_infos_ptr;
+	pov_h_block_infos = (dss_overlay_block_t *)pov_req->ov_block_infos_ptr;
 	if (pov_h_block_infos == NULL) {
-		if (pov_req != NULL) {
+		if (pov_req) {
 			kfree(pov_req);
 			pov_req = NULL;
 		}
@@ -184,8 +184,8 @@ static void hisi_media_common_clear(struct hisi_fb_data_type *hisifd,
 
 	hisi_cmdlist_del_node(hisifd, pov_req, cmdlist_idxs);
 
-	if (pov_req != NULL) {
-		if (pov_h_block_infos != NULL) {
+	if (pov_req) {
+		if (pov_h_block_infos) {
 			kfree(pov_h_block_infos);
 			pov_h_block_infos = NULL;
 		}
@@ -228,13 +228,13 @@ static int hisi_media_common_get_data_from_user(struct hisi_fb_data_type *hisifd
 
 	ov_block_size = pov_req->ov_block_nums * sizeof(dss_overlay_block_t);
 	pov_h_block_infos = (dss_overlay_block_t *)kmalloc(ov_block_size, GFP_ATOMIC);
-	if (pov_h_block_infos == NULL) {
+	if (!pov_h_block_infos) {
 		HISI_FB_ERR("fb%d, pov_h_block_infos alloc failed!\n", hisifd->index);
 		return -EINVAL;
 	}
 	memset(pov_h_block_infos, 0, ov_block_size);
 
-	ret = copy_from_user(pov_h_block_infos, (dss_overlay_block_t *)(uintptr_t)pov_req->ov_block_infos_ptr,
+	ret = copy_from_user(pov_h_block_infos, (dss_overlay_block_t *)pov_req->ov_block_infos_ptr,
 		ov_block_size);
 	if (ret) {
 		HISI_FB_ERR("fb%d, dss_overlay_block_t copy_from_user failed!\n",
@@ -252,7 +252,7 @@ static int hisi_media_common_get_data_from_user(struct hisi_fb_data_type *hisifd
 		return -EINVAL;
 	}
 
-	pov_req->ov_block_infos_ptr = (uint64_t)(uintptr_t)pov_h_block_infos;
+	pov_req->ov_block_infos_ptr = (uint64_t)pov_h_block_infos;
 
 	return ret;
 }
@@ -266,7 +266,7 @@ static bool hisi_media_common_check_csc_config_needed(dss_overlay_t *pov_req_h_v
 		return true;
 	}
 
-	pov_h_v_block = (dss_overlay_block_t *)(uintptr_t)(pov_req_h_v->ov_block_infos_ptr);
+	pov_h_v_block = (dss_overlay_block_t *)(pov_req_h_v->ov_block_infos_ptr);
 
 	// check whether csc config needed or not
 	if ((pov_h_v_block->layer_nums == 1) &&
@@ -373,7 +373,7 @@ int hisi_mdc_scl_coef_on(struct hisi_fb_data_type *hisifd, bool enable_cmdlist, 
 	return 0;
 }
 
-int hisi_ov_media_common_play(struct hisi_fb_data_type *hisifd, const void __user *argp)
+int hisi_ov_media_common_play(struct hisi_fb_data_type *hisifd, void __user *argp)
 {
 	dss_overlay_t *pov_req = NULL;
 	dss_overlay_t *pov_req_h_v = NULL;
@@ -439,12 +439,11 @@ int hisi_ov_media_common_play(struct hisi_fb_data_type *hisifd, const void __use
 	////////////////////////////////////////////////////////////////////////////
 	// get horizontal block ov
 	pov_req = (dss_overlay_t *)kmalloc(sizeof(dss_overlay_t), GFP_ATOMIC);
-	if (pov_req == NULL) {
+	if (!pov_req) {
 		ret = -1;
 		HISI_FB_ERR("fb%d, dss_overlay_t alloc failed!\n", hisifd->index);
 		goto err_return_sem0;
 	}
-	memset(pov_req, 0, sizeof(dss_overlay_t));
 
 	hisifb_dss_overlay_info_init(pov_req);
 	ret = hisi_media_common_get_data_from_user(hisifd, pov_req, argp);
@@ -463,7 +462,7 @@ int hisi_ov_media_common_play(struct hisi_fb_data_type *hisifd, const void __use
 	////////////////////////////////////////////////////////////////////////////
 	// get vertical block ov
 	pov_req_h_v = &(hisifd->ov_req);
-	pov_req_h_v->ov_block_infos_ptr = (uintptr_t)(&(hisifd->ov_block_infos));
+	pov_req_h_v->ov_block_infos_ptr = (uint64_t)(&(hisifd->ov_block_infos));
 
 	hisifd->set_reg = hisi_cmdlist_set_reg;
 	hisifd->cmdlist_data = hisifd->media_common_cmdlist_data;
@@ -486,7 +485,7 @@ int hisi_ov_media_common_play(struct hisi_fb_data_type *hisifd, const void __use
 		goto err_return_sem0;
 	}
 
-	pov_h_block_infos = (dss_overlay_block_t *)(uintptr_t)(pov_req->ov_block_infos_ptr);
+	pov_h_block_infos = (dss_overlay_block_t *)(pov_req->ov_block_infos_ptr);
 
 	for (m = 0; m < pov_req->ov_block_nums; m++) {
 		pov_h_block = &(pov_h_block_infos[m]);
@@ -655,7 +654,7 @@ err_return_sem0:
 
 	reset = true;
 
-	if (pov_req != NULL) {
+	if (pov_req) {
 		hisi_media_common_clear(hisifd, pov_req, cmdlist_idxs, reset, debug);
 	}
 	up(&(hisifd->media_common_composer_sem));

@@ -49,7 +49,6 @@ enum lcd_kit_sysfs_index{
 	BL_SELF_TEST_INDEX,
 	EFFECT_BL_INDEX,
 	LCD_GENERAL_TEST_INDEX,
-	VERTICAL_LINE_TEST_INDEX,
 };
 /*sysfs support enum*/
 enum lcd_kit_sysfs_support{
@@ -119,9 +118,5 @@ struct lcd_kit_sysfs_ops {
 	ssize_t (*effect_bl_show)(struct device* dev, struct device_attribute* attr, char* buf);
 	ssize_t (*effect_bl_store)(struct device* dev, struct device_attribute* attr, const char* buf, size_t count);
 	ssize_t (*general_test_show)(struct device* dev, struct device_attribute* attr, char* buf);
-	ssize_t (*vtc_line_test_show)(struct device *dev,
-		struct device_attribute *attr, char *buf);
-	ssize_t (*vtc_line_test_store)(struct device *dev,
-		struct device_attribute *attr, const char *buf, size_t count);
 };
 #endif

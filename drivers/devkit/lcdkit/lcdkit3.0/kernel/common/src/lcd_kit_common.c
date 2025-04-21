@@ -24,7 +24,6 @@ u32 mipi_level;
 
 #define BL_MAX 256
 
-
 int lcd_kit_msg_level = MSG_LEVEL_INFO;
 /*common info*/
 struct lcd_kit_common_info g_lcd_kit_common_info;
@@ -38,7 +37,7 @@ static struct lcd_kit_power_seq g_lcd_kit_power_seq;
 struct lcd_kit_esd_error_info g_esd_error_info;
 /*hw adapt ops*/
 static struct lcd_kit_adapt_ops *g_adapt_ops = NULL;
-static char *sence_array[] = {
+static char* sence_array[SENCE_ARRAY_SIZE] = {
 	"LCD_INCOME0",   "MMI0",   "RUNNINGTEST0", "PROJECT_MENU0",
 	"LCD_INCOME1",   "MMI1",   "RUNNINGTEST1",  "PROJECT_MENU1",
 	"LCD_INCOME2",   "MMI2",   "RUNNINGTEST2",  "PROJECT_MENU2",
@@ -58,20 +57,15 @@ static char *sence_array[] = {
 	"LCD_INCOME16",  "MMI16",  "RUNNINGTEST16",  "PROJECT_MENU16",
 	"LCD_INCOME17",  "MMI17",  "RUNNINGTEST17",  "PROJECT_MENU17",
 	"LCD_INCOME18",  "MMI18",  "RUNNINGTEST18",  "PROJECT_MENU18",
-	"LCD_INCOME19",  "MMI19",  "RUNNINGTEST19",  "PROJECT_MENU19",
-	"LCD_INCOME20",  "MMI20",  "RUNNINGTEST20",  "PROJECT_MENU20",
-	"LCD_INCOME21",  "MMI21",  "RUNNINGTEST21",  "PROJECT_MENU21",
-	"LCD_INCOME22",  "MMI22",  "RUNNINGTEST22",  "PROJECT_MENU22",
-	"LCD_INCOME23",  "MMI23",  "RUNNINGTEST23",  "PROJECT_MENU23",
 	"CURRENT1_0",    "CURRENT1_1", "CURRENT1_2",  "CURRENT1_3",
 	"CURRENT1_4",    "CURRENT1_5", "CHECKSUM1",  "CHECKSUM2",
 	"CHECKSUM3",     "CHECKSUM4", "BL_OPEN_SHORT",  "PCD_ERRORFLAG",
 	"DOTINVERSION",  "CHECKREG", "COLUMNINVERSION",   "POWERONOFF",
 	"BLSWITCH", "CURRENT_TEST_MODE", "OVER_CURRENT_DETECTION", "OVER_VOLTAGE_DETECTION",
-	"GENERAL_TEST", "VERTICAL_LINE",
+	"GENERAL_TEST",
 };
 
-static char *cmd_array[] = {
+static char* cmd_array[SENCE_ARRAY_SIZE] = {
 	"CURRENT1_0",   "CURRENT1_0",  "CURRENT1_0",  "CURRENT1_0",//current test0
 	"CURRENT1_1",   "CURRENT1_1",  "CURRENT1_1",  "CURRENT1_1",//current test1
 	"CURRENT1_2",   "CURRENT1_2",  "CURRENT1_2",  "CURRENT1_2",//current test2
@@ -91,13 +85,6 @@ static char *cmd_array[] = {
 	"BLSWITCH",    "BLSWITCH",  "BLSWITCH", "BLSWITCH",// backlight switch test
 	"GPU_TEST",   "GPU_TEST",  "GPU_TEST", "GPU_TEST", //GPU SLT test
 	"GENERAL_TEST", "GENERAL_TEST", "GENERAL_TEST", "GENERAL_TEST",
-	"VERTICAL_LINE_1", "VERTICAL_LINE_1", "VERTICAL_LINE_1",
-	"VERTICAL_LINE_1", "VERTICAL_LINE_2", "VERTICAL_LINE_2",
-	"VERTICAL_LINE_2", "VERTICAL_LINE_2", "VERTICAL_LINE_3",
-	"VERTICAL_LINE_3", "VERTICAL_LINE_3", "VERTICAL_LINE_3",
-	"VERTICAL_LINE_4", "VERTICAL_LINE_4", "VERTICAL_LINE_4",
-	"VERTICAL_LINE_4", "VERTICAL_LINE_5", "VERTICAL_LINE_5",
-	"VERTICAL_LINE_5", "VERTICAL_LINE_5",
 	"/sys/class/ina231/ina231_0/ina231_set," \
 	"/sys/class/ina231/ina231_0/ina231_value," \
 	"1,9999999,1,9999999,1,99999",
@@ -131,7 +118,6 @@ static char *cmd_array[] = {
 	"OVER_CURRENT_DETECTION",
 	"OVER_VOLTAGE_DETECTION",
 	"/sys/class/graphics/fb0/lcd_general_test",
-	"/sys/class/graphics/fb0/vertical_line_test",
 };
 
 int lcd_kit_adapt_register(struct lcd_kit_adapt_ops* ops)
@@ -179,45 +165,6 @@ struct lcd_kit_power_desc *lcd_kit_get_power_handle(void)
 struct lcd_kit_power_seq *lcd_kit_get_power_seq(void)
 {
 	return &g_lcd_kit_power_seq;
-}
-
-static int lcd_kit_set_bias_ctrl(int enable)
-{
-	int ret = LCD_KIT_OK;
-	struct lcd_kit_bias_ops *bias_ops = NULL;
-
-	bias_ops = lcd_kit_get_bias_ops();
-	if (!bias_ops) {
-		LCD_KIT_ERR("can not register adapt_ops!\n");
-		return LCD_KIT_FAIL;
-	}
-
-	if (enable) {
-		if (power_hdl->lcd_vsp.buf == NULL) {
-			LCD_KIT_ERR("can not get lcd voltage!\n");
-			return LCD_KIT_FAIL;
-		}
-		if (bias_ops->set_bias_voltage)
-			/* buf[2]:set voltage value */
-			ret = bias_ops->set_bias_voltage(
-				power_hdl->lcd_vsp.buf[2],
-				power_hdl->lcd_vsn.buf[2]);
-		if (ret)
-			LCD_KIT_ERR("set_bias failed\n");
-	} else {
-		if (power_hdl->lcd_power_down_vsp.buf == NULL) {
-			LCD_KIT_ERR("can not get lcd voltage!\n");
-			return LCD_KIT_FAIL;
-		}
-		if (bias_ops->set_bias_power_down)
-			/* buf[2]:set voltage value */
-			ret = bias_ops->set_bias_power_down(
-				power_hdl->lcd_power_down_vsp.buf[2],
-				power_hdl->lcd_power_down_vsn.buf[2]);
-		if (ret)
-			LCD_KIT_ERR("power_down_set_bias failed!\n");
-	}
-	return ret;
 }
 
 static int lcd_kit_vci_power_ctrl(int enable)
@@ -367,7 +314,6 @@ static int lcd_kit_vsp_power_ctrl(int enable)
 {
 	int ret = LCD_KIT_OK;
 	struct lcd_kit_adapt_ops* adapt_ops = NULL;
-	struct lcd_kit_bias_ops *bias_ops = NULL;
 
 	adapt_ops = lcd_kit_get_adapt_ops();
 	if (!adapt_ops) {
@@ -409,19 +355,6 @@ static int lcd_kit_vsp_power_ctrl(int enable)
             LCD_KIT_ERR("lcd vsp mode is not normal\n");
             return LCD_KIT_FAIL;
 	}
-
-	bias_ops = lcd_kit_get_bias_ops();
-	if (!bias_ops) {
-		LCD_KIT_ERR("can not register adapt_ops!\n");
-		return ret;
-	}
-
-	if (enable)
-		return ret;
-
-	if (bias_ops->set_ic_disable)
-		ret = bias_ops->set_ic_disable();
-
 	return ret;
 }
 
@@ -590,9 +523,9 @@ static int lcd_kit_reset_power_off(void)
 	return ret;
 }
 
-int lcd_kit_reset_power_ctrl(int enable)
+static int lcd_kit_reset_power_ctrl(int enable)
 {
-	if (enable == LCD_RESET_HIGH) {
+	if (enable) {
 		return lcd_kit_reset_power_on();
 	} else {
 		return lcd_kit_reset_power_off();
@@ -609,7 +542,26 @@ static int lcd_kit_on_cmds(void* hld)
 		LCD_KIT_ERR("can not register adapt_ops!\n");
 		return LCD_KIT_FAIL;
 	}
-	/* init code */
+	if(common_info->dsi1_cmd.support)
+	{
+		if (!(adapt_ops->daul_mipi_diff_cmd_tx)) {
+			LCD_KIT_ERR("daul_mipi_diff_cmd_tx can not register adapt_ops!\n");
+			return LCD_KIT_FAIL;
+		}
+		ret = adapt_ops->daul_mipi_diff_cmd_tx(hld, &common_info->panel_on_cmds,
+												&common_info->dsi1_cmd.on_cmds);
+		if (ret) {
+			LCD_KIT_ERR("send daul mipi panel on cmds error\n");
+		}
+		if (common_info->effect_on.support) {
+			ret = adapt_ops->mipi_tx(hld, &common_info->effect_on.cmds);
+			if (ret) {
+				LCD_KIT_ERR("send effect on cmds error\n");
+			}
+		}
+		return ret;
+	}
+	/*send panel on init code*/
 	if (adapt_ops->mipi_tx) {
 		ret = adapt_ops->mipi_tx(hld, &common_info->panel_on_cmds);
 		if (ret) {
@@ -635,6 +587,19 @@ static int lcd_kit_off_cmds(void* hld)
 	if (!adapt_ops) {
 		LCD_KIT_ERR("can not register adapt_ops!\n");
 		return LCD_KIT_FAIL;
+	}
+	if(common_info->dsi1_cmd.support)
+	{
+		if (!(adapt_ops->daul_mipi_diff_cmd_tx)) {
+			LCD_KIT_ERR("daul_mipi_diff_cmd_tx can not register adapt_ops!\n");
+			return LCD_KIT_FAIL;
+		}
+		ret = adapt_ops->daul_mipi_diff_cmd_tx(hld, &common_info->panel_off_cmds,
+												&common_info->dsi1_cmd.off_cmds);
+		if (ret) {
+			LCD_KIT_ERR("send daul mipi panel on cmds error\n");
+		}
+		return ret;
 	}
 	/*send panel off code*/
 	if (adapt_ops->mipi_tx) {
@@ -840,7 +805,7 @@ static int lcd_kit_later_ts_event(int enable, int sync)
 	}
 }
 
-int lcd_kit_get_pt_mode(void)
+static int lcd_kit_get_pt_mode(void)
 {
 	struct lcd_kit_ops *lcd_ops = NULL;
 	int status = 0;
@@ -854,35 +819,6 @@ int lcd_kit_get_pt_mode(void)
 		status = lcd_ops->get_pt_station_status();
 	}
 	return status;
-}
-
-static int lcd_kit_get_proxmity_status(int data)
-{
-	struct ts_kit_ops *ts_ops = NULL;
-	static bool ts_get_proxmity_flag = true;
-
-	if (!common_info->thp_proximity.support) {
-		LCD_KIT_ERR("[Proximity_feature] not support\n");
-		return TP_PROXMITY_DISABLE;
-	}
-	if (data) {
-		ts_get_proxmity_flag = true;
-		return common_info->thp_proximity.work_status ;
-	}
-	if (ts_get_proxmity_flag == false)
-		return common_info->thp_proximity.work_status ;
-	ts_ops = ts_kit_get_ops();
-	if (!ts_ops) {
-		LCD_KIT_ERR("ts_ops is null\n");
-		return TP_PROXMITY_DISABLE;
-	}
-	if (ts_ops->get_tp_proxmity) {
-		common_info->thp_proximity.work_status = (int)ts_ops->get_tp_proxmity();
-		LCD_KIT_INFO("[Proximity_feature] get status %d\n",
-			common_info->thp_proximity.work_status );
-	}
-	ts_get_proxmity_flag = false;
-	return common_info->thp_proximity.work_status;
 }
 
 static int lcd_kit_gesture_mode(void)
@@ -931,21 +867,9 @@ static int lcd_kit_event_should_send(uint32_t event, uint32_t data)
 		case EVENT_IOVCC:
 		case EVENT_VSP:
 		case EVENT_VSN:
-		case EVENT_VDD:
-		case EVENT_BIAS:
-			return (lcd_kit_get_pt_mode() ||
-				((uint32_t)lcd_kit_gesture_mode() &&
-				(common_info->ul_does_lcd_poweron_tp)) ||
-				lcd_kit_get_proxmity_status(data));
 		case EVENT_RESET:
-			if (data && common_info->panel_on_always_need_reset) {
-				return ret;
-			} else {
-				return (lcd_kit_get_pt_mode() ||
-					((uint32_t)lcd_kit_gesture_mode() &&
-					(common_info->ul_does_lcd_poweron_tp)) ||
-					lcd_kit_get_proxmity_status(data));
-			}
+		case EVENT_VDD:
+		return (lcd_kit_get_pt_mode()||((uint32_t)lcd_kit_gesture_mode() && (common_info->ul_does_lcd_poweron_tp)));
 		case EVENT_MIPI:
 		if (data) {
 			return lcd_kit_panel_is_power_on();
@@ -986,6 +910,8 @@ int lcd_kit_event_handler(void* hld, uint32_t event, uint32_t data, uint32_t del
 		case EVENT_VSN:
 		{
 			ret = lcd_kit_vsn_power_ctrl(data);
+			/*set bias voltage*/
+			lcd_kit_set_bias_voltage();
 			break;
 		}
 		case EVENT_RESET:
@@ -1021,12 +947,10 @@ int lcd_kit_event_handler(void* hld, uint32_t event, uint32_t data, uint32_t del
 			LCD_KIT_INFO("none event\n");
 			break;
 		}
-		case EVENT_BIAS:
-			lcd_kit_set_bias_ctrl(data);
-			break;
 		default:
 		{
-			LCD_KIT_INFO("event not exist\n");
+			LCD_KIT_ERR("event not exist\n");
+			ret = LCD_KIT_FAIL;
 			break;
 		}
 	}
@@ -1357,8 +1281,8 @@ static int lcd_kit_hbm_set_handle(void* hld, int last_hbm_level, int hbm_dimming
 		LCD_KIT_ERR("can not register adapt_ops!\n");
 		return LCD_KIT_FAIL;
 	}
-	if ((!hld) || (hbm_level < 0) || (hbm_level > HBM_SET_MAX_LEVEL)) {
-		LCD_KIT_ERR("input param invlid, hbm_level %d\n", hbm_level);
+	if (!hld) {
+		LCD_KIT_ERR("hld is null!\n");
 		return LCD_KIT_FAIL;
 	}
 	if (common_info->hbm.support) {
@@ -1411,16 +1335,8 @@ static u32 lcd_kit_get_blmaxnit(void)
 	u32 bl_max_nit = 0;
 	u32 lcd_kit_brightness_ddic_info = 0;
 	lcd_kit_brightness_ddic_info = common_info->blmaxnit.lcd_kit_brightness_ddic_info;
-	if (common_info->blmaxnit.get_blmaxnit_type == GET_BLMAXNIT_FROM_DDIC &&
-		lcd_kit_brightness_ddic_info > BL_MIN &&
-		lcd_kit_brightness_ddic_info < BL_MAX) {
-		if (lcd_kit_brightness_ddic_info < BL_REG_NOUSE_VALUE) {
-			bl_max_nit = lcd_kit_brightness_ddic_info +
-				common_info->bl_max_nit_min_value;
-		} else {
-			bl_max_nit = lcd_kit_brightness_ddic_info +
-				common_info->bl_max_nit_min_value - 1;
-		}
+	if (common_info->blmaxnit.get_blmaxnit_type == GET_BLMAXNIT_FROM_DDIC && lcd_kit_brightness_ddic_info > BL_MIN && lcd_kit_brightness_ddic_info < BL_MAX){
+		bl_max_nit = (lcd_kit_brightness_ddic_info < BL_REG_NOUSE_VALUE) ? (lcd_kit_brightness_ddic_info + BL_NIT): (lcd_kit_brightness_ddic_info + BL_NIT - 1);
 	} else {
 		bl_max_nit = common_info->actual_bl_max_nit;
 	}
@@ -1432,8 +1348,6 @@ static int lcd_kit_get_panel_info(char* buf)
 	#define PANEL_MAX	10
 	int ret = LCD_KIT_OK;
 	char panel_type[PANEL_MAX] = {0};
-	struct lcd_kit_bl_ops *bl_ops = NULL;
-	char *bl_type = " ";
 
 	if (common_info->panel_type == LCD_TYPE) {
 		strncpy(panel_type, "LCD", strlen("LCD"));
@@ -1443,13 +1357,9 @@ static int lcd_kit_get_panel_info(char* buf)
 		strncpy(panel_type, "INVALID", strlen("INVALID"));
 	}
 	common_info->actual_bl_max_nit = lcd_kit_get_blmaxnit();
-	bl_ops = lcd_kit_get_bl_ops();
-	if ((bl_ops != NULL) && (bl_ops->name != NULL))
-		bl_type = bl_ops->name;
-
-	ret = snprintf(buf, PAGE_SIZE, "blmax:%u,blmin:%u,blmax_nit_actual:%d,blmax_nit_standard:%d,lcdtype:%s,bl_type:%s\n",
+	ret = snprintf(buf, PAGE_SIZE, "blmax:%u,blmin:%u,blmax_nit_actual:%d,blmax_nit_standard:%d,lcdtype:%s,\n",
 				   common_info->bl_level_max, common_info->bl_level_min, \
-				   common_info->actual_bl_max_nit, common_info->bl_max_nit, panel_type, bl_type);
+				   common_info->actual_bl_max_nit, common_info->bl_max_nit, panel_type);
 	return ret;
 }
 
@@ -1971,7 +1881,7 @@ static int lcd_kit_get_test_config(char* buf)
 	int i = 0;
 	int ret = LCD_KIT_FAIL;
 
-	for (i = 0; i < (int)ARRAY_SIZE(sence_array); i++) {
+	for (i = 0; i < SENCE_ARRAY_SIZE; i++) {
 		if (sence_array[i] == NULL) {
 			ret = LCD_KIT_FAIL;
 			LCD_KIT_INFO("Sence cmd is end, total num is:%d\n", i);
@@ -2036,7 +1946,6 @@ static int lcd_kit_dirty_region_handle(void* hld, struct region_rect* dirty)
 
 static void lcd_kit_panel_parse_running(struct device_node* np)
 {
-	int ret;
 	/*dot-colomn inversion*/
 	OF_PROPERTY_READ_U32_DEFAULT(np, "lcd-kit,inversion-support", &common_info->inversion.support, 0);
 	if (common_info->inversion.support) {
@@ -2077,17 +1986,6 @@ static void lcd_kit_panel_parse_running(struct device_node* np)
 		lcd_kit_parse_array_data(np, "lcd-kit,check-reg-off-value", &common_info->check_reg_off.value);
 		OF_PROPERTY_READ_U32_DEFAULT(np, "lcd-kit,check-reg-off-support-dsm-report", &common_info->check_reg_off.support_dsm_report, 0);
 	}
-	/* elvdd detect */
-	ret = of_property_read_u32(np, "lcd-kit,elvdd-detect-support",
-		&common_info->elvdd_detect.support);
-	if (ret) {
-		LCD_KIT_INFO("of_property_read_u32: elvdd-detect-support not find\n");
-		common_info->elvdd_detect.support = NOT_SUPPORT;
-	}
-	if (common_info->elvdd_detect.support)
-		lcd_kit_parse_dcs_cmds(np, "lcd-kit,open-elvdd-detect-cmds",
-			"lcd-kit,open-elvdd-detect-cmds-state",
-			&common_info->elvdd_detect.cmds);
 	/*check mipi*/
 	OF_PROPERTY_READ_U32_DEFAULT(np, "lcd-kit,mipi-check-support", &common_info->mipi_check.support, 0);
 	if (common_info->mipi_check.support) {
@@ -2100,6 +1998,16 @@ static void lcd_kit_panel_parse_running(struct device_node* np)
 	OF_PROPERTY_READ_U32_DEFAULT(np, "lcd-kit,pt-support", &common_info->pt.support, 0);
 	if (common_info->pt.support) {
 		OF_PROPERTY_READ_U32_DEFAULT(np, "lcd-kit,pt-panel-ulps-support", &common_info->pt.panel_ulps_support, 0);
+	}
+	OF_PROPERTY_READ_U32_DEFAULT(np, "lcd-kit,dsi1-cmd-support",
+				&common_info->dsi1_cmd.support, 0);
+	if (common_info->dsi1_cmd.support) {
+		lcd_kit_parse_dcs_cmds(np, "lcd-kit,panel-dsi1-on-cmds",
+				"lcd-kit,panel-dsi1-on-cmds-state",
+				&(common_info->dsi1_cmd.on_cmds));
+		lcd_kit_parse_dcs_cmds(np, "lcd-kit,panel-dsi1-off-cmds",
+				"lcd-kit,panel-dsi1-off-cmds-state",
+				&(common_info->dsi1_cmd.off_cmds));
 	}
 	return ;
 }
@@ -2117,11 +2025,6 @@ static void lcd_kit_panel_parse_effect(struct device_node* np)
 	OF_PROPERTY_READ_U32_DEFAULT(np, "lcd-kit,panel-bl-max-nit", &common_info->bl_max_nit, 0);
 	OF_PROPERTY_READ_U32_DEFAULT(np, "lcd-kit,panel-getblmaxnit-type",  &common_info->blmaxnit.get_blmaxnit_type, 0);
 	OF_PROPERTY_READ_U32_DEFAULT(np, "lcd-kit,Does-lcd-poweron-tp", &common_info->ul_does_lcd_poweron_tp, 0);
-	OF_PROPERTY_READ_U32_DEFAULT(np, "lcd-kit,panel-on-always-reset",
-				&common_info->panel_on_always_need_reset, 0);
-	OF_PROPERTY_READ_U32_DEFAULT(np, "lcd-kit,panel-blmaxnit-min-value",
-				&common_info->bl_max_nit_min_value, BL_NIT);
-
 	/*get blmaxnit*/
 	if (common_info->blmaxnit.get_blmaxnit_type == GET_BLMAXNIT_FROM_DDIC) {
 		lcd_kit_parse_dcs_cmds(np, "lcd-kit,panel-bl-maxnit-command", "lcd-kit,panel-bl-maxnit-command-state",
@@ -2254,8 +2157,6 @@ static void lcd_kit_panel_parse_util(struct device_node* np)
 							&common_info->panel_off_cmds);
 	/*esd*/
 	OF_PROPERTY_READ_U32_DEFAULT(np, "lcd-kit,esd-support", &common_info->esd.support, 0);
-	OF_PROPERTY_READ_U32_DEFAULT(np, "lcd-kit,fac-esd-support",
-		&common_info->esd.fac_esd_support, 0);
 	if (common_info->esd.support) {
 		lcd_kit_parse_dcs_cmds(np, "lcd-kit,esd-reg-cmds", "lcd-kit,esd-reg-cmds-state",
 								&common_info->esd.cmds);
@@ -2288,13 +2189,6 @@ static void lcd_kit_panel_parse_util(struct device_node* np)
 		lcd_kit_parse_dcs_cmds(np, "lcd-kit,vss-cmds-thi", "lcd-kit,vss-cmds-thi-state",
 								&common_info->set_vss.cmds_thi);
 	}
-	/* thp proximity */
-	OF_PROPERTY_READ_U32_DEFAULT(np, "lcd-kit,thp-proximity-support",
-		&common_info->thp_proximity.support, 0);
-	if (common_info->thp_proximity.support) {
-		common_info->thp_proximity.work_status = TP_PROXMITY_DISABLE;
-		common_info->thp_proximity.panel_power_state = POWER_ON;
-	}
 	return ;
 }
 
@@ -2311,52 +2205,24 @@ static void lcd_kit_parse_power_seq(struct device_node* np)
 static void lcd_kit_parse_power(struct device_node* np)
 {
 	/*vci*/
-	if (power_hdl->lcd_vci.buf == NULL)
-		lcd_kit_parse_array_data(np, "lcd-kit,lcd-vci",
-			&power_hdl->lcd_vci);
+	lcd_kit_parse_array_data(np, "lcd-kit,lcd-vci", &power_hdl->lcd_vci);
 	/*iovcc*/
-	if (power_hdl->lcd_iovcc.buf == NULL)
-		lcd_kit_parse_array_data(np, "lcd-kit,lcd-iovcc",
-			&power_hdl->lcd_iovcc);
+	lcd_kit_parse_array_data(np, "lcd-kit,lcd-iovcc", &power_hdl->lcd_iovcc);
 	/*vsp*/
-	if (power_hdl->lcd_vsp.buf == NULL)
-		lcd_kit_parse_array_data(np, "lcd-kit,lcd-vsp",
-			&power_hdl->lcd_vsp);
+	lcd_kit_parse_array_data(np, "lcd-kit,lcd-vsp", &power_hdl->lcd_vsp);
 	/*vsn*/
-	if (power_hdl->lcd_vsn.buf == NULL)
-		lcd_kit_parse_array_data(np, "lcd-kit,lcd-vsn",
-			&power_hdl->lcd_vsn);
+	lcd_kit_parse_array_data(np, "lcd-kit,lcd-vsn", &power_hdl->lcd_vsn);
 	/*lcd reset*/
-	if (power_hdl->lcd_rst.buf == NULL)
-		lcd_kit_parse_array_data(np, "lcd-kit,lcd-reset",
-			&power_hdl->lcd_rst);
+	lcd_kit_parse_array_data(np, "lcd-kit,lcd-reset", &power_hdl->lcd_rst);
 	/*backlight*/
-	if (power_hdl->lcd_backlight.buf == NULL)
-		lcd_kit_parse_array_data(np, "lcd-kit,lcd-backlight",
-			&power_hdl->lcd_backlight);
+	lcd_kit_parse_array_data(np, "lcd-kit,lcd-backlight", &power_hdl->lcd_backlight);
 	/*TE0*/
-	if (power_hdl->lcd_te0.buf == NULL)
-		lcd_kit_parse_array_data(np, "lcd-kit,lcd-te0",
-			&power_hdl->lcd_te0);
+	lcd_kit_parse_array_data(np, "lcd-kit,lcd-te0", &power_hdl->lcd_te0);
 	/*tp reset*/
-	if (power_hdl->tp_rst.buf == NULL)
-		lcd_kit_parse_array_data(np, "lcd-kit,tp-reset",
-			&power_hdl->tp_rst);
+	lcd_kit_parse_array_data(np, "lcd-kit,tp-reset", &power_hdl->tp_rst);
 	/*vdd*/
-	if (power_hdl->lcd_vdd.buf == NULL)
-		lcd_kit_parse_array_data(np, "lcd-kit,lcd-vdd",
-			&power_hdl->lcd_vdd);
-	if (power_hdl->lcd_aod.buf == NULL)
-		lcd_kit_parse_array_data(np, "lcd-kit,lcd-aod",
-			&power_hdl->lcd_aod);
-
-	/* bias */
-	if (power_hdl->lcd_power_down_vsp.buf == NULL)
-		lcd_kit_parse_array_data(np, "lcd-kit,lcd-power-down-vsp",
-			&power_hdl->lcd_power_down_vsp);
-	if (power_hdl->lcd_power_down_vsn.buf == NULL)
-		lcd_kit_parse_array_data(np, "lcd-kit,lcd-power-down-vsn",
-			&power_hdl->lcd_power_down_vsn);
+	lcd_kit_parse_array_data(np, "lcd-kit,lcd-vdd", &power_hdl->lcd_vdd);
+	lcd_kit_parse_array_data(np, "lcd-kit,lcd-aod", &power_hdl->lcd_aod);
 }
 
 static int lcd_kit_panel_parse_dt(struct device_node* np)

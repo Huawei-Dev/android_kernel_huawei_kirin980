@@ -396,8 +396,34 @@ enum bias_control_mode {
 };
 
 /*function declare*/
+//extern int mipi_dsi_ulps_cfg(struct hisi_fb_data_type *hisifd, int enable);
+//struct hisi_fb_data_type* dev_get_hisifd(struct device* dev);
+//int lcd_kit_lread_reg(void* pdata, uint32_t* out, struct lcd_kit_dsi_cmd_desc* cmds, uint32_t len);
+//int lcd_kit_rgbw_set_mode(struct hisi_fb_data_type* hisifd, int mode);
+//int lcd_kit_rgbw_set_backlight(struct hisi_fb_data_type* hisifd, int bl_level);
+//int lcd_kit_rgbw_set_handle(struct hisi_fb_data_type* hisifd);
+//int lcd_kit_updt_fps(struct platform_device* pdev);
+//int lcd_kit_updt_fps_scence(struct platform_device* pdev, uint32_t scence);
+//int lcd_kit_get_bl_set_type(struct hisi_panel_info* pinfo);
+//int lcd_kit_rgbw_set_bl(struct hisi_fb_data_type* hisifd, uint32_t level);
+//int lcd_kit_blpwm_set_backlight(struct hisi_fb_data_type* hisifd, uint32_t level);
+//int lcd_kit_mipi_set_backlight(struct hisi_fb_data_type* hisifd, uint32_t level);
+//int lcd_kit_is_enter_sleep_mode(void);
+//int lcd_kit_check_mipi_fifo_empty(char __iomem* dsi_base);
+//int lcd_kit_checksum_set(struct hisi_fb_data_type* hisifd, int pic_index);
+//int lcd_kit_checksum_check(struct hisi_fb_data_type* hisifd);
+//int lcd_kit_is_enter_pt_mode(void);
+//int lcd_kit_current_det(struct hisi_fb_data_type* hisifd);
+//int lcd_kit_lv_det(struct hisi_fb_data_type* hisifd);
+//int lcd_kit_read_gamma(struct hisi_fb_data_type* hisifd, uint8_t *read_value);
+//int lcd_kit_parse_switch_cmd(struct hisi_fb_data_type* hisifd, char *command);
+//int lcd_kit_read_project_id(void);
+//int lcd_kit_alpm_setting(struct hisi_fb_data_type* hisifd, uint32_t mode);
 int lcd_kit_utils_init(struct device_node* np, struct mtk_panel_info* pinfo);
+//int lcd_kit_dsi_fifo_is_full(char __iomem* dsi_base);
 bool lcd_kit_support(void);
+//void lcd_kit_effect_switch_ctrl(struct hisi_fb_data_type* hisifd, bool ctrl);
+//void lcd_kit_disp_on_check_delay(void);
 void lcd_kit_disp_on_record_time(void);
 int lcd_kit_get_bl_max_nit_from_dts(void);
 #endif

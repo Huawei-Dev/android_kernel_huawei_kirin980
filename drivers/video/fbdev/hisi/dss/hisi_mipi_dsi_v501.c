@@ -1505,7 +1505,7 @@ int mipi_dsi_off(struct platform_device *pdev)
 
 
 static int mipi_dsi_ulps_enter(struct hisi_fb_data_type *hisifd,
-	char __iomem *mipi_dsi_base, uint32_t mipi_idx)
+	char __iomem *mipi_dsi_base)
 {
 	uint32_t tmp;
 	uint32_t cmp_ulpsactivenot_val = 0;
@@ -1517,7 +1517,7 @@ static int mipi_dsi_ulps_enter(struct hisi_fb_data_type *hisifd,
 		return 0;
 	}
 
-	HISI_FB_DEBUG("fb%d, mipi_idx=%d, +!\n", hisifd->index, mipi_idx);
+	HISI_FB_DEBUG("fb%d, +!\n", hisifd->index);
 
 	if (hisifd->panel_info.mipi.lane_nums >= DSI_4_LANES) {
 		cmp_ulpsactivenot_val = (BIT(5) | BIT(8) | BIT(10) | BIT(12));
@@ -1533,7 +1533,7 @@ static int mipi_dsi_ulps_enter(struct hisi_fb_data_type *hisifd,
 		cmp_stopstate_val = (BIT(4));
 	}
 
-	tmp = (uint32_t)inp32(mipi_dsi_base + MIPIDSI_LPCLK_CTRL_OFFSET) & BIT(1);
+	tmp = inp32(mipi_dsi_base + MIPIDSI_LPCLK_CTRL_OFFSET) & BIT(1);
 	if (tmp && (hisifd->panel_info.mipi.phy_mode == DPHY_MODE)) {
 		cmp_stopstate_val |= (BIT(2));
 	}
@@ -1598,19 +1598,23 @@ static int mipi_dsi_ulps_enter(struct hisi_fb_data_type *hisifd,
 
 	//bit13 lock sel enable (dual_mipi_panel bit29 set 1) ,colse clock gate
 	set_reg(hisifd->pctrl_base + PERI_CTRL33, 0x1, 1, 13);
-	set_reg(hisifd->peri_crg_base + PERDIS3, 0x3, 4, 28);
-	if (mipi_idx == 1) {
+	if (is_dual_mipi_panel(hisifd)) {
 		set_reg(hisifd->pctrl_base + PERI_CTRL30, 0x1, 1, 29);
-		set_reg(hisifd->peri_crg_base + PERDIS3, 0xf, 4, 28);
 	}
 
-	HISI_FB_DEBUG("fb%d, mipi_idx=%d, -!\n", hisifd->index, mipi_idx);
+	if (is_dual_mipi_panel(hisifd)) {
+		set_reg(hisifd->peri_crg_base + PERDIS3, 0xf, 4, 28);
+	} else {
+		set_reg(hisifd->peri_crg_base + PERDIS3, 0x3, 4, 28);
+	}
+
+	HISI_FB_DEBUG("fb%d, -!\n", hisifd->index);
 
 	return 0;
 }
 
 static int mipi_dsi_ulps_exit(struct hisi_fb_data_type *hisifd,
-	char __iomem *mipi_dsi_base, uint32_t mipi_idx)
+	char __iomem *mipi_dsi_base)
 {
 	uint32_t tmp = 0;
 	uint32_t cmp_ulpsactivenot_val = 0;
@@ -1627,7 +1631,7 @@ static int mipi_dsi_ulps_exit(struct hisi_fb_data_type *hisifd,
 		return -EINVAL;
 	}
 
-	HISI_FB_DEBUG("fb%d, mipi_idx=%d, +!\n", hisifd->index, mipi_idx);
+	HISI_FB_DEBUG("fb%d, +!\n", hisifd->index);
 
 	if (hisifd->panel_info.mipi.lane_nums >= DSI_4_LANES) {
 		cmp_ulpsactivenot_val = (BIT(3) | BIT(5) | BIT(8) | BIT(10) | BIT(12));
@@ -1713,7 +1717,7 @@ static int mipi_dsi_ulps_exit(struct hisi_fb_data_type *hisifd,
 	// Power_up dsi
 	outp32(mipi_dsi_base + MIPIDSI_PWR_UP_OFFSET, 0x1);
 
-	HISI_FB_DEBUG("fb%d, mipi_idx=%d, -!\n", hisifd->index, mipi_idx);
+	HISI_FB_DEBUG("fb%d, -!\n", hisifd->index);
 	return 0;
 }
 //lint -restore
@@ -1730,13 +1734,13 @@ int mipi_dsi_ulps_cfg(struct hisi_fb_data_type *hisifd, int enable)
 	HISI_FB_DEBUG("fb%d, +.\n", hisifd->index);
 
 	if (enable) {
-		mipi_dsi_ulps_exit(hisifd, hisifd->mipi_dsi0_base, 0);
+		mipi_dsi_ulps_exit(hisifd, hisifd->mipi_dsi0_base);
 		if (is_dual_mipi_panel(hisifd))
-			mipi_dsi_ulps_exit(hisifd, hisifd->mipi_dsi1_base, 1);
+			mipi_dsi_ulps_exit(hisifd, hisifd->mipi_dsi1_base);
 	} else {
-		mipi_dsi_ulps_enter(hisifd, hisifd->mipi_dsi0_base, 0);
+		mipi_dsi_ulps_enter(hisifd, hisifd->mipi_dsi0_base);
 		if (is_dual_mipi_panel(hisifd))
-			mipi_dsi_ulps_enter(hisifd, hisifd->mipi_dsi1_base, 1);
+			mipi_dsi_ulps_enter(hisifd, hisifd->mipi_dsi1_base);
 	}
 
 	HISI_FB_DEBUG("fb%d, -.\n", hisifd->index);
@@ -1917,15 +1921,15 @@ static void mipi_dsi_set_cdphy_bit_clk_upt_video(struct hisi_fb_data_type *hisif
 	pixel_clk = mipi_pixel_clk(hisifd);
 	/*lint -e737 -e776 -e712*/
 	if (pinfo->mipi.phy_mode == DPHY_MODE) {
-		hsa_time = ROUND1(pinfo->ldi.h_pulse_width * phy_ctrl->lane_byte_clk, pixel_clk);
-		hbp_time = ROUND1(pinfo->ldi.h_back_porch * phy_ctrl->lane_byte_clk, pixel_clk);
-		hline_time = ROUND1((pinfo->ldi.h_pulse_width + pinfo->ldi.h_back_porch +
-			rect.w + pinfo->ldi.h_front_porch) * phy_ctrl->lane_byte_clk, pixel_clk);
+		hsa_time = pinfo->ldi.h_pulse_width * phy_ctrl->lane_byte_clk / pixel_clk;
+		hbp_time = pinfo->ldi.h_back_porch * phy_ctrl->lane_byte_clk / pixel_clk;
+		hline_time = (pinfo->ldi.h_pulse_width + pinfo->ldi.h_back_porch +
+			rect.w + pinfo->ldi.h_front_porch) * phy_ctrl->lane_byte_clk / pixel_clk;
 	} else {
-		hsa_time = ROUND1(pinfo->ldi.h_pulse_width * phy_ctrl->lane_word_clk, pixel_clk);
-		hbp_time = ROUND1(pinfo->ldi.h_back_porch * phy_ctrl->lane_word_clk, pixel_clk);
-		hline_time = ROUND1((pinfo->ldi.h_pulse_width + pinfo->ldi.h_back_porch +
-			rect.w + pinfo->ldi.h_front_porch) * phy_ctrl->lane_word_clk, pixel_clk);
+		hsa_time = pinfo->ldi.h_pulse_width * phy_ctrl->lane_word_clk / pixel_clk;
+		hbp_time = pinfo->ldi.h_back_porch * phy_ctrl->lane_word_clk / pixel_clk;
+		hline_time = (pinfo->ldi.h_pulse_width + pinfo->ldi.h_back_porch +
+			rect.w + pinfo->ldi.h_front_porch) * phy_ctrl->lane_word_clk / pixel_clk;
 	}
 	/*lint +e737 +e776 +e712*/
 	set_reg(mipi_dsi_base + MIPIDSI_VID_HSA_TIME_OFFSET, hsa_time, 12, 0);
@@ -2016,7 +2020,7 @@ int mipi_dsi_bit_clk_upt_isr_handler(struct hisi_fb_data_type *hisifd)
 	if (hisifd->panel_info.mipi.phy_mode == CPHY_MODE) {
 		lane_byte_clk = hisifd->panel_info.dsi_phy_ctrl.lane_word_clk;
 	}
-	vfp_time = (uint32_t)inp32(hisifd->mipi_dsi0_base + MIPIDSI_VID_HLINE_TIME_OFFSET) & VFP_TIME_MASK;
+	vfp_time = inp32(hisifd->mipi_dsi0_base + MIPIDSI_VID_HLINE_TIME_OFFSET) & VFP_TIME_MASK;
 	if (lane_byte_clk != 0) {
 		vfp_time = vfp_time * (hisifd->panel_info.ldi.v_front_porch + VFP_TIME_OFFSET) / ((uint32_t)(lane_byte_clk/MILLION_CONVERT));
 	} else {
@@ -2103,8 +2107,3 @@ int mipi_dsi_bit_clk_upt_isr_handler(struct hisi_fb_data_type *hisifd)
 	return 0;
 }
 
-int mipi_dsi_reset_underflow_clear(struct hisi_fb_data_type *hisifd)
-{
-	(void)hisifd;
-	return 0;
-}

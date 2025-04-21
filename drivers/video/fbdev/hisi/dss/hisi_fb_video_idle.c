@@ -19,7 +19,6 @@
 
 #define ONLINE_WB_TIMEOUT_COUNT (16600)
 #define DSS_CLEAR_TIMEOUT  (1000)
-
 static void hisifb_video_idle_wb_err_clear(struct hisi_fb_data_type *hisifd)
 {
 	char __iomem *pipe_sw_wb_base = NULL;
@@ -47,7 +46,7 @@ static void hisifb_video_idle_wb_err_clear(struct hisi_fb_data_type *hisifd)
 		if ((wch0_status & BIT(5)) && (wback_status & BIT(5))) {
 			set_reg(mctl_sys_base + MCTL_MOD8_DBG, 0x0, 2, 22);  // wch0_debug[23:22] =2'b11
 			set_reg(mctl_sys_base + MCTL_MOD14_DBG, 0x0, 2, 22); // wback_debug[23:22] =2'b11
-			HISI_FB_INFO("wb err clear succ.\n");
+			HISI_FB_INFO("wb err clear succ! +++++++\n");
 			break;
 		}
 		udelay(1);
@@ -57,14 +56,21 @@ static void hisifb_video_idle_wb_err_clear(struct hisi_fb_data_type *hisifd)
 		HISI_FB_ERR("wb err clear timeout!\n");
 	}
 
-	hisi_fb_frame_refresh(hisifd, "videoidle");
+	{
+		char *envp[2];
+		char buf[64];
+		snprintf(buf, sizeof(buf), "Refresh=1");
+		envp[0] = buf;
+		envp[1] = NULL;
+		kobject_uevent_env(&(hisifd->fbi->dev->kobj), KOBJ_CHANGE, envp);
+	}
 
 	return;
 }
 
 static void hisifb_video_idle_init(struct hisi_fb_data_type *hisifd)
 {
-	uint32_t bpp = 0;
+	int bpp = 0;
 	dss_rect_t rect;
 	struct hisifb_video_idle_ctrl *video_idle_ctrl = NULL;
 
@@ -89,8 +95,6 @@ static void hisifb_video_idle_init(struct hisi_fb_data_type *hisifd)
 	rect.y = 0;
 	rect.w = hisifd->panel_info.xres;
 	rect.h = hisifd->panel_info.yres;
-	//mipi_ifbc_get_rect(hisifd, &rect);
-
 	if (video_idle_ctrl->wdma_format == DMA_PIXEL_FORMAT_RGB_565) {
 		bpp = 2;
 	} else if (video_idle_ctrl->wdma_format == DMA_PIXEL_FORMAT_ARGB_8888) {
@@ -98,17 +102,16 @@ static void hisifb_video_idle_init(struct hisi_fb_data_type *hisifd)
 	} else {
 		bpp = 4;
 	}
-	video_idle_ctrl->wb_buffer_size = ALIGN_UP((uint32_t)rect.w * bpp, DMA_STRIDE_ALIGN) * rect.h;
-	HISI_FB_INFO("video_idle_ctrl->wb_buffer_size = 0x%x\n", video_idle_ctrl->wb_buffer_size);
+	video_idle_ctrl->wb_buffer_size = ALIGN_UP(rect.w * bpp, DMA_STRIDE_ALIGN) * rect.h;
 
 	mipi_ifbc_get_rect(hisifd, &rect);
-	video_idle_ctrl->wb_hsize = ALIGN_UP((uint32_t)rect.w, 8);
-	video_idle_ctrl->wb_pad_num = ALIGN_UP((uint32_t)rect.w, 8) - rect.w;
+	video_idle_ctrl->wb_hsize = ALIGN_UP(rect.w, 8);
+	video_idle_ctrl->wb_pad_num = ALIGN_UP(rect.w, 8) - rect.w;
 
 	if (video_idle_ctrl->compress_enable) {
-		video_idle_ctrl->wb_pack_hsize = ALIGN_UP((uint32_t)rect.w, 8) * 3 / 4;
+		video_idle_ctrl->wb_pack_hsize = ALIGN_UP(rect.w, 8) * 3 / 4;
 	} else {
-		video_idle_ctrl->wb_pack_hsize = ALIGN_UP((uint32_t)rect.w, 8);
+		video_idle_ctrl->wb_pack_hsize = ALIGN_UP(rect.w, 8);
 	}
 
 	video_idle_ctrl->wdfc_pad_hsize = ALIGN_UP(video_idle_ctrl->wb_pack_hsize, 4);
@@ -134,7 +137,6 @@ static void hisifb_video_idle_interrupt_config(struct hisi_fb_data_type *hisifd)
 	outp32(dss_base + DSS_WB_OFFSET + WB_ONLINE_ERR_INTS, isr_s1);
 }
 
-/*buffer alloc & release diff:*/
 static void hisifb_video_idle_buffer_alloc(struct hisi_fb_data_type *hisifd, uint32_t req_size)
 {
 	size_t buf_len = 0;
@@ -142,7 +144,7 @@ static void hisifb_video_idle_buffer_alloc(struct hisi_fb_data_type *hisifd, uin
 	struct hisifb_video_idle_ctrl *video_idle_ctrl = NULL;
 	video_idle_ctrl = &(hisifd->video_idle_ctrl);
 
-	if ((hisifd->pdev) == NULL) {
+	if (!(hisifd->pdev)) {
 		HISI_FB_ERR("fb%d pdev is NULL!\n", hisifd->index);
 		return;
 	}
@@ -179,6 +181,40 @@ static void hisifb_video_idle_buffer_alloc(struct hisi_fb_data_type *hisifd, uin
 		}
 	}
 	return;
+}
+
+static void hisifb_video_idle_wb_clear_by_cpu(struct hisi_fb_data_type *hisifd)
+{
+	struct hisifb_video_idle_ctrl *vic = NULL;
+	char __iomem *pipe_sw_wb_base = NULL;
+	char __iomem *mctl_ov_ien = NULL;
+	char __iomem *mctl_mutex_base = NULL;
+	char __iomem *wdma_base = NULL;
+	char __iomem *mctl_sys_base = NULL;
+
+	vic = &(hisifd->video_idle_ctrl);
+	mctl_sys_base = hisifd->dss_base + DSS_MCTRL_SYS_OFFSET;
+	set_reg(mctl_sys_base + MCTL_MOD8_DBG, 0x3, 2, 22);  // wch0_debug[23:22] =2'b11
+
+	wdma_base = hisifd->dss_base + g_dss_module_base[vic->wch_idx][MODULE_DMA];
+	set_reg(wdma_base + CH_REG_DEFAULT, 0x1, 32, 0);
+	set_reg(wdma_base + CH_REG_DEFAULT, 0x0, 32, 0);
+
+	pipe_sw_wb_base = hisifd->dss_base + DSS_PIPE_SW_WB_OFFSET;
+	set_reg(pipe_sw_wb_base + PIPE_SW_SIG_CTRL, 0x0, 32, 0);
+	set_reg(pipe_sw_wb_base + SW_POS_CTRL_SIG_EN, 0x0, 32, 0);
+	set_reg(pipe_sw_wb_base + PIPE_SW_DAT_CTRL, 0x0, 32, 0);
+	set_reg(pipe_sw_wb_base + SW_POS_CTRL_DAT_EN, 0x0, 32, 0);
+	set_reg(pipe_sw_wb_base + NXT_SW_NO_PR, 0x0, 32, 0);
+
+	mctl_mutex_base = hisifd->dss_base + g_dss_module_ovl_base[vic->ovl_idx][MODULE_MCTL_BASE];
+	set_reg(mctl_mutex_base + MCTL_CTL_MUTEX_WB, 0x0, 32, 0);
+	set_reg(mctl_mutex_base + MCTL_CTL_MUTEX_WCH0, 0x0, 32, 0);
+	set_reg(mctl_mutex_base + MCTL_CTL_END_SEL, 0xffffbfff, 32, 0);
+
+	mctl_ov_ien = hisifd->dss_base + g_dss_module_base[vic->wch_idx][MODULE_MCTL_CHN_OV_OEN];
+	set_reg(mctl_ov_ien, 0x0, 32, 0);
+	set_reg(mctl_sys_base + MCTL_MOD8_DBG, 0x0, 2, 22);  // wch0_debug[23:22] =2'b00
 }
 
 void hisifb_video_idle_buffer_free(struct hisi_fb_data_type *hisifd)
@@ -218,41 +254,6 @@ void hisifb_video_idle_buffer_free(struct hisi_fb_data_type *hisifd)
 	HISI_FB_INFO("fb%d free buffer and relase L3cache! \n", hisifd->index);
 
 	video_idle_ctrl->buffer_alloced = false;
-}
-
-
-static void hisifb_video_idle_wb_clear_by_cpu(struct hisi_fb_data_type *hisifd)
-{
-	char __iomem *pipe_sw_wb_base = NULL;
-	char __iomem *mctl_ov_ien = NULL;
-	char __iomem *mctl_mutex_base = NULL;
-	struct hisifb_video_idle_ctrl *vic = NULL;
-	char __iomem *wdma_base = NULL;
-	char __iomem *mctl_sys_base = NULL;
-
-	vic = &(hisifd->video_idle_ctrl);
-	mctl_sys_base = hisifd->dss_base + DSS_MCTRL_SYS_OFFSET;
-	set_reg(mctl_sys_base + MCTL_MOD8_DBG, 0x3, 2, 22);  // wch0_debug[23:22] =2'b11
-
-	wdma_base = hisifd->dss_base + g_dss_module_base[vic->wch_idx][MODULE_DMA];
-	set_reg(wdma_base + CH_REG_DEFAULT, 0x1, 32, 0);
-	set_reg(wdma_base + CH_REG_DEFAULT, 0x0, 32, 0);
-
-	pipe_sw_wb_base = hisifd->dss_base + DSS_PIPE_SW_WB_OFFSET;
-	set_reg(pipe_sw_wb_base + PIPE_SW_SIG_CTRL, 0x0, 32, 0);
-	set_reg(pipe_sw_wb_base + SW_POS_CTRL_SIG_EN, 0x0, 32, 0);
-	set_reg(pipe_sw_wb_base + PIPE_SW_DAT_CTRL, 0x0, 32, 0);
-	set_reg(pipe_sw_wb_base + SW_POS_CTRL_DAT_EN, 0x0, 32, 0);
-	set_reg(pipe_sw_wb_base + NXT_SW_NO_PR, 0x0, 32, 0);
-
-	mctl_mutex_base = hisifd->dss_base + g_dss_module_ovl_base[vic->ovl_idx][MODULE_MCTL_BASE];
-	set_reg(mctl_mutex_base + MCTL_CTL_MUTEX_WB, 0x0, 32, 0);
-	set_reg(mctl_mutex_base + MCTL_CTL_MUTEX_WCH0, 0x0, 32, 0);
-	set_reg(mctl_mutex_base + MCTL_CTL_END_SEL, 0xffffbfff, 32, 0);
-
-	mctl_ov_ien = hisifd->dss_base + g_dss_module_base[vic->wch_idx][MODULE_MCTL_CHN_OV_OEN];
-	set_reg(mctl_ov_ien, 0x0, 32, 0);
-	set_reg(mctl_sys_base + MCTL_MOD8_DBG, 0x0, 2, 22);  // wch0_debug[23:22] =2'b00
 }
 
 static void hisifb_video_idle_wb_pipe_set_reg(struct hisi_fb_data_type *hisifd)
@@ -355,7 +356,6 @@ static void hisifb_video_idle_wch_set_reg(struct hisi_fb_data_type *hisifd)
 	video_idle_ctrl = &(hisifd->video_idle_ctrl);
 	chn_idx = video_idle_ctrl->wch_idx;
 	ovl_idx = video_idle_ctrl->ovl_idx;
-
 	/* step1. mctl config*/
 	mctl_mutex_base = hisifd->dss_base + g_dss_module_ovl_base[ovl_idx][MODULE_MCTL_BASE];
 	hisifd->set_reg(hisifd, mctl_mutex_base + MCTL_CTL_MUTEX_WB, 0x1, 32, 0);
@@ -508,15 +508,14 @@ static void hisifb_video_idle_config_dpp_regs(struct hisi_fb_data_type *hisifd)
 
 static void hisifb_video_idle_wb_clear(struct hisi_fb_data_type *hisifd)
 {
+	struct hisifb_video_idle_ctrl *vic = NULL;
 	char __iomem *pipe_sw_wb_base = NULL;
 	char __iomem *mctl_ov_ien = NULL;
 	char __iomem *mctl_mutex_base = NULL;
-	struct hisifb_video_idle_ctrl *vic = NULL;
 	char __iomem *wdma_base = NULL;
 	char __iomem *mctl_sys_base = NULL;
 
 	vic = &(hisifd->video_idle_ctrl);
-
 	mctl_sys_base = hisifd->dss_base + DSS_MCTRL_SYS_OFFSET;
 	hisifd->set_reg(hisifd, mctl_sys_base + MCTL_MOD8_DBG, 0x3, 2, 22);  // wch0_debug[23:22] =2'b11
 
@@ -828,19 +827,19 @@ static int hisifb_video_idle_rb_config(struct hisi_fb_data_type *hisifd)
 
 	if ((isr_wb & BIT_WB_ONLINE_ERR_INTS) == BIT_WB_ONLINE_ERR_INTS) {
 		enable_ldi(hisifd);
-		HISI_FB_INFO("BIT_WB_ONLINE_ERR_INTS return, %d us.\n", count);
+		HISI_FB_INFO("enter video idle err: %d us ++++++.\n", count);
 		hisifb_video_idle_wb_err_clear(hisifd);
 		return -1;
 	}
 
 	if (count == ONLINE_WB_TIMEOUT_COUNT) {
 		enable_ldi(hisifd);
-		HISI_FB_INFO("ONLINE_WB_TIMEOUT return, : %d us.\n", count);
+		HISI_FB_INFO("enter video idle timeout: %d us ++++++.\n", count);
 		hisifb_video_idle_wb_err_clear(hisifd);
 		return -1;
 	}
 	__flush_dcache_area(vic->wb_buffer_base, vic->wb_buffer_size);
-	HISI_FB_INFO("enter video idle success! time: %d us.\n", count);
+	HISI_FB_INFO("enter video idle success! time: %d us ++++++.\n", count);
 
 	if (enable_cmdlist) {
 		hisi_cmdlist_config_start(hisifd, vic->ovl_idx, cmdlist_idxs, 0);
@@ -857,7 +856,7 @@ static int hisifb_video_idle_rb_config(struct hisi_fb_data_type *hisifd)
 	hisifd->frame_count++;
 	pov_req_prev->ov_block_nums = 1;
 	pov_req_prev->ovl_idx = DSS_OVL0;
-	pov_h_block_infos = (dss_overlay_block_t *)(uintptr_t)pov_req_prev->ov_block_infos_ptr;
+	pov_h_block_infos = (dss_overlay_block_t *)pov_req_prev->ov_block_infos_ptr;
 	pov_h_block = &(pov_h_block_infos[0]);
 	pov_h_block->layer_nums = 1;
 	pov_h_block->layer_infos[0].chn_idx = vic->rch_idx;
@@ -972,6 +971,7 @@ static void hisifb_video_idle_rb_clear(struct hisi_fb_data_type *hisifd)
 		vic->rb_closed_reg.need_recovery = false;
 	}
 }
+
 irqreturn_t hisifb_video_idle_dss_wb_isr(int irq, void *ptr)
 {
 	uint32_t isr_s1 = 0;
@@ -1091,7 +1091,7 @@ int hisifb_video_idle_check_enable(struct hisi_fb_data_type *hisifd, uint32_t vi
 	}
 
 	pov_req = &(hisifd->ov_req);
-	pov_h_block_infos = (dss_overlay_block_t *)(uintptr_t)(pov_req->ov_block_infos_ptr);
+	pov_h_block_infos = (dss_overlay_block_t *)(pov_req->ov_block_infos_ptr);
 	for (m = 0; m < (int)pov_req->ov_block_nums; m++) {
 		pov_h_block = &(pov_h_block_infos[m]);
 		for (i = 0; i < (int)pov_h_block->layer_nums; i++) {
@@ -1109,7 +1109,7 @@ int hisifb_video_idle_check_enable(struct hisi_fb_data_type *hisifd, uint32_t vi
 		// 1. alloc buffer and l3cache
 		hisifb_video_idle_buffer_alloc(hisifd, vic->l3cache_size);
 		if (!vic->buffer_alloced) {
-			HISI_FB_INFO("buffer alloc fail, exit video idle.\n");
+			HISI_FB_INFO("request l3cache buffer failed, exit video idle.\n");
 			return 0;
 		}
 		// 2. wb config
@@ -1132,12 +1132,12 @@ int hisifb_video_idle_check_enable(struct hisi_fb_data_type *hisifd, uint32_t vi
 
 exit:
 	if (vic->video_idle_wb_status) {
-		HISI_FB_INFO("exit video idle! wb clear.\n");
+		HISI_FB_INFO("exit video idle! wb clear ------.\n");
 		hisifb_video_idle_wb_clear(hisifd);
 	}
 
 	if (vic->video_idle_rb_status) {
-		HISI_FB_INFO("exit video idle! rb clear.\n");
+		HISI_FB_INFO("exit video idle! rb clear ------.\n");
 		hisifb_video_idle_wb_clear(hisifd);
 		hisifb_video_idle_rb_clear(hisifd);
 	}
@@ -1192,7 +1192,7 @@ int hisifb_hisync_disp_sync_config(struct hisi_fb_data_type *hisifd)
 	}
 
 	cmdlist_base = hisifd->dss_base + DSS_CMDLIST_OFFSET;
-	while ((uint32_t)inp32(cmdlist_base + CMD_CFG_FLAG) & BIT(0)) {
+	while (inp32(cmdlist_base + CMD_CFG_FLAG) & BIT(0)) {
 		udelay(1);
 		if (++try_times > 10000) {
 			HISI_FB_ERR("Read cmd_cfg_flag timeout!\n");

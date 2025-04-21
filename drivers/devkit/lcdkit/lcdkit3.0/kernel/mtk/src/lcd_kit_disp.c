@@ -342,6 +342,7 @@ static int __init lcd_kit_init(void)
 	/*4.init fnode*/
 	lcd_kit_sysfs_init();
 	/*5.init factory mode*/
+	//lcd_kit_factory_init(pinfo);
 	/*6.power init*/
 	lcd_kit_power_init();
 	/*7.init panel ops*/

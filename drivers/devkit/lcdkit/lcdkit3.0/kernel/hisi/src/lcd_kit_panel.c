@@ -18,7 +18,6 @@
 #include "panel/boe_hx83112e.c"
 #include "panel/samsung_ea8076.c"
 #include "panel/boe_r66451.c"
-#include "panel/boe_nt37800f_tah_8p03_3lane_2mux_cmd.c"
 
 /*
 ***************************************************
@@ -28,14 +27,14 @@ static struct lcd_kit_panel_map panel_map[] = {
 	{PANEL_LG_NT36772A, lg_nt36772a_proble},
 	{PANEL_LG_NT36772A_V2, lg_nt36772a_proble},
 	{PANEL_BOE_HX83112E, boe_hx83112e_proble},
-	{PANEL_SAMSUNG_EA8076_ELLE, samsung_ea8076_probe},
-	{PANEL_SAMSUNG_EA8076_ELLE_V2, samsung_ea8076_probe},
+	{PANEL_SAMSUNG_EA8076, samsung_ea8076_probe},
+	{PANEL_SAMSUNG_EA8076_V2, samsung_ea8076_probe},
 	{PANEL_SAMSUNG_EA8074, samsung_ea8076_probe},
 	{PANEL_SAMSUNG_EA8074_VN1, samsung_ea8076_probe},
 	{PANEL_BOE_R66451, boe_r66451_probe},
-	{PANEL_SAMSUNG_EA8076, samsung_ea8076_probe},
-	{ PANEL_SAMSUNG_EA8074_PANDA, samsung_ea8076_probe },
-	{ PANEL_BOE_NT37800F_TAH, boe_nt37800f_probe },
+	{PANEL_TONY_SAMSUNG_EA8076_V4,samsung_ea8076_probe},
+	{PANEL_TONY_SAMSUNG_EA8076,samsung_ea8076_probe},
+
 };
 
 struct lcd_kit_panel_ops *g_lcd_kit_panel_ops = NULL;

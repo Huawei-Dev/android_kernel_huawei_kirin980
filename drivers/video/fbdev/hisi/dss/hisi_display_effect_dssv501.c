@@ -49,19 +49,10 @@ static void hisifb_ce_service_deinit(void);
 
 #define EFFECT_GRADUAL_REFRESH_FRAMES		(30)
 
-#define HIACE_LHIST_BLOCK_ERROR         95
-#define HIACE_LHIST_BLOCK_WARNING       98
-#define HIACE_LHIST_BLOCK_RATIO         100
-
-
 static bool g_is_effect_init = false;
 static bool g_is_ce_service_init = false;
 static struct mutex g_ce_service_lock;
 static ce_service_t g_hiace_service;
-
-// for hiace single mode global setting
-static struct hiace_single_mode_info g_single_mode_info;
-static bool g_single_mode_init;
 
 static bool g_is_effect_lock_init = false;
 spinlock_t g_gmp_effect_lock;
@@ -69,7 +60,6 @@ static spinlock_t g_igm_effect_lock;
 static spinlock_t g_xcc_effect_lock;
 static spinlock_t g_gamma_effect_lock;
 static spinlock_t g_hiace_table_lock;
-static spinlock_t g_roi_lock;
 extern struct mutex g_rgbw_lock;
 static uint32_t g_table_update = 0;
 static uint32_t g_sel_gamma_ab_shadow_hdr_lut = 0;
@@ -87,7 +77,6 @@ uint32_t g_enable_effect = ENABLE_EFFECT_HIACE | ENABLE_EFFECT_BL;
 uint32_t g_debug_effect = 0;
 static bool hiace_enable_status = false;
 
-#define SCREEN_OFF_BLC_DELTA (-10000)
 #define DBV_MAP_INDEX 3
 #define DBV_MAP_COUNTS 1024
 extern unsigned short dbv_curve_noliner_to_liner_map[DBV_MAP_INDEX][DBV_MAP_COUNTS];
@@ -686,23 +675,12 @@ static u32 gmp_lut_table_high4bit_init[4913] = {
 #define GMP_BLOCK_SIZE	137
 #define GMP_CNT_NUM 18
 #define GMP_COFE_CNT 4913   //17*17*17
-#define GAMMA_LUT_LEN (257)
 
 static u32 gmp_lut_table_low32bit_wq_doing[GMP_COFE_CNT] = { 0 };
 static u32 gmp_lut_table_high4bit_wq_doing[GMP_COFE_CNT] = { 0 };
 
 static u32 gmp_lut_low32bit_set[GMP_COFE_CNT] = { 0 };
 static u32 gmp_lut_high4bit_set[GMP_COFE_CNT] = { 0 };
-
-static u32 g_gamma_r_table[2][GAMMA_LUT_LEN];
-static u32 g_gamma_g_table[2][GAMMA_LUT_LEN];
-static u32 g_gamma_b_table[2][GAMMA_LUT_LEN];
-static u32 g_gamma_lut_sel;
-static u32 g_gamma_r_table_pre[2][GAMMA_LUT_LEN];
-static u32 g_gamma_g_table_pre[2][GAMMA_LUT_LEN];
-static u32 g_gamma_b_table_pre[2][GAMMA_LUT_LEN];
-static u32 g_gamma_lut_sel_pre;
-
 static inline long get_timestamp_in_us(void)
 {
 	struct timespec ts;
@@ -749,6 +727,7 @@ static inline uint32_t get_fixed_point_offset(uint32_t half_block_size)
 #define LCP_XCC_LUT_LENGTH	((uint32_t)12)
 
 #define IGM_LUT_LEN ((uint32_t)257)
+#define GAMMA_LUT_LEN ((uint32_t)257)
 
 #define HIACE_DETAIL_WEIGHT_TABLE_LEN 33
 #define HIACE_LOGLUM_EOTF_TABLE_LEN 63
@@ -760,7 +739,7 @@ static int hisi_effect_copy_to_user(uint32_t *table_dst, uint32_t *table_src, ui
 {
 	unsigned long table_size = 0;
 
-	if ((table_dst == NULL) || (table_src == NULL) || (table_length == 0)) {
+	if ((NULL == table_dst) || (NULL == table_src) || (table_length == 0)) {
 		HISI_FB_ERR("invalid input parameters.\n");
 		return -EINVAL;
 	}
@@ -775,36 +754,13 @@ static int hisi_effect_copy_to_user(uint32_t *table_dst, uint32_t *table_src, ui
 	return 0;
 }
 
-static int hisi_effect_copy_from_user(uint32_t *table_dst, uint32_t *table_src, uint32_t table_length)
-{
-	unsigned long table_size = 0;
-	unsigned long ret;
-
-	if ((table_dst == NULL) || (table_src == NULL) || (table_length == 0)) {
-		HISI_FB_ERR("invalid input parameters.\n");
-		return -EINVAL;
-	}
-
-	table_size = (unsigned long)table_length * BYTES_PER_TABLE_ELEMENT;
-
-	ret = copy_from_user(table_dst, table_src, table_size);
-	if (ret) {
-		HISI_FB_ERR("failed to copy table from user: %ld\n", ret);
-		return -EINVAL;
-	}
-
-	return 0;
-}
-
-
 static int hisi_effect_alloc_and_copy(uint32_t **table_dst, uint32_t *table_src,
 	uint32_t lut_table_length, bool copy_user)
 {
 	uint32_t *table_new = NULL;
 	unsigned long table_size = 0;
-	unsigned long ret;
 
-	if ((table_dst == NULL) ||(table_src == NULL) ||  (lut_table_length == 0)) {
+	if ((NULL == table_dst) ||(NULL == table_src) ||  (lut_table_length == 0)) {
 		HISI_FB_ERR("invalid input parameter");
 		return -EINVAL;
 	}
@@ -813,7 +769,7 @@ static int hisi_effect_alloc_and_copy(uint32_t **table_dst, uint32_t *table_src,
 
 	if (*table_dst == NULL) {
 		table_new = (uint32_t *)kmalloc(table_size, GFP_ATOMIC);
-		if (table_new != NULL) {
+		if (table_new) {
 			memset(table_new, 0, table_size);
 			*table_dst = table_new;
 		} else {
@@ -823,11 +779,10 @@ static int hisi_effect_alloc_and_copy(uint32_t **table_dst, uint32_t *table_src,
 	}
 
 	if (copy_user) {
-		ret = copy_from_user(*table_dst, table_src, table_size);
-		if (ret) {
-			HISI_FB_ERR("failed to copy table from user: %ld\n", ret);
-			if (*table_dst != NULL)
-				kfree(*table_dst);
+		if (copy_from_user(*table_dst, table_src, table_size)) {
+			HISI_FB_ERR("failed to copy table from user\n");
+			if (table_new)
+				kfree(table_new);
 			*table_dst = NULL;
 			return -EINVAL;
 		}
@@ -912,7 +867,6 @@ void hisi_effect_init(struct hisi_fb_data_type *hisifd)
 		spin_lock_init(&g_xcc_effect_lock);
 		spin_lock_init(&g_gamma_effect_lock);
 		spin_lock_init(&g_hiace_table_lock);
-		spin_lock_init(&g_roi_lock);
 		mutex_init(&g_rgbw_lock);
 		g_is_effect_lock_init = true;
 	}
@@ -972,18 +926,6 @@ void hisi_effect_init(struct hisi_fb_data_type *hisifd)
 		if (g_debug_effect & DEBUG_EFFECT_ENTRY) {
 			DEBUG_EFFECT_LOG("[effect] bypass\n");
 		}
-	}
-
-	// init hiace single mode info
-	if (!g_single_mode_init) {
-		memset(&g_single_mode_info, 0, sizeof(g_single_mode_info));
-		init_waitqueue_head(&g_single_mode_info.wq_hist);
-		sema_init(&g_single_mode_info.wq_sem, 1);
-		mutex_init(&g_single_mode_info.hist_lock);
-		g_single_mode_info.block_once_num = YBLOCKNUM * XBLOCKNUM;   // use the max block num default
-
-		g_single_mode_init= true;
-		HISI_FB_INFO("[effect] hiace single mode init done\n");
 	}
 }
 
@@ -1094,19 +1036,6 @@ static inline void enable_hiace(struct hisi_fb_data_type *hisifd, bool enable)
 	}
 	up(&hisifd->blank_sem);
 }
-
-static bool hisifb_hiace_is_normal_mode(struct hisi_fb_data_type *hisifd)
-{
-	if (!(g_enable_effect & ENABLE_EFFECT_HIACE))
-		return false;
-
-	if ((hisifd->ce_ctrl.ctrl_ce_mode == CE_MODE_IMAGE) ||
-		(hisifd->ce_ctrl.ctrl_ce_mode == CE_MODE_VIDEO))
-		return true;
-
-	return false;
-}
-
 int hisifb_ce_service_blank(int blank_mode, struct fb_info *info)
 {
 	struct hisi_fb_data_type *hisifd = NULL;
@@ -1129,11 +1058,13 @@ int hisifb_ce_service_blank(int blank_mode, struct fb_info *info)
 		if (pinfo->hiace_support) {
 			if (blank_mode == FB_BLANK_UNBLANK) {
 				hisifb_ce_service_init();
-				if (hisifb_hiace_is_normal_mode(hisifd))
+				if (hisifb_display_effect_is_need_ace(hisifd)) {
 					enable_hiace(hisifd, true);
+				}
 			} else {
-				if (hisifb_hiace_is_normal_mode(hisifd))
+				if (hisifb_display_effect_is_need_ace(hisifd)) {
 					g_hiace_service.use_last_value = true;
+				}
 				hisifd->hiace_info.gradual_frames = 0;
 				hisifd->hiace_info.hiace_enable = false;
 				hisifd->hiace_info.to_stop_hdr = false;
@@ -1146,18 +1077,6 @@ int hisifb_ce_service_blank(int blank_mode, struct fb_info *info)
 					hisifd->ce_ctrl.ctrl_ce_mode = CE_MODE_DISABLE;
 				}
 				hisifb_ce_service_deinit();
-
-				// terminate single mode, wait next trigger
-				if (g_single_mode_init && (hisifd->ce_ctrl.ctrl_ce_mode == CE_MODE_SINGLE)) {
-					mutex_lock(&g_single_mode_info.hist_lock);
-					hisifd->ce_ctrl.ctrl_ce_mode = CE_MODE_DISABLE;
-					g_single_mode_info.single_mode_state = EN_HIACE_SINGLE_MODE_IDLE;
-					mutex_unlock(&g_single_mode_info.hist_lock);
-					wake_up_interruptible(&g_single_mode_info.wq_hist);
-				}
-
-				// set hiace off timestamp when sleep
-				hisifb_panel_set_hiace_timestamp(hisifd, false, hisifd->ce_ctrl.ctrl_ce_mode);
 			}
 		}
 	}
@@ -1222,103 +1141,6 @@ int hisifb_ce_service_get_limit(struct fb_info *info, void __user *argp)
 
 	return ret;
 }
-
-int hisifb_get_hiace_enable(struct fb_info *info, void __user *argp)
-{
-	int ret;
-	struct hisi_fb_data_type *hisifd = NULL;
-	struct hisi_panel_info *pinfo = NULL;
-	int hiace_enabled;
-
-	if (info == NULL) {
-		HISI_FB_ERR("[effect] info is NULL\n");
-		return -EINVAL;
-	}
-
-	if (argp == NULL) {
-		HISI_FB_ERR("[effect] argp is NULL\n");
-		return -EINVAL;
-	}
-
-	hisifd = (struct hisi_fb_data_type *)info->par;
-	if (hisifd == NULL) {
-		HISI_FB_ERR("[effect] hisifd is NULL\n");
-		return -EINVAL;
-	}
-
-	if (hisifd->index != PRIMARY_PANEL_IDX) {
-		HISI_FB_ERR("[effect] hisifd index error: fd = %d\n", hisifd->index);
-		return -EINVAL;
-	}
-
-	pinfo = &(hisifd->panel_info);
-	if (pinfo->hiace_support == 0) {
-		if (g_debug_effect & DEBUG_EFFECT_ENTRY)
-			DEBUG_EFFECT_LOG("[effect] Don't support HIACE\n");
-		return -EINVAL;
-	}
-
-	hiace_enabled = hisifd->hiace_info.hiace_enable;
-
-	ret = copy_to_user(argp, &hiace_enabled, sizeof(int));
-	if (ret) {
-		HISI_FB_ERR("failed to copy result of ioctl to user space\n");
-		return -EINVAL;
-	}
-
-	return 0;
-}
-
-int hisifb_get_hiace_roi(struct fb_info *info, void __user *argp)
-{
-	int ret;
-	struct hisi_fb_data_type *hisifd = NULL;
-	struct hisi_panel_info *pinfo = NULL;
-
-	if (info == NULL) {
-		HISI_FB_ERR("[effect] info is NULL\n");
-		return -EINVAL;
-	}
-
-	if (argp == NULL) {
-		HISI_FB_ERR("[effect] argp is NULL\n");
-		return -EINVAL;
-	}
-
-	hisifd = (struct hisi_fb_data_type *)info->par;
-	if (hisifd == NULL) {
-		HISI_FB_ERR("[effect] hisifd is NULL\n");
-		return -EINVAL;
-	}
-
-	if (hisifd->index != PRIMARY_PANEL_IDX) {
-		HISI_FB_ERR("[effect] hisifd index error: fd = %d\n", hisifd->index);
-		return -EINVAL;
-	}
-
-	if (!g_is_effect_lock_init) {
-		HISI_FB_INFO("display effect lock is not init\n");
-		return -EINVAL;
-	}
-
-	pinfo = &(hisifd->panel_info);
-	if (pinfo->hiace_support == 0) {
-		if (g_debug_effect & DEBUG_EFFECT_ENTRY)
-			DEBUG_EFFECT_LOG("[effect] Don't support HIACE\n");
-		return -EINVAL;
-	}
-
-	spin_lock(&g_roi_lock);
-	ret = copy_to_user(argp, &(hisifd->hist_hiace_roi_info), sizeof(struct hiace_roi_info));
-	if (ret) {
-		spin_unlock(&g_roi_lock);
-		HISI_FB_ERR("failed to copy result of ioctl to user space\n");
-		return -EINVAL;
-	}
-	spin_unlock(&g_roi_lock);
-	return 0;
-}
-
 
 int hisifb_ce_service_get_hiace_param(struct fb_info *info, void __user *argp){
 	int ret = 0;
@@ -1490,7 +1312,7 @@ int hisifb_ce_service_get_hist(struct fb_info *info, void __user *argp)
 	if (g_is_effect_init) {
 		unlock_fb_info(info);
 		wait_ret = wait_event_interruptible_timeout(service->wq_hist, service->new_hist || service->hist_stop, timeout);
-		(void)lock_fb_info(info);
+		lock_fb_info(info);
 		service->hist_stop = false;
 	}
 	if (!g_is_effect_init) {
@@ -1827,19 +1649,6 @@ bool hisifb_display_effect_is_need_ace(struct hisi_fb_data_type *hisifd)
 	return (g_enable_effect & ENABLE_EFFECT_HIACE) && (hisifd->ce_ctrl.ctrl_ce_mode > 0);
 }
 
-bool hisifb_hiace_roi_is_disable(struct hisi_fb_data_type *hisifd)
-{
-	struct hiace_roi_info *hiace = NULL;
-
-	if (hisifd == NULL) {
-		HISI_FB_ERR("[effect] hisifd is NULL\n");
-		return false;
-	}
-
-	hiace = &(hisifd->auto_hiace_roi_info);
-	return hiace->roi_enable == 0;
-}
-
 bool hisifb_display_effect_is_need_blc(struct hisi_fb_data_type *hisifd)
 {
 	if (NULL == hisifd) {
@@ -1957,7 +1766,7 @@ static void handle_first_deltabl(struct hisi_fb_data_type *hisifd, int backlight
 	}
 
 	if (hisifd->bl_level == 0) {
-		hisifd->de_info.blc_delta = SCREEN_OFF_BLC_DELTA;
+		hisifd->de_info.blc_delta = -10000;
 		return;
 	}
 
@@ -1965,7 +1774,7 @@ static void handle_first_deltabl(struct hisi_fb_data_type *hisifd, int backlight
 		return;
 	}
 
-	if (hisifd->de_info.blc_delta == SCREEN_OFF_BLC_DELTA) {
+	if (hisifd->de_info.blc_delta == -10000) {
 		deltabl_process(hisifd,backlight_in);
 	}
 }
@@ -2348,7 +2157,7 @@ void hisifb_display_effect_handle_first_deltabl(struct hisi_fb_data_type *hisifd
 	if (hisifd->de_param.manufacture_brightness.engine_mode == 0) {
 		handle_first_deltabl(hisifd,backlight_in);
 	} else if (hisifd->de_param.manufacture_brightness.engine_mode == 1 &&
-		hisifd->de_info.blc_delta == SCREEN_OFF_BLC_DELTA) {
+		hisifd->de_info.blc_delta == -10000) {
 		hisifd->de_info.blc_delta = 0;
 	}
 }
@@ -2390,12 +2199,8 @@ bool hisifb_display_effect_fine_tune_backlight(struct hisi_fb_data_type *hisifd,
 	if (hisifd->bl_level > 0) {
 		if (hisifb_display_effect_is_need_blc(hisifd)) {
 			int bl = MIN((int)hisifd->panel_info.bl_max, MAX((int)hisifd->panel_info.bl_min, backlight_in + hisifd->de_info.blc_delta));
-			if (hisifd->de_info.amoled_param.DC_Brightness_Dimming_Enable_Real) {
-				if (backlight_in <=
-					hisifd->de_info.amoled_param.Lowac_DBV_Thre_DC) {
-					bl = hisifd->de_info.amoled_param.Lowac_Fixed_DBV_Thres_DC;
-				}
-			} else if (hisifd->de_info.amoled_param.AmoledDimingEnable) {
+
+			if (hisifd->de_info.amoled_param.AmoledDimingEnable) {
 				if (backlight_in >= hisifd->de_info.amoled_param.Lowac_DBV_XCCThres && backlight_in <= hisifd->de_info.amoled_param.Lowac_DBVThres) {
 					bl = hisifd->de_info.amoled_param.Lowac_Fixed_DBVThres;
 				}
@@ -2508,19 +2313,42 @@ static void init_hdr10_lut(struct hisi_fb_data_type *hisifd)
     return;
 }
 
-void hiace_size_config(struct hisi_fb_data_type *hisifd, uint32_t width, uint32_t height)
+void init_hiace(struct hisi_fb_data_type *hisifd)
 {
 	struct hisi_panel_info *pinfo = NULL;
 	char __iomem *hiace_base = NULL;
 	struct hiace_info *hiace_param = NULL;
+	unsigned long dw_jiffies = 0;
+	uint32_t tmp = 0;
+	bool is_ready = false;
 
+	uint32_t global_hist_ab_work;
+	uint32_t global_hist_ab_shadow;
+	uint32_t gamma_ab_work;
+	uint32_t gamma_ab_shadow;
+	uint32_t width;
+	uint32_t height;
 	uint32_t half_block_w;
 	uint32_t half_block_h;
-	uint32_t xPartition = 6;
+	uint32_t pipe_mode;
+	uint32_t partition_mode;
+	uint32_t xPartition;
+	uint32_t is_left_pipe;
+	uint32_t lhist_quant;
+	uint32_t lhist_sft;
+	uint32_t slop;
+	uint32_t th_max;
+	uint32_t th_min;
+	uint32_t up_thres;
+	uint32_t low_thres;
 	uint32_t fixbit_x;
 	uint32_t fixbit_y;
 	uint32_t reciprocal_x;
 	uint32_t reciprocal_y;
+
+	uint32_t block_pixel_num;
+	uint32_t max_lhist_block_pixel_num;
+	uint32_t max_lhist_bin_reg_num;
 
 	if (NULL == hisifd) {
 		HISI_FB_ERR("[effect] hisifd is NULL\n");
@@ -2545,88 +2373,6 @@ void hiace_size_config(struct hisi_fb_data_type *hisifd, uint32_t width, uint32_
 
 	hiace_param = &(hisifd->effect_info.hiace);
 
-	/* parameters */
-	set_reg(hiace_base + DPE_IMAGE_INFO, (height << 16) | width, 32, 0);
-	hiace_param->image_info = (height << 16) | width;
-
-	half_block_w = (width / (2 * xPartition)) & 0x1ff;
-	half_block_h = ((height + 11) / 12) & 0x1ff;
-	set_reg(hiace_base + DPE_HALF_BLOCK_INFO,
-		(half_block_h << 16) | half_block_w, 32, 0);
-
-	hiace_param->half_block_info = (half_block_h << 16) | half_block_w;
-
-	fixbit_x = get_fixed_point_offset(half_block_w) & 0x1f;
-	fixbit_y = get_fixed_point_offset(half_block_h) & 0x1f;
-	reciprocal_x = (1U << (fixbit_x + 8)) / (2 * MAX(half_block_w, 1)) & 0x3ff;
-	reciprocal_y = (1U << (fixbit_y + 8)) / (2 * MAX(half_block_h, 1)) & 0x3ff;
-	set_reg(hiace_base + DPE_XYWEIGHT, (fixbit_y << 26) | (reciprocal_y << 16) |
-		(fixbit_x << 10) | reciprocal_x, 32, 0);
-
-	hiace_param->xyweight = (fixbit_y << 26) | (reciprocal_y << 16) |
-		(fixbit_x << 10) | reciprocal_x;
-
-	if (g_debug_effect & DEBUG_EFFECT_ENTRY) {
-		DEBUG_EFFECT_LOG("[effect] half_block_w:%d,half_block_h:%d,fixbit_x:%d,"
-			"fixbit_y:%d, reciprocal_x:%d, reciprocal_y:%d\n",
-			half_block_w, half_block_h, fixbit_x,
-			fixbit_y, reciprocal_x, reciprocal_y);
-	}
-}
-
-void init_hiace(struct hisi_fb_data_type *hisifd)
-{
-	struct hisi_panel_info *pinfo = NULL;
-	char __iomem *hiace_base = NULL;
-	struct hiace_info *hiace_param = NULL;
-	unsigned long dw_jiffies;
-	uint32_t tmp;
-	bool is_ready = false;
-	uint32_t half_block_w;
-	uint32_t half_block_h;
-	uint32_t lhist_sft;
-	uint32_t block_pixel_num;
-	uint32_t max_lhist_block_pixel_num;
-	uint32_t max_lhist_bin_reg_num;
-
-	uint32_t global_hist_ab_work;
-	uint32_t global_hist_ab_shadow;
-	uint32_t gamma_ab_work;
-	uint32_t gamma_ab_shadow;
-	uint32_t width;
-	uint32_t height;
-	uint32_t pipe_mode;
-	uint32_t partition_mode;
-	uint32_t xPartition = 6;
-	uint32_t is_left_pipe;
-	uint32_t lhist_quant;
-	uint32_t slop;
-	uint32_t th_max;
-	uint32_t th_min;
-	uint32_t up_thres;
-	uint32_t low_thres;
-
-	if (hisifd == NULL) {
-		HISI_FB_ERR("[effect] hisifd is NULL\n");
-		return;
-	}
-
-	pinfo = &(hisifd->panel_info);
-
-	if (pinfo->hiace_support == 0) {
-		if (g_debug_effect & DEBUG_EFFECT_ENTRY)
-			DEBUG_EFFECT_LOG("[effect] HIACE is not supported!\n");
-		return;
-	}
-
-	if (hisifd->index == PRIMARY_PANEL_IDX) {
-		hiace_base = hisifd->dss_base + DSS_HI_ACE_OFFSET;
-	} else {
-		HISI_FB_ERR("[effect] fb%d, not support!", hisifd->index);
-		return;
-	}
-
-	hiace_param = &(hisifd->effect_info.hiace);
 
 	set_reg(hiace_base + DPE_BYPASS_ACE, 0x1, 1, 0);
 	set_reg(hiace_base + DPE_INIT_GAMMA, 0x1, 1, 0);
@@ -2636,34 +2382,15 @@ void init_hiace(struct hisi_fb_data_type *hisifd)
 	/* parameters */
 	width = hisifd->panel_info.xres & 0x1fff;
 	height = hisifd->panel_info.yres & 0x1fff;
+	set_reg(hiace_base + DPE_IMAGE_INFO, (height << 16) | width, 32, 0);
 
-	hiace_size_config(hisifd, width, height);
-
-	half_block_w = (width / (2 * xPartition)) & 0x1ff;
-	half_block_h = ((height + 11) / 12) & 0x1ff;
-	block_pixel_num = (half_block_w * half_block_h) << 2;
-	max_lhist_block_pixel_num = block_pixel_num << 2;
-	max_lhist_bin_reg_num = (1 << 16) - 1; /* each local hist bin 20bit -> 16bit */
-	if (max_lhist_block_pixel_num < (max_lhist_bin_reg_num)) {
-		lhist_sft = 0;
-	} else if (max_lhist_block_pixel_num < (max_lhist_bin_reg_num << 1)) {
-		lhist_sft = 1;
-	} else if (max_lhist_block_pixel_num < (max_lhist_bin_reg_num << 2)) {
-		lhist_sft = 2;
-	} else if (max_lhist_block_pixel_num < (max_lhist_bin_reg_num << 3)) {
-		lhist_sft = 3;
-	} else {
-		lhist_sft = 4;
-	}
-	set_reg(hiace_base + DPE_LHIST_SFT, lhist_sft, 3, 0);
-	pinfo->hiace_param.ilhist_sft = (int)lhist_sft;
-	hiace_param->lhist_sft = lhist_sft;
-	HISI_FB_INFO("[effect] half_block_w=%d, half_block_h=%d lhist_sft = %d!", half_block_w, half_block_h, lhist_sft);
+	hiace_param->image_info = (height << 16) | width;
 
 	pipe_mode = 0;
 	partition_mode = 0;
 	is_left_pipe = 0;
 	set_reg(hiace_base + DPE_DB_PIPE_CFG, (is_left_pipe << 31) | (partition_mode << 30) | pipe_mode, 32, 0);
+	xPartition = 6;
 
 	hiace_param->db_pipe_cfg = (is_left_pipe << 31) | (partition_mode << 30) | pipe_mode;
 
@@ -2671,6 +2398,31 @@ void init_hiace(struct hisi_fb_data_type *hisifd)
 	set_reg(hiace_base + DPE_LHIST_EN, lhist_quant, 1, 10);
 
 	hiace_param->lhist_en = lhist_quant<<10 | hiace_param->lhist_en;
+
+	half_block_w = (width / (2 * xPartition)) & 0x1ff;
+	half_block_h = ((height + 11) / 12) & 0x1ff;
+	set_reg(hiace_base + DPE_HALF_BLOCK_INFO,
+		(half_block_h << 16) | half_block_w, 32, 0);
+
+	hiace_param->half_block_info = (half_block_h << 16) | half_block_w;
+
+	block_pixel_num = (half_block_w * half_block_h) << 2;
+	max_lhist_block_pixel_num = block_pixel_num << 2;
+	max_lhist_bin_reg_num = (1 << 16) - 1; /* each local hist bin 20bit -> 16bit */
+	if (max_lhist_block_pixel_num < (max_lhist_bin_reg_num << 1)) {
+		lhist_sft = 0;
+	} else if (max_lhist_block_pixel_num < (max_lhist_bin_reg_num << 2)) {
+		lhist_sft = 1;
+	} else if (max_lhist_block_pixel_num < (max_lhist_bin_reg_num << 3)) {
+		lhist_sft = 2;
+	} else if (max_lhist_block_pixel_num < (max_lhist_bin_reg_num << 4)) {
+		lhist_sft = 3;
+	} else {
+		lhist_sft = 4;
+	}
+	set_reg(hiace_base + DPE_LHIST_SFT, lhist_sft, 3, 0);
+	pinfo->hiace_param.ilhist_sft = (int)lhist_sft;
+	hiace_param->lhist_sft = lhist_sft;
 
 	slop = 68 & 0xff;
 	th_min = 0 & 0x1ff;
@@ -2693,10 +2445,25 @@ void init_hiace(struct hisi_fb_data_type *hisifd)
 
 	set_reg(hiace_base + DPE_SKIN_GAIN, 128, 8, 0);
 	hiace_param->skin_gain = 128;   //SDR:128;  HDR:0
+
 	up_thres = 248 & 0xff;
 	low_thres = 8 & 0xff;
 	set_reg(hiace_base + DPE_UP_LOW_TH, (up_thres << 8) | low_thres, 32, 0);
 	hiace_param->up_low_th = (up_thres << 8) | low_thres;
+
+	fixbit_x = get_fixed_point_offset(half_block_w) & 0x1f;
+	fixbit_y = get_fixed_point_offset(half_block_h) & 0x1f;
+	reciprocal_x = (1U << (fixbit_x + 8)) / (2 * MAX(half_block_w, 1)) & 0x3ff;
+	reciprocal_y = (1U << (fixbit_y + 8)) / (2 * MAX(half_block_h, 1)) & 0x3ff;
+	set_reg(hiace_base + DPE_XYWEIGHT, (fixbit_y << 26) | (reciprocal_y << 16)
+		| (fixbit_x << 10) | reciprocal_x, 32, 0);
+
+	hiace_param->xyweight = (fixbit_y << 26) | (reciprocal_y << 16) | (fixbit_x << 10) | reciprocal_x;
+
+	if (g_debug_effect & DEBUG_EFFECT_ENTRY) {
+		DEBUG_EFFECT_LOG("[effect] half_block_w:%d, half_block_h:%d, fixbit_x:%d, fixbit_y:%d, reciprocal_x:%d, reciprocal_y:%d, lhist_sft:%d\n",
+						 half_block_w, half_block_h, fixbit_x, fixbit_y, reciprocal_x, reciprocal_y, lhist_sft);
+	}
 
 	/* wait for gamma init finishing */
 	dw_jiffies = jiffies + HZ / 2;
@@ -2981,8 +2748,8 @@ static void hisi_dss_dpp_hiace_set_lut_reg(struct hisi_fb_data_type *hisifd, con
 	gamma_ab_shadow = 0;
 	gamma_ab_work = 0;
 	if ((g_table_update & LUMA_GAMA_TABLE_UPDATED) && (hisifd->effect_info.hiace.luma_gamma_table != NULL)) {
-		gamma_ab_shadow = (uint32_t)inp32(hiace_base + DPE_GAMMA_AB_SHADOW) & 0x2;
-		gamma_ab_work = (uint32_t)inp32(hiace_base + DPE_GAMMA_AB_WORK) & 0x2;
+		gamma_ab_shadow = inp32(hiace_base + DPE_GAMMA_AB_SHADOW) & 0x2;
+		gamma_ab_work = inp32(hiace_base + DPE_GAMMA_AB_WORK) & 0x2;
 		if (gamma_ab_shadow == gamma_ab_work) {
 			/* write luma_gama lut */
 			for (i = 0; i < LUMA_GAMA_LUT_SIZE; i++) {
@@ -3055,7 +2822,7 @@ void hisi_dss_dpp_hiace_set_reg(struct hisi_fb_data_type *hisifd)
 	//lint -e{438}
 	gamma_ab_shadow = inp32(hiace_base + DPE_GAMMA_AB_SHADOW) & 0x1;
 	if (ce_info->algorithm_result == 0 && hisifd->hiace_info.lut_table != NULL) {
-		gamma_ab_work = (uint32_t)inp32(hiace_base + DPE_GAMMA_AB_WORK) & 0x1;
+		gamma_ab_work = inp32(hiace_base + DPE_GAMMA_AB_WORK) & 0x1;
 		HISI_FB_DEBUG("[effect] start set hiace lut! gamma_ab_shadow=%d,gamma_ab_work=%d,g_sel_gamma_ab_shadow_hdr_lut=%d\n",gamma_ab_shadow,gamma_ab_work,g_sel_gamma_ab_shadow_hdr_lut);
 		if (gamma_ab_shadow == gamma_ab_work) {
 			int i = 0;
@@ -3160,28 +2927,12 @@ void hisi_dpp_hiace_end_handle_func(struct work_struct *work)
 		return;
 	}
 
-	if (!g_is_effect_lock_init) {
-		HISI_FB_ERR("display effect lock is not init\n");
-		return;
-	}
-
 	if (PRIMARY_PANEL_IDX != hisifd->index) {
 		HISI_FB_ERR("[effect] fb%d, not support!\n", hisifd->index);
 		return;
 	}
 	ce_info = &(hisifd->hiace_info);
 	hiace_base = hisifd->dss_base + DSS_HI_ACE_OFFSET;
-
-	spin_lock(&g_roi_lock);
-	hisifd->hist_hiace_roi_info = hisifd->auto_hiace_roi_info;
-	spin_unlock(&g_roi_lock);
-
-	// first try hiace singe mode routine
-	if (hisifd->ce_ctrl.ctrl_ce_mode == CE_MODE_SINGLE) {
-		hisi_hiace_single_mode_wq_handler(work);
-		HISI_FB_INFO("[effect] hiace single mode, return at this point!\n");
-		return;
-	}
 
 	down(&hisifd->blank_sem);
 	if (!hisifd->panel_power_on) {
@@ -3379,7 +3130,9 @@ int hisifb_use_dynamic_gamma(struct hisi_fb_data_type *hisifd, char __iomem *dpp
 		for (i = 0; i < pinfo->gamma_lut_table_len / 2; i++) {
 			index = i << 1;
 			if (index >= GM_LUT_MHLEN)
+			{
 				index = GM_LUT_MHLEN;
+			}
 			outp32(dpp_base + (U_GAMA_R_COEF + i * 4), gm_lut_r[index] | gm_lut_r[index+1] << 16);
 			outp32(dpp_base + (U_GAMA_G_COEF + i * 4), gm_lut_g[index] | gm_lut_g[index+1] << 16);
 			outp32(dpp_base + (U_GAMA_B_COEF + i * 4), gm_lut_b[index] | gm_lut_b[index+1] << 16);
@@ -3531,6 +3284,21 @@ void hisifb_update_gm_from_reserved_mem(uint32_t *gm_r, uint32_t *gm_g, uint32_t
 
 /*lint -e571, -e573, -e737, -e732, -e850, -e730, -e713, -e529, -e574, -e679, -e732, -e845, -e570,
 -e774 -e568 -e587 -e685*/
+
+static void free_gamma_table(struct gamma_info *gamma)
+{
+	if(gamma == NULL){
+		HISI_FB_ERR("gamma is null pointer\n");
+		return;
+	}
+
+	hisi_effect_kfree(&gamma->gamma_r_table);
+	hisi_effect_kfree(&gamma->gamma_g_table);
+	hisi_effect_kfree(&gamma->gamma_b_table);
+	hisi_effect_kfree(&gamma->gamma_r_table_pre);
+	hisi_effect_kfree(&gamma->gamma_g_table_pre);
+	hisi_effect_kfree(&gamma->gamma_b_table_pre);
+}
 
 int hisi_effect_arsr2p_info_get(struct hisi_fb_data_type *hisifd, struct arsr2p_info *arsr2p)
 {
@@ -3732,7 +3500,6 @@ int hisi_effect_lcp_info_get(struct hisi_fb_data_type *hisifd, struct lcp_info *
 {
 	int ret = 0;
 	struct hisi_panel_info *pinfo = NULL;
-	struct lcp_info *lcp_xcc_param = NULL;
 
 	if (NULL == hisifd) {
 		HISI_FB_ERR("hisifd is NULL!\n");
@@ -3744,13 +3511,7 @@ int hisi_effect_lcp_info_get(struct hisi_fb_data_type *hisifd, struct lcp_info *
 		return -EINVAL;
 	}
 
-	if (!g_is_effect_lock_init) {
-		HISI_FB_INFO("display effect lock is not init!\n");
-		return -EINVAL;
-	}
-
 	pinfo = &(hisifd->panel_info);
-	lcp_xcc_param = &(hisifd->effect_info.lcp);
 
 	if (hisifd->effect_ctl.lcp_gmp_support && (pinfo->gmp_lut_table_len == LCP_GMP_LUT_LENGTH)) {
 		ret = hisi_effect_copy_to_user(lcp->gmp_table_low32, pinfo->gmp_lut_table_low32bit, LCP_GMP_LUT_LENGTH);
@@ -3773,10 +3534,8 @@ int hisi_effect_lcp_info_get(struct hisi_fb_data_type *hisifd, struct lcp_info *
 			goto err_ret;
 		}
 
-		lcp->xcc_dual_lcd_top = lcp_xcc_param->xcc_dual_lcd_top;
-		lcp->xcc_dual_lcd_left = lcp_xcc_param->xcc_dual_lcd_left;
-		lcp->xcc_dual_lcd_bot = lcp_xcc_param->xcc_dual_lcd_bot;
-		lcp->xcc_dual_lcd_right = lcp_xcc_param->xcc_dual_lcd_right;
+		lcp->xcc_dual_lcd_top_left = (pinfo->yres/2) << 16;
+		lcp->xcc_dual_lcd_bot_right = pinfo->yres << 16 | pinfo->xres;
 
 		ret = hisi_effect_copy_to_user(lcp->xcc_table_pre, pinfo->xcc_table, LCP_XCC_LUT_LENGTH);
 		if (ret) {
@@ -3912,7 +3671,6 @@ int hisi_effect_hiace_info_get(struct hisi_fb_data_type *hisifd, struct hiace_in
 int hisi_effect_gamma_info_get(struct hisi_fb_data_type *hisifd, struct gamma_info *gamma)
 {
 	struct hisi_panel_info *pinfo = NULL;
-	struct gamma_info *gamma_param = NULL;
 	int ret = 0;
 
 	if (NULL == hisifd) {
@@ -3931,14 +3689,12 @@ int hisi_effect_gamma_info_get(struct hisi_fb_data_type *hisifd, struct gamma_in
 	}
 
 	pinfo = &(hisifd->panel_info);
-	gamma_param = &(hisifd->effect_info.gamma);
 
 	if (hisifd->effect_ctl.lcp_gmp_support && (pinfo->gamma_lut_table_len== GAMMA_LUT_LEN)) {
 		gamma->para_mode = 0;
-		gamma->gamma_dual_lcd_top = gamma_param->gamma_dual_lcd_top;
-		gamma->gamma_dual_lcd_left = gamma_param->gamma_dual_lcd_left;
-		gamma->gamma_dual_lcd_bot = gamma_param->gamma_dual_lcd_bot;
-		gamma->gamma_dual_lcd_right = gamma_param->gamma_dual_lcd_right;
+
+		gamma->gamma_dual_lcd_top_left= (pinfo->yres/2)<<16;
+		gamma->gamma_dual_lcd_bot_right=(pinfo->yres<<16) | pinfo->xres;
 
 		ret = hisi_effect_copy_to_user(gamma->gamma_r_table, pinfo->gamma_lut_table_R, GAMMA_LUT_LEN);
 		if (ret) {
@@ -4061,7 +3817,6 @@ int hisi_effect_gmp_info_set(struct hisi_fb_data_type *hisifd, struct lcp_info *
 {
 	struct lcp_info *lcp_dst = NULL;
 	struct dss_effect *effect = NULL;
-	struct hisi_panel_info *pinfo = NULL;
 
 	if (NULL == hisifd) {
 		HISI_FB_ERR("hisifd is NULL!\n");
@@ -4083,7 +3838,6 @@ int hisi_effect_gmp_info_set(struct hisi_fb_data_type *hisifd, struct lcp_info *
 		return -EINVAL;
 	}
 
-	pinfo = &(hisifd->panel_info);
 	lcp_dst = &(hisifd->effect_info.lcp);
 	effect = &(hisifd->effect_ctl);
 
@@ -4093,31 +3847,29 @@ int hisi_effect_gmp_info_set(struct hisi_fb_data_type *hisifd, struct lcp_info *
 	}
 
 	lcp_dst->gmp_enable = lcp_src->gmp_enable;
-	spin_lock(&g_gmp_effect_lock);
 	/*only update gmp lut when gmp is enabled*/
 	if (lcp_src->gmp_enable) {
+		spin_lock(&g_gmp_effect_lock);
+
 		lcp_dst->gmp_table_high4 = gmp_lut_high4bit_set;
 		lcp_dst->gmp_table_low32 = gmp_lut_low32bit_set;
 
 		if (copy_from_user(gmp_lut_high4bit_set, lcp_src->gmp_table_high4, (LCP_GMP_LUT_LENGTH * BYTES_PER_TABLE_ELEMENT))) {
-			hisifd->effect_updated_flag.gmp_effect_updated = false;
 			HISI_FB_ERR("failed to copy gmp high4bit table from user\n");
 			goto err_ret;
 		}
 
 		if (copy_from_user(gmp_lut_low32bit_set, lcp_src->gmp_table_low32, (LCP_GMP_LUT_LENGTH * BYTES_PER_TABLE_ELEMENT))) {
-			hisifd->effect_updated_flag.gmp_effect_updated = false;
 			HISI_FB_ERR("failed to copy gmp low32bit table from user\n");
 			goto err_ret;
 		}
+		spin_unlock(&g_gmp_effect_lock);
 	}
 
 	/*sdk updated gmp lut, driver need to config the lut reg*/
 	hisifd->effect_updated_flag.gmp_effect_updated = true;
-	spin_unlock(&g_gmp_effect_lock);
 
-	if(((!pinfo->cascadeic_support && hisifd->online_play_count > 1) ||
-		(pinfo->cascadeic_support && hisifd->gmp_online_set_reg_count > 1)) && hisifd->gmp_lut_wq) {
+	if(hisifd->online_play_count > 1 && hisifd->gmp_lut_wq) {
 		queue_work(hisifd->gmp_lut_wq, &hisifd->gmp_lut_work);
 	}
 
@@ -4154,8 +3906,6 @@ int hisi_effect_igm_info_set(struct hisi_fb_data_type *hisifd, struct lcp_info *
 		HISI_FB_INFO("fb%d, lcp degamma is not supported!\n", hisifd->index);
 		return 0;
 	}
-
-	HISI_FB_INFO("+\n" );
 
 	spin_lock(&g_igm_effect_lock);
 
@@ -4197,103 +3947,6 @@ int hisi_effect_xcc_info_set(struct hisi_fb_data_type *hisifd, struct lcp_info *
 	struct lcp_info *lcp_dst = NULL;
 	struct dss_effect *effect = NULL;
 
-	if (hisifd == NULL) {
-		HISI_FB_ERR("hisifd is NULL!\n");
-		return -EINVAL;
-	}
-
-	if (!g_is_effect_lock_init) {
-		HISI_FB_INFO("display effect lock is not init!\n");
-		return -EINVAL;
-	}
-
-	if (lcp_src == NULL) {
-		HISI_FB_ERR("fb%d, lcp_src is NULL!\n", hisifd->index);
-		return -EINVAL;
-	}
-
-	lcp_dst = &(hisifd->effect_info.lcp);
-	effect = &(hisifd->effect_ctl);
-
-	if (!effect->lcp_xcc_support) {
-		HISI_FB_INFO("fb%d, lcp xcc are not supported!\n", hisifd->index);
-		return 0;
-	}
-
-	spin_lock(&g_xcc_effect_lock);
-
-	lcp_dst->xcc_enable = lcp_src->xcc_enable;
-	lcp_dst->xcc_pre_enable=lcp_src->xcc_pre_enable;
-
-	if (hisi_effect_alloc_and_copy(&lcp_dst->xcc_table, lcp_src->xcc_table,
-		LCP_XCC_LUT_LENGTH, true)) {
-		HISI_FB_ERR("fb%d, failed to set xcc_table!\n", hisifd->index);
-		goto err_ret;
-	}
-
-	if (lcp_dst->xcc_pre_enable) {
-		if ((lcp_src->xcc_dual_lcd_top == 0x0) &&
-			(lcp_src->xcc_dual_lcd_left == 0x0) &&
-			(lcp_src->xcc_dual_lcd_bot == 0x0) &&
-			(lcp_src->xcc_dual_lcd_right == 0x0)) {
-			lcp_dst->xcc_dual_lcd_top = hisifd->gamma_xcc_roi.roi_top;
-			lcp_dst->xcc_dual_lcd_left = hisifd->gamma_xcc_roi.roi_left;
-			lcp_dst->xcc_dual_lcd_bot = hisifd->gamma_xcc_roi.roi_bot;
-			lcp_dst->xcc_dual_lcd_right = hisifd->gamma_xcc_roi.roi_right;
-		} else {
-			if ((lcp_src->xcc_dual_lcd_bot > (hisifd->panel_info.yres)) ||
-				(lcp_src->xcc_dual_lcd_right > (hisifd->panel_info.xres))) {
-				HISI_FB_ERR("xcc dual_lcd_bot_right_x or dual_lcd_bot_right_y "
-					"is larger than pinfo size!\n");
-				goto err_ret;
-			}
-
-			if ((lcp_src->xcc_dual_lcd_top > lcp_src->xcc_dual_lcd_bot) ||
-				(lcp_src->xcc_dual_lcd_left > lcp_src->xcc_dual_lcd_right)) {
-				HISI_FB_ERR("xcc dual_lcd_top_left is less than dual_lcd_bot_right!\n");
-				goto err_ret;
-			}
-
-			lcp_dst->xcc_dual_lcd_top = lcp_src->xcc_dual_lcd_top;
-			lcp_dst->xcc_dual_lcd_left = lcp_src->xcc_dual_lcd_left;
-			lcp_dst->xcc_dual_lcd_bot = lcp_src->xcc_dual_lcd_bot;
-			lcp_dst->xcc_dual_lcd_right = lcp_src->xcc_dual_lcd_right;
-		}
-
-		if (hisi_effect_alloc_and_copy(&lcp_dst->xcc_table_pre,
-		lcp_src->xcc_table_pre,
-		LCP_XCC_LUT_LENGTH, true)) {
-		HISI_FB_ERR("fb%d, failed to set xcc_table_pre!\n", hisifd->index);
-		goto err_ret;
-		}
-	}
-
-	hisifd->effect_updated_flag.xcc_effect_updated = true;
-
-	spin_unlock(&g_xcc_effect_lock);
-	return 0;
-
-err_ret:
-	hisi_effect_kfree(&lcp_dst->xcc_table);
-	hisi_effect_kfree(&lcp_dst->xcc_table_pre);
-
-	spin_unlock(&g_xcc_effect_lock);
-	return -EINVAL;
-}
-
-
-int hisi_effect_xcc_info_set_kernel(struct hisi_fb_data_type *hisifd, struct dss_display_effect_xcc *lcp_src) {
-	struct lcp_info *lcp_dst = NULL;
-	struct dss_effect *effect = NULL;
-	struct hisi_fb_data_type *hisifd_primary = NULL;
-
-	hisifd_primary = hisifd_list[PRIMARY_PANEL_IDX];
-
-	if (hisifd_primary == NULL) {
-		HISI_FB_ERR("hisifd_primary is NULL pointer, return!\n");
-		return -EINVAL;
-	}
-
 	if (NULL == hisifd) {
 		HISI_FB_ERR("hisifd is NULL!\n");
 		return -EINVAL;
@@ -4320,31 +3973,50 @@ int hisi_effect_xcc_info_set_kernel(struct hisi_fb_data_type *hisifd, struct dss
 	spin_lock(&g_xcc_effect_lock);
 
 	lcp_dst->xcc_enable = lcp_src->xcc_enable;
-	lcp_dst->xcc_pre_enable = lcp_src->xcc_enable;
+	lcp_dst->xcc_pre_enable=lcp_src->xcc_pre_enable;
 
-	if (hisifd->panel_info.cascadeic_support && lcp_dst->xcc_pre_enable) {
-		lcp_dst->xcc_dual_lcd_top = hisifd->gamma_xcc_roi.roi_top;
-		lcp_dst->xcc_dual_lcd_left = hisifd->gamma_xcc_roi.roi_left;
-		lcp_dst->xcc_dual_lcd_bot = hisifd->gamma_xcc_roi.roi_bot;
-		lcp_dst->xcc_dual_lcd_right = hisifd->gamma_xcc_roi.roi_right;
-	}
 	if (hisi_effect_alloc_and_copy(&lcp_dst->xcc_table, lcp_src->xcc_table,
-		LCP_XCC_LUT_LENGTH, false)) {
+		LCP_XCC_LUT_LENGTH, true)) {
 		HISI_FB_ERR("fb%d, failed to set xcc_table!\n", hisifd->index);
 		goto err_ret;
 	}
-	if (hisi_effect_alloc_and_copy(&lcp_dst->xcc_table_pre, lcp_src->xcc_table,
-		LCP_XCC_LUT_LENGTH, false)) {
+
+	if(lcp_dst->xcc_pre_enable){
+		if((0x0 == lcp_src->xcc_dual_lcd_top_left) && (0x0 == lcp_src->xcc_dual_lcd_bot_right)){
+			lcp_src->xcc_dual_lcd_top_left= ((hisifd->panel_info.yres)/2)<<16;
+			lcp_src->xcc_dual_lcd_bot_right=((hisifd->panel_info.yres)<<16 | (hisifd->panel_info.xres));
+		}
+		else{
+			if(((((lcp_src->xcc_dual_lcd_top_left) >> 16) & 0x1fff) < 0) || (((lcp_src->xcc_dual_lcd_top_left) & 0x1fff) < 0)){
+				HISI_FB_ERR("xcc dual_lcd_top_left_x or dual_lcd_top_left_x  is  less than 0!\n");
+				goto err_ret;
+			}
+
+			if(((((lcp_src->xcc_dual_lcd_bot_right) >> 16) & 0x1fff) > (hisifd->panel_info.yres)) || (((lcp_src->xcc_dual_lcd_bot_right) & 0x1fff)> (hisifd->panel_info.xres))){
+				HISI_FB_ERR("xcc dual_lcd_bot_right_x or dual_lcd_bot_right_y is larger than pinfo size!\n");
+				goto err_ret;
+			}
+
+			if(((((lcp_src->xcc_dual_lcd_top_left) >> 16) & 0x1fff) > (((lcp_src->xcc_dual_lcd_bot_right) >> 16) & 0x1fff)) || (((lcp_src->xcc_dual_lcd_top_left) & 0x1fff) > ((lcp_src->xcc_dual_lcd_bot_right) & 0x1fff))){
+				HISI_FB_ERR("xcc dual_lcd_top_left is less than dual_lcd_bot_right!\n");
+				goto err_ret;
+			}
+
+			lcp_dst->xcc_dual_lcd_top_left = lcp_src->xcc_dual_lcd_top_left;
+			lcp_dst->xcc_dual_lcd_bot_right = lcp_src->xcc_dual_lcd_bot_right;
+		}
+
+		if (hisi_effect_alloc_and_copy(&lcp_dst->xcc_table_pre,
+		lcp_src->xcc_table_pre,
+		LCP_XCC_LUT_LENGTH, true)) {
 		HISI_FB_ERR("fb%d, failed to set xcc_table_pre!\n", hisifd->index);
 		goto err_ret;
+		}
 	}
-	/*the display effect is not allowed to set reg when the partical update*/
-	if (hisifd_primary->display_effect_flag < 5)
-		hisifd_primary->display_effect_flag = 4;
 
 	hisifd->effect_updated_flag.xcc_effect_updated = true;
-	spin_unlock(&g_xcc_effect_lock);
 
+	spin_unlock(&g_xcc_effect_lock);
 	return 0;
 
 err_ret:
@@ -4357,75 +4029,69 @@ err_ret:
 
 
 static int hisi_efffect_gamma_lut_set(struct gamma_info *gammaDst, struct gamma_info *gammaSrc,
-	struct hisi_panel_info* pInfo) {
-	uint32_t sel;
+                                  struct hisi_panel_info* pInfo) {
 
 	if((gammaDst == NULL) || (gammaSrc == NULL) || (pInfo == NULL)){
 		HISI_FB_ERR("gammaDst or gammaSrc or pInfo is null pointer\n");
 		return -1;
 	}
 
-	HISI_FB_INFO("para_mode:%d\n", gammaSrc->para_mode);
-
-	if (g_gamma_lut_sel == 1)
-		sel = 2;
-	else
-		sel = 1;
 	if (gammaSrc->para_mode == 0) {
 		//Normal mode
-		if (pInfo->gamma_lut_table_R == NULL ||
-			pInfo->gamma_lut_table_G == NULL ||
-			pInfo->gamma_lut_table_B == NULL) {
-			HISI_FB_ERR("Normal mode gamma table is NULL!\n");
+		if (hisi_effect_alloc_and_copy(&gammaDst->gamma_r_table, pInfo->gamma_lut_table_R,
+			GAMMA_LUT_LEN, false)) {
+			HISI_FB_ERR("failed to set gamma_r_table!\n");
 			goto err_ret;
 		}
 
-		memcpy(g_gamma_r_table[sel-1], pInfo->gamma_lut_table_R,
-			GAMMA_LUT_LEN * BYTES_PER_TABLE_ELEMENT);
-		memcpy(g_gamma_g_table[sel-1], pInfo->gamma_lut_table_G,
-			GAMMA_LUT_LEN * BYTES_PER_TABLE_ELEMENT);
-		memcpy(g_gamma_b_table[sel-1], pInfo->gamma_lut_table_B,
-			GAMMA_LUT_LEN * BYTES_PER_TABLE_ELEMENT);
-		g_gamma_lut_sel = sel;
+		if (hisi_effect_alloc_and_copy(&gammaDst->gamma_g_table, pInfo->gamma_lut_table_G,
+			GAMMA_LUT_LEN, false)) {
+			HISI_FB_ERR("failed to set gamma_g_table!\n");
+			goto err_ret;
+		}
+
+		if (hisi_effect_alloc_and_copy(&gammaDst->gamma_b_table, pInfo->gamma_lut_table_B,
+			GAMMA_LUT_LEN, false)) {
+			HISI_FB_ERR("failed to set gamma_b_table!\n");
+			goto err_ret;
+		}
 	} else if (gammaSrc->para_mode == 1) {
 		//Cinema mode
-		if (pInfo->cinema_gamma_lut_table_R == NULL ||
-			pInfo->cinema_gamma_lut_table_G == NULL ||
-			pInfo->cinema_gamma_lut_table_B == NULL) {
-			HISI_FB_ERR("Cinema mode gamma table is NULL!\n");
+		if (hisi_effect_alloc_and_copy(&gammaDst->gamma_r_table, pInfo->cinema_gamma_lut_table_R,
+			GAMMA_LUT_LEN, false)) {
+			HISI_FB_ERR("failed to set gamma_r_table!\n");
 			goto err_ret;
 		}
 
-		memcpy(g_gamma_r_table[sel-1], pInfo->cinema_gamma_lut_table_R,
-			GAMMA_LUT_LEN * BYTES_PER_TABLE_ELEMENT);
-		memcpy(g_gamma_g_table[sel-1], pInfo->cinema_gamma_lut_table_G,
-			GAMMA_LUT_LEN * BYTES_PER_TABLE_ELEMENT);
-		memcpy(g_gamma_b_table[sel-1], pInfo->cinema_gamma_lut_table_B,
-			GAMMA_LUT_LEN * BYTES_PER_TABLE_ELEMENT);
-		g_gamma_lut_sel = sel;
+		if (hisi_effect_alloc_and_copy(&gammaDst->gamma_g_table, pInfo->cinema_gamma_lut_table_G,
+			GAMMA_LUT_LEN, false)) {
+			HISI_FB_ERR("failed to set gamma_g_table!\n");
+			goto err_ret;
+		}
+
+		if (hisi_effect_alloc_and_copy(&gammaDst->gamma_b_table, pInfo->cinema_gamma_lut_table_B,
+			GAMMA_LUT_LEN, false)) {
+			HISI_FB_ERR("failed to set gamma_b_table!\n");
+			goto err_ret;
+		}
 	} else if (gammaSrc->para_mode == 2) {
-		if (hisi_effect_copy_from_user(g_gamma_r_table[sel-1], gammaSrc->gamma_r_table,
-			GAMMA_LUT_LEN)) {
+		if (hisi_effect_alloc_and_copy(&gammaDst->gamma_r_table, gammaSrc->gamma_r_table,
+			GAMMA_LUT_LEN, true)) {
 			HISI_FB_ERR("failed to copy gamma_r_table from user!\n");
 			goto err_ret;
 		}
-		if (hisi_effect_copy_from_user(g_gamma_g_table[sel-1], gammaSrc->gamma_g_table,
-			GAMMA_LUT_LEN)) {
+
+		if (hisi_effect_alloc_and_copy(&gammaDst->gamma_g_table, gammaSrc->gamma_g_table,
+			GAMMA_LUT_LEN, true)) {
 			HISI_FB_ERR("failed to copy gamma_g_table from user!\n");
 			goto err_ret;
 		}
-		if (hisi_effect_copy_from_user(g_gamma_b_table[sel-1], gammaSrc->gamma_b_table,
-			GAMMA_LUT_LEN)) {
+
+		if (hisi_effect_alloc_and_copy(&gammaDst->gamma_b_table, gammaSrc->gamma_b_table,
+			GAMMA_LUT_LEN, true)) {
 			HISI_FB_ERR("failed to copy gamma_b_table from user!\n");
 			goto err_ret;
 		}
-		g_gamma_lut_sel = sel;
-		HISI_FB_INFO("set gamma table:[0]0x%x,0x%x,0x%x / [%d]0x%x,0x%x,0x%x / [%d]0x%x,0x%x,0x%x\n",
-			g_gamma_r_table[sel-1][0], g_gamma_g_table[sel-1][0], g_gamma_b_table[sel-1][0],
-			GAMMA_LUT_LEN/2, g_gamma_r_table[sel-1][GAMMA_LUT_LEN/2],
-			g_gamma_g_table[sel-1][GAMMA_LUT_LEN/2], g_gamma_b_table[sel-1][GAMMA_LUT_LEN/2],
-			GAMMA_LUT_LEN-2, g_gamma_r_table[sel-1][GAMMA_LUT_LEN-2],
-			g_gamma_g_table[sel-1][GAMMA_LUT_LEN-2], g_gamma_b_table[sel-1][GAMMA_LUT_LEN-2]);
 	} else {
 		HISI_FB_ERR("not supported gamma para_mode!\n");
 		return -EINVAL;
@@ -4434,122 +4100,112 @@ static int hisi_efffect_gamma_lut_set(struct gamma_info *gammaDst, struct gamma_
 	return 0;
 
 err_ret:
+	free_gamma_table(gammaDst);
 
 	return -EINVAL;
 
 }
 
 static int hisi_efffect_gamma_lut_pre_set(struct gamma_info *gammaDst, struct gamma_info *gammaSrc,
-	struct hisi_fb_data_type *hisifd, struct hisi_panel_info* pInfo) {
-	uint32_t sel;
-
-	if (gammaDst == NULL){
+                                  struct hisi_panel_info* pInfo) {
+        if(NULL == gammaDst){
 		HISI_FB_ERR("gammaDst is NULL!\n");
 		return -EINVAL;
-	}
+        }
 
-	if (gammaSrc == NULL){
+        if(NULL == gammaSrc){
 		HISI_FB_ERR("gammaSrc is NULL!\n");
 		return -EINVAL;
-	}
+        }
 
-	if (hisifd == NULL) {
-		HISI_FB_ERR("hisifd is NULL!\n");
-		return -EINVAL;
-	}
-
-	if (pInfo == NULL){
+	if(NULL == pInfo){
 		HISI_FB_ERR("pInfo is NULL!\n");
 		return -EINVAL;
 	}
 
-	HISI_FB_INFO("para_mode:%d\n", gammaSrc->para_mode);
-
-	if ((gammaSrc->gamma_dual_lcd_top == 0x0) && (gammaSrc->gamma_dual_lcd_left == 0x0) &&
-		(gammaSrc->gamma_dual_lcd_bot == 0x0) && (gammaSrc->gamma_dual_lcd_right == 0x0)) {
-		gammaDst->gamma_dual_lcd_top = hisifd->gamma_xcc_roi.roi_top;
-		gammaDst->gamma_dual_lcd_left = hisifd->gamma_xcc_roi.roi_left;
-		gammaDst->gamma_dual_lcd_bot = hisifd->gamma_xcc_roi.roi_bot;
-		gammaDst->gamma_dual_lcd_right = hisifd->gamma_xcc_roi.roi_right;
-	} else {
-		if ((gammaSrc->gamma_dual_lcd_bot > pInfo->yres) ||
-			(gammaSrc->gamma_dual_lcd_right > pInfo->xres)) {
-			HISI_FB_ERR("gamma dual_lcd_bot_right_x or dual_lcd_bot_right_y "
-				"is larger than pinfo size!\n");
+	if ((0x0 == gammaSrc->gamma_dual_lcd_top_left) && (0x0 == gammaSrc->gamma_dual_lcd_bot_right)){
+		gammaDst->gamma_dual_lcd_top_left= (pInfo->yres/2)<<16;
+		gammaDst->gamma_dual_lcd_bot_right=((pInfo->yres)<<16 | pInfo->xres);
+	}
+	else{
+		if(((((gammaSrc->gamma_dual_lcd_top_left) >> 16) & 0x1fff) < 0) || (((gammaSrc->gamma_dual_lcd_top_left) & 0x1fff) < 0)){
+			HISI_FB_ERR("gamma dual_lcd_top_left_x or dual_lcd_top_left_x  is  less than 0!\n");
 			return -EINVAL;
 		}
 
-		if ((gammaSrc->gamma_dual_lcd_top > gammaSrc->gamma_dual_lcd_bot) ||
-			(gammaSrc->gamma_dual_lcd_left > gammaSrc->gamma_dual_lcd_right)) {
-			HISI_FB_ERR("gamma dual_lcd_top_left is less than "
-				"dual_lcd_bot_right!\n");
+		if(((((gammaSrc->gamma_dual_lcd_bot_right) >> 16) & 0x1fff) > pInfo->yres) || (((gammaSrc->gamma_dual_lcd_bot_right)& 0x1fff) > pInfo->xres)){
+			HISI_FB_ERR("gamma dual_lcd_bot_right_x or dual_lcd_bot_right_y is larger than pinfo size!\n");
 			return -EINVAL;
 		}
-		gammaDst->gamma_dual_lcd_top = gammaSrc->gamma_dual_lcd_top;
-		gammaDst->gamma_dual_lcd_left = gammaSrc->gamma_dual_lcd_left;
-		gammaDst->gamma_dual_lcd_bot = gammaSrc->gamma_dual_lcd_bot;
-		gammaDst->gamma_dual_lcd_right = gammaSrc->gamma_dual_lcd_right;
+
+		if(((((gammaSrc->gamma_dual_lcd_top_left) >> 16) & 0x1fff) > (((gammaSrc->gamma_dual_lcd_bot_right) >> 16) & 0x1fff)) || (((gammaSrc->gamma_dual_lcd_top_left) & 0x1fff) > ((gammaSrc->gamma_dual_lcd_bot_right) & 0x1fff))){
+			HISI_FB_ERR("gamma dual_lcd_top_left is less than dual_lcd_bot_right!\n");
+			return -EINVAL;
+		}
+
+		gammaDst->gamma_dual_lcd_top_left = gammaSrc->gamma_dual_lcd_top_left;
+		gammaDst->gamma_dual_lcd_bot_right = gammaSrc->gamma_dual_lcd_bot_right;
 	}
 
-	if (g_gamma_lut_sel_pre == 1)
-		sel = 2;
-	else
-		sel = 1;
 	if (gammaSrc->para_mode == 0) {
 		//Normal mode
-		if (pInfo->gamma_lut_table_R == NULL ||
-			pInfo->gamma_lut_table_G == NULL ||
-			pInfo->gamma_lut_table_B == NULL) {
-			HISI_FB_ERR("Normal mode gamma table is NULL!\n");
+		if (hisi_effect_alloc_and_copy(&gammaDst->gamma_r_table_pre, pInfo->gamma_lut_table_R,
+			GAMMA_LUT_LEN, false)) {
+			HISI_FB_ERR("failed to set gamma_r_table_pre!\n");
 			goto err_ret;
 		}
 
-		memcpy(g_gamma_r_table_pre[sel-1], pInfo->gamma_lut_table_R,
-			GAMMA_LUT_LEN * BYTES_PER_TABLE_ELEMENT);
-		memcpy(g_gamma_g_table_pre[sel-1], pInfo->gamma_lut_table_G,
-			GAMMA_LUT_LEN * BYTES_PER_TABLE_ELEMENT);
-		memcpy(g_gamma_b_table_pre[sel-1], pInfo->gamma_lut_table_B,
-			GAMMA_LUT_LEN * BYTES_PER_TABLE_ELEMENT);
-		g_gamma_lut_sel_pre = sel;
+		if (hisi_effect_alloc_and_copy(&gammaDst->gamma_g_table_pre, pInfo->gamma_lut_table_G,
+			GAMMA_LUT_LEN, false)) {
+			HISI_FB_ERR("failed to set gamma_g_table_pre!\n");
+			goto err_ret;
+		}
+
+		if (hisi_effect_alloc_and_copy(&gammaDst->gamma_b_table_pre, pInfo->gamma_lut_table_B,
+			GAMMA_LUT_LEN, false)) {
+			HISI_FB_ERR("failed to set gamma_b_table_pre!\n");
+			goto err_ret;
+		}
 	} else if (gammaSrc->para_mode == 1) {
 		//Cinema mode
-		if (pInfo->cinema_gamma_lut_table_R == NULL ||
-			pInfo->cinema_gamma_lut_table_G == NULL ||
-			pInfo->cinema_gamma_lut_table_B == NULL) {
-			HISI_FB_ERR("Cinema mode gamma table is NULL!\n");
+		if (hisi_effect_alloc_and_copy(&gammaDst->gamma_r_table_pre, pInfo->cinema_gamma_lut_table_R,
+			GAMMA_LUT_LEN, false)) {
+			HISI_FB_ERR("failed to set gamma_r_table_pre!\n");
 			goto err_ret;
 		}
 
-		memcpy(g_gamma_r_table_pre[sel-1], pInfo->cinema_gamma_lut_table_R,
-			GAMMA_LUT_LEN * BYTES_PER_TABLE_ELEMENT);
-		memcpy(g_gamma_g_table_pre[sel-1], pInfo->cinema_gamma_lut_table_G,
-			GAMMA_LUT_LEN * BYTES_PER_TABLE_ELEMENT);
-		memcpy(g_gamma_b_table_pre[sel-1], pInfo->cinema_gamma_lut_table_B,
-			GAMMA_LUT_LEN * BYTES_PER_TABLE_ELEMENT);
-		g_gamma_lut_sel_pre = sel;
+		if (hisi_effect_alloc_and_copy(&gammaDst->gamma_g_table_pre, pInfo->cinema_gamma_lut_table_G,
+			GAMMA_LUT_LEN, false)) {
+			HISI_FB_ERR("failed to set gamma_g_table_pre!\n");
+			goto err_ret;
+		}
+
+		if (hisi_effect_alloc_and_copy(&gammaDst->gamma_b_table_pre, pInfo->cinema_gamma_lut_table_B,
+			GAMMA_LUT_LEN, false)) {
+			HISI_FB_ERR("failed to set gamma_b_table_pre!\n");
+			goto err_ret;
+		}
 	} else if (gammaSrc->para_mode == 2) {
-		if (hisi_effect_copy_from_user(g_gamma_r_table_pre[sel-1], gammaSrc->gamma_r_table_pre,
-			GAMMA_LUT_LEN)) {
+		if (hisi_effect_alloc_and_copy(&gammaDst->gamma_r_table_pre,
+		gammaSrc->gamma_r_table_pre,
+			GAMMA_LUT_LEN, true)) {
 			HISI_FB_ERR("failed to copy gamma_r_table_pre from user!\n");
 			goto err_ret;
 		}
-		if (hisi_effect_copy_from_user(g_gamma_g_table_pre[sel-1], gammaSrc->gamma_g_table_pre,
-			GAMMA_LUT_LEN)) {
+
+		if (hisi_effect_alloc_and_copy(&gammaDst->gamma_g_table_pre,
+		gammaSrc->gamma_g_table_pre,
+			GAMMA_LUT_LEN, true)) {
 			HISI_FB_ERR("failed to copy gamma_g_table_pre from user!\n");
 			goto err_ret;
 		}
-		if (hisi_effect_copy_from_user(g_gamma_b_table_pre[sel-1], gammaSrc->gamma_b_table_pre,
-			GAMMA_LUT_LEN)) {
+
+		if (hisi_effect_alloc_and_copy(&gammaDst->gamma_b_table_pre,
+		gammaSrc->gamma_b_table_pre,
+			GAMMA_LUT_LEN, true)) {
 			HISI_FB_ERR("failed to copy gamma_b_table_pre from user!\n");
 			goto err_ret;
 		}
-		g_gamma_lut_sel_pre = sel;
-		HISI_FB_INFO("set gamma pre table:[0]0x%x,0x%x,0x%x / [%d]0x%x,0x%x,0x%x / [%d]0x%x,0x%x,0x%x\n",
-			g_gamma_r_table_pre[sel-1][0], g_gamma_g_table_pre[sel-1][0], g_gamma_b_table_pre[sel-1][0],
-			GAMMA_LUT_LEN/2, g_gamma_r_table_pre[sel-1][GAMMA_LUT_LEN/2],
-			g_gamma_g_table_pre[sel-1][GAMMA_LUT_LEN/2], g_gamma_b_table_pre[sel-1][GAMMA_LUT_LEN/2],
-			GAMMA_LUT_LEN-2, g_gamma_r_table_pre[sel-1][GAMMA_LUT_LEN-2],
-			g_gamma_g_table_pre[sel-1][GAMMA_LUT_LEN-2], g_gamma_b_table_pre[sel-1][GAMMA_LUT_LEN-2]);
 	} else {
 		HISI_FB_ERR("not supported gamma para_mode!\n");
 		return -EINVAL;
@@ -4558,29 +4214,27 @@ static int hisi_efffect_gamma_lut_pre_set(struct gamma_info *gammaDst, struct ga
 	return 0;
 
 err_ret:
+       gammaDst->gamma_dual_lcd_top_left= (pInfo->yres/2)<<16;
+       gammaDst->gamma_dual_lcd_bot_right=((pInfo->yres)<<16 | pInfo->xres);
+	free_gamma_table(gammaDst);
 
 	return -EINVAL;
 
 }
 
 static int hisi_efffect_gamma_param_set(struct gamma_info *gammaDst, struct gamma_info *gammaSrc,
-	struct hisi_fb_data_type *hisifd, struct hisi_panel_info* pInfo) {
+                                  struct hisi_panel_info* pInfo) {
 	int ret;
 
 	if(NULL == gammaDst){
 		HISI_FB_ERR("gammaDst is NULL!\n");
 		return -EINVAL;
-	}
+        }
 
 	if(NULL == gammaSrc){
 		HISI_FB_ERR("gammaSrc is NULL!\n");
 		return -EINVAL;
-	}
-
-	if (NULL == hisifd) {
-		HISI_FB_ERR("hisifd is NULL!\n");
-		return -EINVAL;
-	}
+        }
 
 	if(NULL == pInfo){
 		HISI_FB_ERR("pInfo is NULL!\n");
@@ -4594,7 +4248,7 @@ static int hisi_efffect_gamma_param_set(struct gamma_info *gammaDst, struct gamm
 	}
 
 	if (gammaSrc->pre_enable) {
-		ret = hisi_efffect_gamma_lut_pre_set(gammaDst, gammaSrc, hisifd, pInfo);
+		ret = hisi_efffect_gamma_lut_pre_set(gammaDst, gammaSrc,pInfo);
 		if (ret < 0) {
 			HISI_FB_ERR("failed to set gamma lut pre!\n");
 			return -EINVAL;
@@ -4637,7 +4291,7 @@ int hisi_effect_gamma_info_set(struct hisi_fb_data_type *hisifd, struct gamma_in
 	gamma_dst->enable = gamma_src->enable;
 	gamma_dst->pre_enable = gamma_src->pre_enable;
 	gamma_dst->para_mode = gamma_src->para_mode;
-	ret = hisi_efffect_gamma_param_set(gamma_dst, gamma_src, hisifd, pinfo);
+	ret = hisi_efffect_gamma_param_set(gamma_dst, gamma_src, pinfo);
 	if (ret < 0) {
 		HISI_FB_ERR("fb%d, failed to set gamma table!\n", hisifd->index);
 		spin_unlock(&g_gamma_effect_lock);
@@ -4843,8 +4497,8 @@ static bool lcp_xcc_pre_set_reg(char __iomem *xcc_pre_base, struct lcp_info *lcp
 		return false;
 	}
 
-	if (lcp_param->xcc_table_pre == NULL) {
-		HISI_FB_DEBUG("xcc_table_pre is NULL!\n");
+	if (lcp_param->xcc_table == NULL) {
+		HISI_FB_DEBUG("xcc_table is NULL!\n");
 		return false;
 	}
 	for (cnt = 0; cnt < XCC_COEF_LEN; cnt++) {
@@ -4941,14 +4595,8 @@ void hisifb_effect_gmp_lut_workqueue_handler(struct work_struct *work)
 					hisifb_get_timestamp(&tv1);
 				}
 				spin_lock(&g_gmp_effect_lock);
-				if (!hisifd->effect_updated_flag.gmp_effect_updated) {
-					HISI_FB_INFO("[effect] gmp_effect_updated is not ok!\n");
-					spin_unlock(&g_gmp_effect_lock);
-					goto ERR_OUT;
-				}
 				memcpy(gmp_lut_table_low32bit_wq_doing, lcp_param->gmp_table_low32, GMP_COFE_CNT * sizeof(u32));
 				memcpy(gmp_lut_table_high4bit_wq_doing, lcp_param->gmp_table_high4, GMP_COFE_CNT * sizeof(u32));
-				hisifd->effect_updated_flag.gmp_effect_updated = false;
 				spin_unlock(&g_gmp_effect_lock);
 				if (g_debug_effect & DEBUG_EFFECT_ENTRY) {
 					hisifb_get_timestamp(&tv2);
@@ -4969,6 +4617,7 @@ void hisifb_effect_gmp_lut_workqueue_handler(struct work_struct *work)
 				gmp_lut_sel = inp32(gmp_base + GMP_LUT_SEL);
 				set_reg(gmp_base + GMP_LUT_SEL, (~(gmp_lut_sel & 0x1)) & 0x1, 1, 0);
 				set_reg(gmp_base + GMP_EN, is_enable, 1, 0);
+				hisifd->effect_updated_flag.gmp_effect_updated = false;
 			}
 			if (g_debug_effect & DEBUG_EFFECT_ENTRY) {
 				hisifb_get_timestamp(&tv4);
@@ -4998,8 +4647,6 @@ void hisi_effect_lcp_set_reg(struct hisi_fb_data_type *hisifd)
 {
 	struct dss_effect *effect = NULL;
 	struct lcp_info *lcp_param = NULL;
-	struct gamma_xcc_roi_info *gamma_xcc_roi = NULL;
-	struct hisi_panel_info *pinfo = NULL;
 	char __iomem *xcc_base = NULL;
 	char __iomem *degamma_base = NULL;
 	char __iomem *gmp_base = NULL;
@@ -5012,7 +4659,7 @@ void hisi_effect_lcp_set_reg(struct hisi_fb_data_type *hisifd)
 	uint32_t gmp_lut_sel = 0;
 	int gmp_en = 0;
 
-	bool ret = false;
+	bool ret;
 	int i=0;
 
 	if (NULL == hisifd) {
@@ -5025,9 +4672,7 @@ void hisi_effect_lcp_set_reg(struct hisi_fb_data_type *hisifd)
 		return;
 	}
 
-	pinfo = &(hisifd->panel_info);
 	effect = &hisifd->effect_ctl;
-	gamma_xcc_roi = &(hisifd->gamma_xcc_roi);
 
 	lcp_base = hisifd->dss_base + DSS_DPP_LCP_OFFSET_ES;
 	xcc_base = hisifd->dss_base + DSS_DPP_XCC_OFFSET;
@@ -5064,20 +4709,17 @@ void hisi_effect_lcp_set_reg(struct hisi_fb_data_type *hisifd)
 	}
 
 	//Update XCC Coef
-	if (effect->lcp_xcc_support && hisifd->effect_updated_flag.xcc_effect_updated &&
-		!hisifd->mask_layer_xcc_flag && hisifd->dirty_region_updt_enable == 0) {
+	if (effect->lcp_xcc_support && hisifd->effect_updated_flag.xcc_effect_updated && !hisifd->mask_layer_xcc_flag) {
 		if (spin_can_lock(&g_xcc_effect_lock)) {
 			spin_lock(&g_xcc_effect_lock);
 			ret = lcp_xcc_set_reg(xcc_base, lcp_param);
 
 			//Update XCC PRE Coef
-			gamma_xcc_roi->xcc_pre_enable = lcp_param->xcc_pre_enable;
 			if(lcp_param->xcc_pre_enable){
+				set_reg(dpp_top_base + DUAL_LCD_TOP_LEFT, lcp_param->xcc_dual_lcd_top_left, 32, 0);
+				set_reg(dpp_top_base + DUAL_LCD_BOT_RIGHT, lcp_param->xcc_dual_lcd_bot_right, 32, 0);
+
 				ret = lcp_xcc_pre_set_reg(xcc_pre_base, lcp_param);
-				gamma_xcc_roi->roi_top = lcp_param->xcc_dual_lcd_top;
-				gamma_xcc_roi->roi_left = lcp_param->xcc_dual_lcd_left;
-				gamma_xcc_roi->roi_bot = lcp_param->xcc_dual_lcd_bot;
-				gamma_xcc_roi->roi_right = lcp_param->xcc_dual_lcd_right;
 			}
 
 			//Enable XCC
@@ -5085,9 +4727,6 @@ void hisi_effect_lcp_set_reg(struct hisi_fb_data_type *hisifd)
 				set_reg(xcc_base + XCC_EN, (lcp_param->xcc_enable | lcp_param->xcc_pre_enable << 1) & 0x3, 2, 0);
 				//Enable XCC pre
 				//set_reg(xcc_base + XCC_EN,  lcp_param->xcc_enable, 1, 1);
-				dc_switch_xcc_updated = hisifd->de_info.amoled_param.
-					DC_Brightness_Dimming_Enable_Real !=
-					hisifd->de_info.amoled_param.DC_Brightness_Dimming_Enable;
 			}
 			hisifd->effect_updated_flag.xcc_effect_updated = false;
 			spin_unlock(&g_xcc_effect_lock);
@@ -5097,9 +4736,8 @@ void hisi_effect_lcp_set_reg(struct hisi_fb_data_type *hisifd)
 	}
 
 	//GMP LUT for init 	AB buffer
-	if (effect->lcp_gmp_support == 1 && ((!pinfo->cascadeic_support && hisifd->online_play_count < 2) ||
-		(pinfo->cascadeic_support && hisifd->gmp_online_set_reg_count < 2))) {
-		if (hisifd->effect_gmp_update_flag && hisifd->effect_updated_flag.gmp_effect_updated) {
+	if (effect->lcp_gmp_support  == 1 && hisifd->online_play_count < 2) {
+		if (hisifd->effect_gmp_update_flag || hisifd->effect_updated_flag.gmp_effect_updated) {
 			if( lcp_param->gmp_table_low32 && lcp_param->gmp_table_high4){
 				if (spin_can_lock(&g_gmp_effect_lock)) {
 					spin_lock(&g_gmp_effect_lock);
@@ -5115,9 +4753,7 @@ void hisi_effect_lcp_set_reg(struct hisi_fb_data_type *hisifd)
 			gmp_lut_sel = (uint32_t)inp32(gmp_base + GMP_LUT_SEL);
 			set_reg(gmp_base + GMP_LUT_SEL, (~(gmp_lut_sel & 0x1)) & 0x1, 1, 0);
 			set_reg(gmp_base + GMP_EN, lcp_param->gmp_enable, 1, 0);
-			if(((!pinfo->cascadeic_support && hisifd->online_play_count == 1) ||
-				(pinfo->cascadeic_support && hisifd->gmp_online_set_reg_count == 1)) &&
-				hisifd->effect_updated_flag.gmp_effect_updated)
+			if((1 ==hisifd->online_play_count) && hisifd->effect_updated_flag.gmp_effect_updated)
 				hisifd->effect_updated_flag.gmp_effect_updated = false;
 		} else {
 			for (i = 0; i < GMP_COFE_CNT; i++) {
@@ -5127,24 +4763,20 @@ void hisi_effect_lcp_set_reg(struct hisi_fb_data_type *hisifd)
 			gmp_lut_sel = (uint32_t)inp32(gmp_base + GMP_LUT_SEL);
 			set_reg(gmp_base + GMP_LUT_SEL, (~(gmp_lut_sel & 0x1)) & 0x1, 1, 0);
 		}
-		if (pinfo->cascadeic_support)
-			hisifd->gmp_online_set_reg_count++;
 		gmp_en = inp32(gmp_base + GMP_EN);
-		HISI_FB_INFO("[effect] gmp_online_set_reg_count=%d, effect_gmp_update_flag=%d,gmp_lut_sel=%d,gmp=%d\n",
-			hisifd->gmp_online_set_reg_count, hisifd->effect_gmp_update_flag, gmp_lut_sel, gmp_en);
+		HISI_FB_INFO("[effect] effect_gmp_update_flag=%d,gmp_lut_sel=%d,gmp=%d\n",hisifd->effect_gmp_update_flag,gmp_lut_sel,gmp_en);
 	}
 }
 
 void hisi_effect_gamma_set_reg(struct hisi_fb_data_type *hisifd)
 {
 	struct gamma_info *gamma_param = NULL;
-	struct gamma_xcc_roi_info *gamma_xcc_roi = NULL;
 	char __iomem *gamma_base = NULL;
 	char __iomem *gamma_lut_base = NULL;
 	char __iomem *gamma_pre_lut_base = NULL;
 	char __iomem *dpp_top_base = NULL;
 	int cnt = 0;
-	uint32_t gama_lut_sel, sel;
+	uint32_t gama_lut_sel;
 
 	if (NULL == hisifd) {
 		HISI_FB_ERR("hisifd is NULL!");
@@ -5170,7 +4802,6 @@ void hisi_effect_gamma_set_reg(struct hisi_fb_data_type *hisifd)
 	dpp_top_base = hisifd->dss_base + DSS_DPP_OFFSET;
 
 	gamma_param = &(hisifd->effect_info.gamma);
-	gamma_xcc_roi = &(hisifd->gamma_xcc_roi);
 
 	if (!spin_can_lock(&g_gamma_effect_lock)) {
 	    HISI_FB_INFO("gamma effect param is being updated, delay set reg to next frame!\n");
@@ -5178,52 +4809,51 @@ void hisi_effect_gamma_set_reg(struct hisi_fb_data_type *hisifd)
 	}
 	spin_lock(&g_gamma_effect_lock);
 
-	if (g_gamma_lut_sel == 0 || g_gamma_lut_sel > 2) {
-		HISI_FB_INFO("gamma table is empty!\n");
+	if ((NULL == gamma_param->gamma_r_table) ||
+		(NULL == gamma_param->gamma_g_table) ||
+		(NULL == gamma_param->gamma_b_table)) {
+		HISI_FB_INFO("fb%d, gamma table is null!\n", hisifd->index);
 		goto err_ret;
 	}
-	sel = g_gamma_lut_sel - 1;
 
 	//Update Gamma LUT
 	for (cnt = 0; cnt < GAMMA_LUT_LEN; cnt = cnt + 2) {
-		set_reg(gamma_lut_base + (U_GAMA_R_COEF + cnt * 2), g_gamma_r_table[sel][cnt], 12, 0);
+		set_reg(gamma_lut_base + (U_GAMA_R_COEF + cnt * 2), gamma_param->gamma_r_table[cnt], 12, 0);
 		if (cnt != GAMMA_LUT_LEN - 1)
-			set_reg(gamma_lut_base + (U_GAMA_R_COEF + cnt * 2), g_gamma_r_table[sel][cnt+1], 12, 16);
+			set_reg(gamma_lut_base + (U_GAMA_R_COEF + cnt * 2), gamma_param->gamma_r_table[cnt+1], 12, 16);
 
-		set_reg(gamma_lut_base + (U_GAMA_G_COEF + cnt * 2), g_gamma_g_table[sel][cnt], 12, 0);
+		set_reg(gamma_lut_base + (U_GAMA_G_COEF + cnt * 2), gamma_param->gamma_g_table[cnt], 12, 0);
 		if (cnt != GAMMA_LUT_LEN - 1)
-			set_reg(gamma_lut_base + (U_GAMA_G_COEF + cnt * 2), g_gamma_g_table[sel][cnt+1], 12, 16);
+			set_reg(gamma_lut_base + (U_GAMA_G_COEF + cnt * 2), gamma_param->gamma_g_table[cnt+1], 12, 16);
 
-		set_reg(gamma_lut_base + (U_GAMA_B_COEF + cnt * 2), g_gamma_b_table[sel][cnt], 12, 0);
+		set_reg(gamma_lut_base + (U_GAMA_B_COEF + cnt * 2), gamma_param->gamma_b_table[cnt], 12, 0);
 		if (cnt != GAMMA_LUT_LEN - 1)
-			set_reg(gamma_lut_base + (U_GAMA_B_COEF + cnt * 2), g_gamma_b_table[sel][cnt+1], 12, 16);
+			set_reg(gamma_lut_base + (U_GAMA_B_COEF + cnt * 2), gamma_param->gamma_b_table[cnt+1], 12, 16);
 	}
 
 	gama_lut_sel = inp32(gamma_base + GAMA_LUT_SEL);
 	gama_lut_sel^=0x1;
 
-	gamma_xcc_roi->gamma_pre_enable = gamma_param->pre_enable;
-	if (gamma_param->pre_enable) {
-		if (g_gamma_lut_sel_pre == 0 || g_gamma_lut_sel_pre > 2) {
-			HISI_FB_INFO("gamma table pre is empty!\n");
+	if(gamma_param->pre_enable){
+		if ((NULL == gamma_param->gamma_r_table_pre) ||
+			(NULL == gamma_param->gamma_g_table_pre) ||
+			(NULL == gamma_param->gamma_b_table_pre)) {
+			HISI_FB_INFO("fb%d, gamma table pre is null!\n", hisifd->index);
 			goto err_ret;
-		}
-		sel = g_gamma_lut_sel_pre - 1;
+			}
 
-		gamma_xcc_roi->roi_top = gamma_param->gamma_dual_lcd_top;
-		gamma_xcc_roi->roi_left = gamma_param->gamma_dual_lcd_left;
-		gamma_xcc_roi->roi_bot = gamma_param->gamma_dual_lcd_bot;
-		gamma_xcc_roi->roi_right = gamma_param->gamma_dual_lcd_right;
+		set_reg(dpp_top_base + DUAL_LCD_TOP_LEFT, gamma_param->gamma_dual_lcd_top_left, 32, 0);
+		set_reg(dpp_top_base + DUAL_LCD_BOT_RIGHT, gamma_param->gamma_dual_lcd_bot_right, 32, 0);
 
 		//Update Gamma pre LUT
 		for (cnt = 0; cnt < GAMMA_LUT_LEN; cnt = cnt + 2) {
-			set_reg(gamma_pre_lut_base + (U_GAMA_PRE_R_COEF + cnt * 2), g_gamma_r_table_pre[sel][cnt], 12, 0);
-			set_reg(gamma_pre_lut_base + (U_GAMA_PRE_G_COEF + cnt * 2), g_gamma_g_table_pre[sel][cnt], 12, 0);
-			set_reg(gamma_pre_lut_base + (U_GAMA_PRE_B_COEF + cnt * 2), g_gamma_b_table_pre[sel][cnt], 12, 0);
+			set_reg(gamma_pre_lut_base + (U_GAMA_PRE_R_COEF + cnt * 2), gamma_param->gamma_r_table_pre[cnt], 12, 0);
+			set_reg(gamma_pre_lut_base + (U_GAMA_PRE_G_COEF + cnt * 2), gamma_param->gamma_g_table_pre[cnt], 12, 0);
+			set_reg(gamma_pre_lut_base + (U_GAMA_PRE_B_COEF + cnt * 2), gamma_param->gamma_b_table_pre[cnt], 12, 0);
 			if (cnt != GAMMA_LUT_LEN - 1) {
-				set_reg(gamma_pre_lut_base + (U_GAMA_PRE_R_COEF + cnt * 2), g_gamma_r_table_pre[sel][cnt+1], 12, 16);
-				set_reg(gamma_pre_lut_base + (U_GAMA_PRE_G_COEF + cnt * 2), g_gamma_g_table_pre[sel][cnt+1], 12, 16);
-				set_reg(gamma_pre_lut_base + (U_GAMA_PRE_B_COEF + cnt * 2), g_gamma_b_table_pre[sel][cnt+1], 12, 16);
+				set_reg(gamma_pre_lut_base + (U_GAMA_PRE_R_COEF + cnt * 2), gamma_param->gamma_r_table_pre[cnt+1], 12, 16);
+				set_reg(gamma_pre_lut_base + (U_GAMA_PRE_G_COEF + cnt * 2), gamma_param->gamma_g_table_pre[cnt+1], 12, 16);
+				set_reg(gamma_pre_lut_base + (U_GAMA_PRE_B_COEF + cnt * 2), gamma_param->gamma_b_table_pre[cnt+1], 12, 16);
 			}
 		}
 		gama_lut_sel^=0x2;
@@ -5233,6 +4863,7 @@ void hisi_effect_gamma_set_reg(struct hisi_fb_data_type *hisifd)
 
 	//Enable Gamma
 	set_reg(gamma_base + GAMA_EN,  (gamma_param->enable | gamma_param->pre_enable << 1) & 0x3, 2, 0);
+
 err_ret:
 	hisifd->effect_updated_flag.gamma_effect_updated = false;
 	//free_gamma_table(gamma_param);
@@ -5347,8 +4978,8 @@ static int set_arsr1p_param(struct hisi_fb_data_type *hisifd, dss_arsr1p_t *post
 	}
 
 	if ((pov_req->res_updt_rect.w != pinfo->xres)
-		&& (pov_req->res_updt_rect.h != pinfo->yres)) {
-		if ((pov_req->res_updt_rect.w * 10) < (pinfo->xres * 7)) {  // HD:(w < xres * 0.7), FHD:(w >= xres * 0.7)
+		|| (pov_req->res_updt_rect.h != pinfo->yres)) {
+		if (pov_req->res_updt_rect.w == 720) {
 			arsr1p_rog = &(hisifd->effect_info.arsr1p[2]);
 			HISI_FB_DEBUG("[effect] ROG HD mode config arsr1p.\n");
 			if (!(hisifd->effect_info.arsr1p_rog_initialized & ARSR1P_ROG_HD_FLAG)) {
@@ -5411,31 +5042,11 @@ int hisi_arsr1p_set_rect(struct hisi_fb_data_type *hisifd, dss_overlay_t *pov_re
 		dst_rect.y = 0;
 		dst_rect.w = pov_req->dirty_rect.w;
 		dst_rect.h = pov_req->dirty_rect.h;
-
-		// rog scale, just consider (x,y) is (0,0) now
-		if (pinfo->cascadeic_support &&
-			(pov_req->rog_width > 0 && pov_req->rog_height > 0)) {
-			dst_rect.w = dst_rect.w * pinfo->xres / pov_req->rog_width;
-			dst_rect.h = dst_rect.h * pinfo->yres / pov_req->rog_height;
-			if (dst_rect.w > pinfo->xres)
-					dst_rect.w = pinfo->xres;
-			if (dst_rect.h > pinfo->yres)
-					dst_rect.h = pinfo->yres;
-		}
 	}
-
-	HISI_FB_DEBUG("dirty_rect:%d,%d / dst_rect:%d,%d / res_updt_rect:%d,%d",
-		pov_req->dirty_rect.w, pov_req->dirty_rect.h, dst_rect.w, dst_rect.h,
-		pov_req->res_updt_rect.w, pov_req->res_updt_rect.h);
 
 	if (((pov_req->dirty_rect.w > 0) && (pov_req->dirty_rect.h > 0)) ||
 		((pov_req->res_updt_rect.w == 0) || (pov_req->res_updt_rect.h == 0))) {
-		if (!pinfo->cascadeic_support ||
-			(pov_req->rog_width == pinfo->xres && pov_req->rog_height == pinfo->yres) ||
-			(pov_req->rog_width == 0 && pov_req->rog_height == 0))  // no rog scale
-			src_rect = dst_rect;
-		else
-			src_rect = pov_req->res_updt_rect;
+		src_rect = dst_rect;
 	} else {
 		src_rect = pov_req->res_updt_rect;
 	}
@@ -5701,19 +5312,11 @@ int hisifb_ce_service_enable_hiace(struct fb_info *info, const void __user *argp
 		return -EINVAL;
 	}
 	mode = enable;
-	if (mode < 0)
+	if (mode < 0) {
 		mode = 0;
-	else if (mode >= CE_MODE_SINGLE)
-		mode = CE_MODE_SINGLE - 1;
-
-	// terminate single mode
-	if (g_single_mode_init && (ce_ctrl->ctrl_ce_mode == CE_MODE_SINGLE)) {
-		mutex_lock(&g_single_mode_info.hist_lock);
-		g_single_mode_info.single_mode_state = EN_HIACE_SINGLE_MODE_IDLE;
-		mutex_unlock(&g_single_mode_info.hist_lock);
-		wake_up_interruptible(&g_single_mode_info.wq_hist);
+	} else if (mode >= CE_MODE_COUNT) {
+		mode = CE_MODE_COUNT - 1;
 	}
-
 	if (mode != ce_ctrl->ctrl_ce_mode) {
 		mutex_lock(&(ce_ctrl->ctrl_lock));
 		ce_ctrl->ctrl_ce_mode = mode;
@@ -5798,6 +5401,7 @@ int hisifb_get_reg_val(struct fb_info *info, void __user *argp) {
 	ret = (int)copy_to_user(argp, &reg, sizeof(struct dss_reg));
 	if (ret) {
 		HISI_FB_ERR("[effect] copy_to_user failed(param)! ret=%d.\n", ret);
+		ret = -EINVAL;
 	}
 	return 0;
 }
@@ -5958,6 +5562,9 @@ static int set_hiace_param(struct hisi_fb_data_type *hisifd) {
 	if (hisifd->effect_updated_flag.hiace_effect_updated) {
 		spin_lock(&g_hiace_table_lock);
 		//set_reg(hiace_base + DPE_LHIST_SFT, hisifd->effect_info.hiace.lhist_sft, 32, 0);
+		set_reg(hiace_base + DPE_ROI_START_POINT, hisifd->effect_info.hiace.roi_start_point, 32, 0);
+		set_reg(hiace_base + DPE_ROI_WIDTH_HIGH, hisifd->effect_info.hiace.roi_width_high, 32, 0);
+		set_reg(hiace_base + DPE_ROI_MODE_CTRL, hisifd->effect_info.hiace.roi_mode_ctrl, 32, 0);
 		set_reg(hiace_base + DPE_ROI_HIST_STAT_MODE, hisifd->effect_info.hiace.roi_hist_stat_mode, 32, 0);
 		set_reg(hiace_base + DPE_HUE, hisifd->effect_info.hiace.hue, 32, 0);
 		set_reg(hiace_base + DPE_SATURATION, hisifd->effect_info.hiace.saturation, 32, 0);
@@ -6011,295 +5618,9 @@ static int set_hiace_param(struct hisi_fb_data_type *hisifd) {
 	hisifd->effect_updated_flag.hiace_effect_updated = false;
 	return 0;
 }
-
-int hisifb_hiace_roi_info_init(struct hisi_fb_data_type *hisifd,
-	dss_overlay_t *pov_req)
-{
-	struct hisi_panel_info *pinfo = NULL;
-	struct dss_rect *hiace_roi = NULL;
-	struct hiace_roi_info *hiace_roi_param = NULL;
-
-	if (hisifd == NULL) {
-		HISI_FB_ERR("hisifd is NULL!\n");
-		return -1;
-	}
-
-	if(pov_req == NULL) {
-		HISI_FB_ERR("pov_req is NULL!\n");
-		return -1;
-	}
-
-	if (hisifd->index != PRIMARY_PANEL_IDX) {
-		HISI_FB_DEBUG("[effect] fb%d, not support!", hisifd->index);
-		return -EINVAL;
-	}
-
-	pinfo = &(hisifd->panel_info);
-	pov_req = &(hisifd->ov_req);
-	hiace_roi_param = &(hisifd->auto_hiace_roi_info);
-
-	if (pinfo->hiace_support) {
-		hiace_roi = &(pov_req->hiace_roi_rect);
-		if (pov_req->hiace_roi_support) {
-			if (pov_req->hiace_roi_enable) {
-				hiace_roi_param->roi_top = hiace_roi->y;
-				hiace_roi_param->roi_left = hiace_roi->x;
-				hiace_roi_param->roi_bot = hiace_roi->y + hiace_roi->h;
-				hiace_roi_param->roi_right = hiace_roi->x + hiace_roi->w;
-			} else {
-				hiace_roi_param->roi_top = 0;
-				hiace_roi_param->roi_left = 0;
-				hiace_roi_param->roi_bot = 0;
-				hiace_roi_param->roi_right = 0;
-			}
-			hiace_roi_param->roi_enable = pov_req->hiace_roi_enable;
-		}
-	} else {
-		hiace_roi_param->roi_top =
-			((hisifd->effect_info.hiace.roi_start_point >> 16) & 0x1fff);
-		hiace_roi_param->roi_left =
-			hisifd->effect_info.hiace.roi_start_point & 0x1fff;
-		hiace_roi_param->roi_bot = hiace_roi_param->roi_top +
-			((hisifd->effect_info.hiace.roi_width_high >> 16) & 0x1fff);
-		hiace_roi_param->roi_right = hiace_roi_param->roi_left +
-			(hisifd->effect_info.hiace.roi_width_high & 0x1fff);
-		hiace_roi_param->roi_enable = hisifd->effect_info.hiace.roi_mode_ctrl;
-	}
-	return 0;
-}
-
-void hisi_dss_roi_config(struct hisi_fb_data_type *hisifd,
-	dss_overlay_t *pov_req)
-{
-	int ret;
-	struct gamma_xcc_roi_info *gamma_xcc_roi_param = NULL;
-	uint32_t gamma_xcc_roi_top_left;
-	uint32_t gamma_xcc_roi_bot_right;
-
-	if (hisifd == NULL) {
-		HISI_FB_ERR("hisifd is NULL!\n");
-		return;
-	}
-	if (pov_req == NULL) {
-		HISI_FB_ERR("pov_req is NULL!\n");
-		return;
-	}
-
-	if (!g_is_effect_lock_init) {
-		HISI_FB_INFO("display effect lock is not init!\n");
-		return;
-	}
-
-	spin_lock(&g_roi_lock);
-	ret = hisifb_hiace_roi_info_init(hisifd, pov_req);
-	if (ret) {
-		spin_unlock(&g_roi_lock);
-		return;
-	}
-
-	gamma_xcc_roi_param = &(hisifd->gamma_xcc_roi);
-	gamma_xcc_roi_top_left =
-		(gamma_xcc_roi_param->roi_top << 16) | gamma_xcc_roi_param->roi_left;
-	gamma_xcc_roi_bot_right =
-		(gamma_xcc_roi_param->roi_bot << 16) | gamma_xcc_roi_param->roi_right;
-
-	if (hisifd->panel_info.dirty_region_updt_support) {
-		update_hiace_roi_by_dirty_region(hisifd, pov_req);
-		update_gamma_xcc_roi_by_dirty_region(hisifd, &gamma_xcc_roi_top_left,
-			&gamma_xcc_roi_bot_right);
-	}
-
-	hisifb_hiace_roi_reg_set(hisifd, pov_req);
-	hisifb_gamma_xcc_reg_set(hisifd, gamma_xcc_roi_top_left,
-		gamma_xcc_roi_bot_right);
-	spin_unlock(&g_roi_lock);
-}
-
-void hisifb_hiace_roi_reg_set(struct hisi_fb_data_type *hisifd,
-	dss_overlay_t *pov_req)
-{
-	char __iomem *hiace_base = NULL;
-	dss_rect_t *rect = NULL;
-	uint32_t start_point, width_high;
-
-	if (hisifd == NULL) {
-		HISI_FB_ERR("hisifd is NULL!\n");
-		return;
-	}
-	if (pov_req == NULL) {
-		HISI_FB_ERR("pov_req is NULL!\n");
-		return;
-	}
-
-	if (hisifd->index == PRIMARY_PANEL_IDX) {
-		hiace_base = hisifd->dss_base + DSS_HI_ACE_OFFSET;
-	} else {
-		HISI_FB_DEBUG("[effect] fb%d, not support!", hisifd->index);
-		return;
-	}
-
-	if (hisifd->fb_shutdown == true || hisifd->panel_power_on == false) {
-		HISI_FB_ERR("[effect] fb_shutdown or panel power down");
-		return;
-	}
-
-	if (pov_req->hiace_roi_support) {
-		rect = &(pov_req->hiace_roi_rect);
-		start_point = ((uint32_t)rect->y << 16) | ((uint32_t)rect->x);
-		width_high = ((uint32_t)rect->h << 16) | ((uint32_t)rect->w);
-		set_reg(hiace_base + DPE_ROI_START_POINT, start_point, 32, 0);
-		set_reg(hiace_base + DPE_ROI_WIDTH_HIGH, width_high, 32, 0);
-		set_reg(hiace_base + DPE_ROI_MODE_CTRL,
-			pov_req->hiace_roi_enable, 32, 0);
-		HISI_FB_DEBUG("start_point:0x%x, width_high:0x%x, roi_enable=%d\n",
-			start_point, width_high, pov_req->hiace_roi_enable);
-	} else {
-		set_reg(hiace_base + DPE_ROI_START_POINT,
-			hisifd->effect_info.hiace.roi_start_point, 32, 0);
-		set_reg(hiace_base + DPE_ROI_WIDTH_HIGH,
-			hisifd->effect_info.hiace.roi_width_high, 32, 0);
-		set_reg(hiace_base + DPE_ROI_MODE_CTRL,
-			hisifd->effect_info.hiace.roi_mode_ctrl, 32, 0);
-	}
-}
-
-void hisifb_gamma_xcc_reg_set(struct hisi_fb_data_type *hisifd,
-	uint32_t top_left, uint32_t bot_right)
-{
-	char __iomem *dpp_top_base = NULL;
-	struct gamma_xcc_roi_info *gamma_xcc_roi_param = NULL;
-
-	if (hisifd == NULL) {
-		HISI_FB_ERR("hisifd is NULL!");
-		return;
-	}
-	if (hisifd->index != PRIMARY_PANEL_IDX)
-		return;
-
-	if (!hisifd->effect_ctl.gamma_support &&
-			!hisifd->effect_ctl.lcp_xcc_support)
-		return;
-
-	dpp_top_base = hisifd->dss_base + DSS_DPP_OFFSET;
-	gamma_xcc_roi_param = &(hisifd->gamma_xcc_roi);
-
-	if (!gamma_xcc_roi_param->gamma_pre_enable &&
-			!gamma_xcc_roi_param->xcc_pre_enable)
-		return;
-
-	set_reg(dpp_top_base + DUAL_LCD_TOP_LEFT, top_left, 32, 0);
-	set_reg(dpp_top_base + DUAL_LCD_BOT_RIGHT, bot_right, 32, 0);
-}
-
-void update_hiace_roi_by_dirty_region(struct hisi_fb_data_type *hisifd,
-	dss_overlay_t *pov_req)
-{
-	struct dss_rect *hiace_roi = NULL;
-	struct hisi_panel_info *pinfo = NULL;
-	struct hiace_roi_info *hiace_roi_param = NULL;
-	struct dss_rect *dirty = NULL;
-
-	if (hisifd == NULL) {
-		HISI_FB_ERR("hisifd is NULL!\n");
-		return;
-	}
-
-	if (pov_req == NULL) {
-		HISI_FB_ERR("pov_req is NULL!\n");
-		return;
-	}
-
-	pinfo = &(hisifd->panel_info);
-	if (pinfo->hiace_support == 0 || pov_req->hiace_roi_support == 0)
-		return;
-
-	if (hisifd->index != PRIMARY_PANEL_IDX) {
-		HISI_FB_ERR("[effect] fb%d, not support!", hisifd->index);
-		return;
-	}
-
-	hiace_roi_param = &(hisifd->auto_hiace_roi_info);
-
-	if (!hisifd->hiace_info.hiace_enable || !hiace_roi_param->roi_enable)
-		return;
-
-	hiace_roi = &(pov_req->hiace_roi_rect);
-	dirty = &(hisifd->dirty_region_updt);
-
-	if ((dirty->x > hiace_roi->x) || (dirty->y > hiace_roi->y)
-		|| ((dirty->x + dirty->w) < (hiace_roi->x + hiace_roi->w))
-		|| ((dirty->y + dirty->h) < (hiace_roi->y + hiace_roi->h))) {
-		HISI_FB_ERR("update_hiace_roi error, dirty: %d,%d,%d,%d,"
-			"hiace_roi: %d,%d,%d,%d\n",
-			dirty->x, dirty->y, dirty->w, dirty->h,
-			hiace_roi->x, hiace_roi->y, hiace_roi->w, hiace_roi->h);
-		pov_req->hiace_roi_enable = false;
-		hiace_roi_param->roi_enable = false;
-		return;
-	}
-
-	hiace_roi->x -= dirty->x;
-	hiace_roi->y -= dirty->y;
-}
-
-void update_gamma_xcc_roi_by_dirty_region(struct hisi_fb_data_type *hisifd,
-	uint32_t *top_left, uint32_t *bot_right)
-{
-	struct gamma_xcc_roi_info *gamma_xcc_roi_param = NULL;
-	struct dss_rect *dirty = NULL;
-
-	if (hisifd == NULL) {
-		HISI_FB_ERR("hisifd is NULL!\n");
-		return;
-	}
-
-	if (!hisifd->effect_ctl.gamma_support &&
-			!hisifd->effect_ctl.lcp_xcc_support)
-		return;
-
-	gamma_xcc_roi_param = &(hisifd->gamma_xcc_roi);
-	dirty = &(hisifd->dirty_region_updt);
-
-	if (!gamma_xcc_roi_param->gamma_pre_enable &&
-			!gamma_xcc_roi_param->xcc_pre_enable)
-		return;
-
-	uint32_t left = gamma_xcc_roi_param->roi_left;
-	uint32_t top = gamma_xcc_roi_param->roi_top;
-	uint32_t right = gamma_xcc_roi_param->roi_right;
-	uint32_t bot = gamma_xcc_roi_param->roi_bot;
-
-	uint32_t dirty_left = dirty->x;
-	uint32_t dirty_right = dirty->x + dirty->w;
-	uint32_t dirty_top = dirty->y;
-	uint32_t dirty_bot = dirty->y + dirty->h;
-
-	uint32_t max_left = left > dirty_left ? left : dirty_left;
-	uint32_t min_right = right < dirty_right ? right : dirty_right;
-	uint32_t max_top = top > dirty_top ? top : dirty_top;
-	uint32_t min_bot = bot < dirty_bot ? bot : dirty_bot;
-
-	if (max_left >= min_right || max_top >= min_bot) {
-		left = 0x1FFF;
-		top = 0x1FFF;
-		right = 0x1FFF;
-		bot = 0x1FFF;
-	} else {
-		left = max_left - dirty->x;
-		top = max_top - dirty->y;
-		right = min_right - dirty->x;
-		bot = min_bot - dirty->y;
-	}
-
-	*top_left = top << 16 | left;
-	*bot_right = bot << 16 | right;
-}
-
-int hisi_effect_hiace_config(struct hisi_fb_data_type *hisifd)
-{
+int hisi_effect_hiace_config(struct hisi_fb_data_type *hisifd) {
 	char __iomem *hiace_base = NULL;
 	struct hisi_panel_info *pinfo = NULL;
-	dss_overlay_t *pov_req = NULL;
 
 	if (hisifd == NULL) {
 		HISI_FB_ERR("hisifd is NULL!\n");
@@ -6318,12 +5639,9 @@ int hisi_effect_hiace_config(struct hisi_fb_data_type *hisifd)
 		return 0;
 	}
 
-	pov_req = &(hisifd->ov_req);
-
 	if (hiace_enable_status != hisifd->hiace_info.hiace_enable) {
 		if (hisifd->hiace_info.hiace_enable) {
-			if (hisifd->dirty_region_updt_enable == 0 ||
-					pov_req->hiace_roi_enable) {
+			if (hisifd->dirty_region_updt_enable == 0) {
 				set_reg(hiace_base + HIACE_BYPASS_ACE, 0x0, 1, 0);
 				set_reg(hiace_base + HIACE_INT_STAT, 0x1, 1, 0);
 				hiace_enable_status = hisifd->hiace_info.hiace_enable;
@@ -6334,810 +5652,8 @@ int hisi_effect_hiace_config(struct hisi_fb_data_type *hisifd)
 		}
 	}
 
-	// set hiace on/off timestamp
-	hisifb_panel_set_hiace_timestamp(hisifd, hisifd->hiace_info.hiace_enable, hisifd->ce_ctrl.ctrl_ce_mode);
-
 	return set_hiace_param(hisifd);
 }
-
-static bool hiace_lhist_block_vertex_block(uint32_t ptr)
-{
-	if (ptr == 0)                             // left-top
-		return true;
-	if (ptr == (XBLOCKNUM - 1))               // right-top
-		return true;
-	if (ptr == (XBLOCKNUM * (YBLOCKNUM - 1)))       // left-bottom
-		return true;
-	if (ptr == (XBLOCKNUM * YBLOCKNUM - 1))        // right-bottom
-		return true;
-
-	return false;
-}
-
-static bool hiace_lhist_block_side_block(uint32_t ptr)
-{
-	if ((ptr % XBLOCKNUM) == 0)              // left
-		return true;
-	if (ptr < XBLOCKNUM)                     // top
-		return true;
-	if ((ptr % XBLOCKNUM) == (XBLOCKNUM - 1))      // right
-		return true;
-	if (ptr >= (XBLOCKNUM * (YBLOCKNUM - 1)))      // bottom
-		return true;
-
-	return false;
-}
-
-static void hiace_single_mode_calculate_block_pixels(struct hisi_fb_data_type *hisifd,
-	uint32_t* center_block, uint32_t * side_block, uint32_t* vertex_block)
-{
-	char __iomem *hiace_base = NULL;
-	struct hisi_panel_info *pinfo = NULL;
-	uint32_t reg, width, height, lshift;
-	uint32_t lhist_block_pixel_num;
-
-	hiace_base = hisifd->dss_base + DSS_HI_ACE_OFFSET;
-	pinfo = &(hisifd->panel_info);
-
-	// calculate block pixels according to local hist algo
-	reg = inp32(hiace_base + DPE_HALF_BLOCK_INFO);
-	width = (reg & 0x1ff) * 2;
-	height = ((reg>>16) & 0x1ff) * 2;
-
-	reg = inp32(hiace_base + DPE_LHIST_SFT);
-	lshift = 1 << (reg & 0x7);
-
-	lhist_block_pixel_num = width * height  / lshift;
-	if (lhist_block_pixel_num == 0) {
-		HISI_FB_ERR("error param: width=%d, height=%d, lshift=%d!\n", width, height, lshift);
-		lhist_block_pixel_num = pinfo->xres * pinfo->yres / (YBLOCKNUM * XBLOCKNUM) / lshift;
-	}
-
-	// calculater different type block typical number according to algorithem
-	*center_block = lhist_block_pixel_num * 4;
-	*side_block = lhist_block_pixel_num * 3;
-	*vertex_block = lhist_block_pixel_num * 9 / 4;
-}
-
-static bool hiace_single_mode_verify_hist_block(struct hisi_fb_data_type *hisifd)
-{
-	bool ret = true;
-	char __iomem *hiace_base = NULL;
-	uint32_t center_block, side_block, vertex_block;
-	uint32_t error_block, warning_block;
-	uint32_t i, j;
-	uint32_t *local_hist_ptr = NULL;
-	uint32_t start, end, lhist_band;
-	uint32_t cur_block_pixel_num;
-
-	start = g_single_mode_info.hist_block_v_ptr * XBLOCKNUM + g_single_mode_info.hist_block_h_ptr;
-	end = start + g_single_mode_info.block_once_num;
-
-	hiace_base = hisifd->dss_base + DSS_HI_ACE_OFFSET;
-
-	local_hist_ptr = &g_single_mode_info.hist[HIACE_GHIST_RANK + HIACE_GHIST_RANK];
-	lhist_band = get_lhist_band(hiace_base);
-
-	hiace_single_mode_calculate_block_pixels(hisifd, &center_block, &side_block, &vertex_block);
-
-	for (i = start; i < end; i++) {
-		cur_block_pixel_num = 0;
-
-		for (j = 0; j < lhist_band; j++)
-			cur_block_pixel_num += local_hist_ptr[i * lhist_band + j];
-
-		if (hiace_lhist_block_vertex_block(i)) {
-			error_block = vertex_block * HIACE_LHIST_BLOCK_ERROR / HIACE_LHIST_BLOCK_RATIO;
-			warning_block = vertex_block * HIACE_LHIST_BLOCK_WARNING / HIACE_LHIST_BLOCK_RATIO;
-		} else if (hiace_lhist_block_side_block(i)) {
-			error_block = side_block * HIACE_LHIST_BLOCK_ERROR / HIACE_LHIST_BLOCK_RATIO;
-			warning_block = side_block * HIACE_LHIST_BLOCK_WARNING / HIACE_LHIST_BLOCK_RATIO;
-		} else {
-			error_block = center_block * HIACE_LHIST_BLOCK_ERROR / HIACE_LHIST_BLOCK_RATIO;
-			warning_block = center_block * HIACE_LHIST_BLOCK_WARNING / HIACE_LHIST_BLOCK_RATIO;
-		}
-
-		if (cur_block_pixel_num < error_block) {
-			HISI_FB_WARNING("lhist block(%d) is wrong num = %d!\n", i, cur_block_pixel_num);
-			ret = false;
-		} else if (cur_block_pixel_num < warning_block) {
-			HISI_FB_WARNING("lhist block(%d) is not good num = %d!\n", i, cur_block_pixel_num);
-		}
-	}
-
-	return ret;
-}
-
-static void hiace_single_mode_state_init(void)
-{
-	if (g_single_mode_info.ioctl_info.info_type & EN_HIACE_INFO_TYPE_GLOBAL_HIST) {
-		g_single_mode_info.single_mode_state = EN_HIACE_SINGLE_MODE_WORKING_GLOBAL_HIST;
-	} else if (g_single_mode_info.ioctl_info.info_type & EN_HIACE_INFO_TYPE_LOCAL_HIST) {
-		g_single_mode_info.single_mode_state = EN_HIACE_SINGLE_MODE_WORKING_LOCAL_HIST;
-	} else if (g_single_mode_info.ioctl_info.info_type & EN_HIACE_INFO_TYPE_FNA) {
-		if (g_single_mode_info.ioctl_info.isr_handle)
-			g_single_mode_info.single_mode_state = EN_HIACE_SINGLE_MODE_WORKING_ISR_FNA;
-		else
-			g_single_mode_info.single_mode_state = EN_HIACE_SINGLE_MODE_WORKING_FNA;
-	}
-}
-
-static void hiace_single_mode_reset_read_point(char __iomem *hiace_base)
-{
-	// reset hist read poit
-	g_single_mode_info.hist_block_h_ptr = 0;
-	g_single_mode_info.hist_block_v_ptr = 0;
-	set_reg(hiace_base + DPE_LHIST_EN, 0, 6, 4);
-
-	// reset fna read point
-	set_reg(hiace_base + DPE_FNA_ADDR, 0, 6, 4);
-}
-
-static void hiace_single_mode_init(struct hisi_fb_data_type *hisifd)
-{
-	char __iomem *hiace_base = NULL;
-	dss_display_effect_ce_t *ce_ctrl = NULL;
-
-	hiace_base = hisifd->dss_base + DSS_HI_ACE_OFFSET;
-	ce_ctrl = &(hisifd->ce_ctrl);
-
-	// intial state
-	hisifd->hiace_info.hiace_enable = true;
-	ce_ctrl->ctrl_ce_mode = CE_MODE_SINGLE;
-	hiace_single_mode_state_init();
-
-	hiace_single_mode_reset_read_point(hiace_base);
-
-	// only enable statistic read module is enough
-	if (g_single_mode_info.ioctl_info.info_type & EN_HIACE_INFO_TYPE_LOCAL_HIST) {
-		set_reg(hiace_base + DPE_UPDATE_LOCAL, 0x1, 1, 0);
-		set_reg(hiace_base + DPE_UPDATE_FNA, 0x0, 1, 0);
-	}
-	if (g_single_mode_info.ioctl_info.info_type & EN_HIACE_INFO_TYPE_FNA) {
-		set_reg(hiace_base + DPE_UPDATE_LOCAL, 0x0, 1, 0);
-		set_reg(hiace_base + DPE_UPDATE_FNA, 0x1, 1, 0);
-	}
-
-	// close no need module
-	outp32(hiace_base + DPE_ROI_MODE_CTRL, 0);
-	set_reg(hiace_base + DPE_BYPASS_NR, 1, 1, 0);
-	outp32(hiace_base + DPE_HDR10_EN, 0);
-
-	// enable hiace
-	set_reg(hiace_base + DPE_BYPASS_ACE, 0x0, 1, 0);
-
-	return;
-
-}
-
-static void hiace_single_mode_deinit(struct hisi_fb_data_type *hisifd, bool is_done)
-{
-	char __iomem *hiace_base = NULL;
-	dss_display_effect_ce_t *ce_ctrl = NULL;
-
-	hiace_base = hisifd->dss_base + DSS_HI_ACE_OFFSET;
-	ce_ctrl = &(hisifd->ce_ctrl);
-
-	// disable hiace
-	set_reg(hiace_base + DPE_BYPASS_ACE, 0x1, 1, 0);
-
-	ce_ctrl->ctrl_ce_mode = CE_MODE_DISABLE;
-	hisifd->hiace_info.hiace_enable = false;
-
-	if (is_done)
-		g_single_mode_info.single_mode_state = EN_HIACE_SINGLE_MODE_DONE;
-	else
-		g_single_mode_info.single_mode_state = EN_HIACE_SINGLE_MODE_IDLE;
-
-	// restore the setting of each module
-	set_reg(hiace_base + DPE_UPDATE_LOCAL, 0x1, 1, 0);
-	outp32(hiace_base + DPE_UPDATE_FNA, hisifd->effect_info.hiace.update_fna);
-	outp32(hiace_base + DPE_ROI_MODE_CTRL, hisifd->effect_info.hiace.roi_mode_ctrl);
-	outp32(hiace_base + DPE_BYPASS_NR, (hisifd->effect_info.hiace.bypass_nr | (hisifd->effect_info.hiace.bypass_nr_gain << 1)));
-	outp32(hiace_base + DPE_HDR10_EN, hisifd->effect_info.hiace.hdr10_en);
-
-	HISI_FB_INFO("alreay read all data, close hiace!");
-}
-
-static int hiace_single_mode_get_read_point(struct hisi_fb_data_type *hisifd, uint32_t band,
-	uint32_t *start_ptr, uint32_t *end_ptr)
-{
-	uint32_t start, end;
-
-	start = g_single_mode_info.hist_block_v_ptr * XBLOCKNUM + g_single_mode_info.hist_block_h_ptr;
-	end = start + g_single_mode_info.block_once_num;
-
-	HISI_FB_DEBUG("start:%d/stop:%d!\n", start, end);
-
-	if (start >= XBLOCKNUM * YBLOCKNUM) {
-		// reset state machine, close hiace
-		hiace_single_mode_deinit(hisifd, false);
-		return -1;
-	}
-
-	// check if end_ptr over the maximum which will occur the total blocks not exact divided by num_once
-	if (end > XBLOCKNUM * YBLOCKNUM)
-		end = XBLOCKNUM * YBLOCKNUM;
-
-	start *= band;
-	end *= band;
-
-	*start_ptr = start;
-	*end_ptr = end;
-
-	return 0;
-}
-
-static void hiace_single_mode_update_read_point(struct hisi_fb_data_type *hisifd, uint32_t end_ptr)
-{
-	// update the read point
-	g_single_mode_info.hist_block_v_ptr = end_ptr / XBLOCKNUM;
-	g_single_mode_info.hist_block_h_ptr = end_ptr % XBLOCKNUM;
-
-	// update the state machine
-	if (end_ptr == XBLOCKNUM * YBLOCKNUM) {
-		// close the hiace, no need read again
-		// not call enable_hiace function, because already gotten the blank_sem
-		hiace_single_mode_deinit(hisifd, true);
-		wake_up_interruptible(&g_single_mode_info.wq_hist);
-	}
-}
-
-static int hiace_single_mode_wait_state(struct fb_info *info)
-{
-	long wait_ret;
-	long timeout = msecs_to_jiffies(HIACE_TIMEOUT_PER_FRAME);
-
-	timeout = timeout * XBLOCKNUM * YBLOCKNUM / g_single_mode_info.block_once_num;
-
-	if (g_single_mode_info.ioctl_info.blocking_mode != 0) {
-		// blocking mode
-		HISI_FB_INFO("enter sleep to wait single mode working done\n");
-		unlock_fb_info(info);
-		wait_ret = wait_event_interruptible_timeout(g_single_mode_info.wq_hist,
-			((g_single_mode_info.single_mode_state & EN_HIACE_SINGLE_MODE_WORKING) == 0), timeout);  //lint !e665
-		(void)lock_fb_info(info);
-		HISI_FB_INFO("exit sleep from waiting single mode working done\n");
-
-		// check if succuss
-		if (g_single_mode_info.single_mode_state != EN_HIACE_SINGLE_MODE_DONE) {
-			// which means timeout, power off, or hiace normal mode...
-			if (wait_ret == -ERESTARTSYS) {
-				HISI_FB_WARNING("single mode wait system err\n");
-			} else if (wait_ret == 0) {
-				HISI_FB_WARNING("single mode wait done timeout\n");
-			} else {
-				HISI_FB_INFO("single mode waiting has been interruputl\n");
-			}
-			return -EINVAL;
-		}
-
-	} else {
-		// non-blocking mode
-		if (g_single_mode_info.single_mode_state & EN_HIACE_SINGLE_MODE_WORKING) {
-			HISI_FB_INFO("still in single mode working state(%d), wait some while and try again\n",
-				g_single_mode_info.single_mode_state);
-			return -EINVAL;
-		} else if (g_single_mode_info.single_mode_state != EN_HIACE_SINGLE_MODE_DONE) {
-			HISI_FB_WARNING("error state(%d), can not get info\n", g_single_mode_info.single_mode_state);
-			return -EINVAL;
-		}
-	}
-
-	return 0;
-}
-
-static void hiace_single_mode_global_hist_get(struct hisi_fb_data_type *hisifd)
-{
-	char __iomem *hiace_base = NULL;
-	uint32_t *global_hist_ptr = NULL;
-	uint32_t *sat_global_hist_ptr = NULL;
-	uint32_t i;
-	int global_hist_ab_shadow;
-	int global_hist_ab_work;
-
-	hiace_base = hisifd->dss_base + DSS_HI_ACE_OFFSET;
-
-	global_hist_ab_shadow = inp32(hiace_base + DPE_GLOBAL_HIST_AB_SHADOW);
-	global_hist_ab_work = inp32(hiace_base + DPE_GLOBAL_HIST_AB_WORK);
-	if (global_hist_ab_shadow == global_hist_ab_work) {
-		/* read global hist */
-		global_hist_ptr = &g_single_mode_info.hist[0];
-		for (i = 0; i < HIACE_GHIST_RANK; i++)
-			global_hist_ptr[i] = inp32(hiace_base + DPE_GLOBAL_HIST_LUT_ADDR + i * 4);  //4 byte one time
-
-		/* read sat_global hist */
-		sat_global_hist_ptr = &g_single_mode_info.hist[HIACE_GHIST_RANK]; /* HIACE_GHIST_RANK */
-		for (i = 0; i < HIACE_GHIST_RANK; i++)
-			sat_global_hist_ptr[i] = inp32(hiace_base + DPE_SAT_GLOBAL_HIST_LUT_ADDR + i * 4);  //4 byte one time
-
-		outp32(hiace_base + DPE_GLOBAL_HIST_AB_SHADOW, global_hist_ab_shadow ^ 1);
-
-		// check if need get local hist further
-		if (g_single_mode_info.ioctl_info.info_type & EN_HIACE_INFO_TYPE_LOCAL_HIST) {
-			g_single_mode_info.single_mode_state = EN_HIACE_SINGLE_MODE_WORKING_LOCAL_HIST;
-		} else {
-			hiace_single_mode_deinit(hisifd, true);
-			wake_up_interruptible(&g_single_mode_info.wq_hist);
-		}
-	}
-}
-
-static int hiace_single_mode_local_hist_get(struct hisi_fb_data_type *hisifd)
-{
-	char __iomem *hiace_base = NULL;
-	uint32_t *local_hist_ptr = NULL;
-	uint32_t i;
-	uint32_t lhist_band;
-	uint32_t local_valid;
-	uint32_t hist_reg;
-	uint32_t start_ptr, end_ptr;
-
-	hiace_base = hisifd->dss_base + DSS_HI_ACE_OFFSET;
-
-	local_valid = inp32(hiace_base + DPE_LOCAL_VALID);
-
-	lhist_band = get_lhist_band(hiace_base);
-
-	if (local_valid == 1) {
-		/* read local hist */
-		if (hiace_single_mode_get_read_point(hisifd, lhist_band, &start_ptr, &end_ptr) != 0) {
-			wake_up_interruptible(&g_single_mode_info.wq_hist);
-			HISI_FB_ERR("should not occur, read point is over limit!");
-			return -1;
-		}
-		local_hist_ptr = &g_single_mode_info.hist[HIACE_GHIST_RANK + HIACE_GHIST_RANK];
-
-		// enable the hist read en, and configure the start block point
-		hist_reg = (g_single_mode_info.hist_block_h_ptr<<3) | g_single_mode_info.hist_block_v_ptr;
-		hist_reg <<= 3; // low 3 bits is reserved
-		hist_reg |= 0x80000000; // BIT31
-		outp32(hiace_base + DPE_LHIST_EN, hist_reg);
-
-		// read the hist register
-		for (i = start_ptr; i < end_ptr; i++)
-			local_hist_ptr[i] = inp32(hiace_base + DPE_LOCAL_HIST_VxHy_2z_2z1);
-
-		set_reg(hiace_base + DPE_LHIST_EN, 0, 1, 31);  // BIT31
-		outp32(hiace_base + DPE_UPDATE_LOCAL, 1);
-
-		// verify the blocks of hist, diacard if not reasonable
-		if (!hiace_single_mode_verify_hist_block(hisifd)) {
-			HISI_FB_WARNING("There are some errors in these %d blocks, which start from hist block:%d/%d!",
-				g_single_mode_info.block_once_num,
-				g_single_mode_info.hist_block_h_ptr,
-				g_single_mode_info.hist_block_v_ptr);
-			return -1;
-		}
-
-		// update the read point
-		hiace_single_mode_update_read_point(hisifd, (end_ptr / lhist_band));
-	}
-
-	return 0;
-}
-
-static int hiace_single_mode_fna_data_get(struct hisi_fb_data_type *hisifd)
-{
-	char __iomem *hiace_base = NULL;
-	uint32_t *fna_data_ptr = NULL;
-	uint32_t i;
-	uint32_t fna_valid;
-	uint32_t hist_reg;
-	uint32_t start_ptr, end_ptr;
-
-	hiace_base = hisifd->dss_base + DSS_HI_ACE_OFFSET;
-
-	fna_valid = inp32(hiace_base + DPE_FNA_VALID);
-	if (fna_valid == 1) {
-		/* read fna data */
-		if (hiace_single_mode_get_read_point(hisifd, HIACE_FNA_RANK, &start_ptr, &end_ptr) != 0) {
-			wake_up_interruptible(&g_single_mode_info.wq_hist);
-			HISI_FB_ERR("should not occur, read point is over limit!");
-			return -1;
-		}
-		fna_data_ptr = &g_single_mode_info.fna[0];
-
-		// enable the hist read en, and configure the start block point
-		hist_reg = (g_single_mode_info.hist_block_h_ptr<<3) | g_single_mode_info.hist_block_v_ptr;
-		hist_reg <<= 3; // low 3 bits is reserved
-		hist_reg |= 0x80000000; // BIT31
-		outp32(hiace_base + DPE_FNA_EN, hist_reg);
-
-		for (i = start_ptr; i < end_ptr; i++)
-			fna_data_ptr[i] = inp32(hiace_base + DPE_FNA_VxHy);
-
-		set_reg(hiace_base + DPE_FNA_EN, 0, 1, 31);  // BIT31
-		outp32(hiace_base + DPE_UPDATE_FNA, 1);
-
-		// update the read point
-		hiace_single_mode_update_read_point(hisifd, (end_ptr / HIACE_FNA_RANK));
-	}
-
-	return 0;
-}
-
-int hisifb_hiace_single_mode_trigger(struct fb_info *info, const void __user *argp)
-{
-	int ret;
-	char __iomem *hiace_base = NULL;
-	struct hisi_fb_data_type *hisifd = NULL;
-	dss_display_effect_ce_t *ce_ctrl = NULL;
-	dss_ce_info_t *ce_info = NULL;
-
-	if ((info == NULL) || (argp == NULL)) {
-		HISI_FB_ERR("info or argp is NULL\n");
-		return -EINVAL;
-	}
-
-	if (!g_single_mode_init) {
-		HISI_FB_ERR("hiace single mode is not init\n");
-		return -EINVAL;
-	}
-
-	hisifd = (struct hisi_fb_data_type *)info->par;
-	if (hisifd == NULL) {
-		HISI_FB_ERR("hisifd is NULL\n");
-		return -EINVAL;
-	}
-
-	hiace_base = hisifd->dss_base + DSS_HI_ACE_OFFSET;
-
-	if (hisifd->index == PRIMARY_PANEL_IDX) {
-		ce_ctrl = &(hisifd->ce_ctrl);
-		ce_info = &(hisifd->hiace_info);
-	} else {
-		HISI_FB_ERR("fb%d, not support!", hisifd->index);
-		return -EINVAL;
-	}
-
-	// check if already in hiace normal mode
-	if ((ce_ctrl->ctrl_ce_mode == CE_MODE_VIDEO) || (ce_ctrl->ctrl_ce_mode == CE_MODE_IMAGE)) {
-		HISI_FB_WARNING("already in hiace normal mode, should call this function\n");
-		return -EINVAL;
-	}
-
-	HISI_FB_INFO("+\n");
-
-	down(&hisifd->blank_sem);
-	if (!hisifd->panel_power_on) {
-		HISI_FB_WARNING("[effect] panel power off!\n");
-		up(&hisifd->blank_sem);
-		return -EINVAL;
-	}
-
-	hisifb_activate_vsync(hisifd);
-
-	// need to synchronize with isr routine
-	mutex_lock(&g_single_mode_info.hist_lock);
-
-	ret = (int)copy_from_user(&g_single_mode_info.ioctl_info, argp, sizeof(struct dss_hiace_single_mode_ctrl_info));
-	if (ret) {
-		mutex_unlock(&g_single_mode_info.hist_lock);
-
-		hisifb_deactivate_vsync(hisifd);
-		up(&hisifd->blank_sem);
-		HISI_FB_ERR("copy_from_user(param) failed! ret=%d\n", ret);
-		return -EINVAL;
-	}
-
-	// check if the last single moe is still working
-	if (ce_ctrl->ctrl_ce_mode == CE_MODE_SINGLE) {
-		if (g_single_mode_info.single_mode_state & EN_HIACE_SINGLE_MODE_WORKING) {
-			// the last working not done, reset state machine
-			hiace_single_mode_state_init();
-
-			hiace_single_mode_reset_read_point(hiace_base);
-		}
-	} else if (ce_ctrl->ctrl_ce_mode == CE_MODE_DISABLE) {
-		// start new single mode
-		hiace_single_mode_init(hisifd);
-	}
-
-	mutex_unlock(&g_single_mode_info.hist_lock);
-
-	hisifb_deactivate_vsync(hisifd);
-	up(&hisifd->blank_sem);
-
-	HISI_FB_INFO("-\n");
-	return 0;
-}
-
-int hisifb_hiace_single_mode_block_once_set(struct fb_info *info, const void __user *argp)
-{
-	int ret;
-	uint32_t block_once_num;
-	dss_ce_info_t *ce_info = NULL;
-	dss_display_effect_ce_t *ce_ctrl = NULL;
-	struct hisi_fb_data_type *hisifd = NULL;
-
-	if ((info == NULL) || (argp == NULL)) {
-		HISI_FB_ERR("info or argp is NULL\n");
-		return -EINVAL;
-	}
-
-	if (!g_single_mode_init) {
-		HISI_FB_ERR("hiace single mode is not init\n");
-		return -EINVAL;
-	}
-
-	hisifd = (struct hisi_fb_data_type *)info->par;
-	if (hisifd == NULL) {
-		HISI_FB_ERR("hisifd is NULL\n");
-		return -EINVAL;
-	}
-
-	if (hisifd->index == PRIMARY_PANEL_IDX) {
-		ce_ctrl = &(hisifd->ce_ctrl);
-		ce_info = &(hisifd->hiace_info);
-	} else {
-		HISI_FB_ERR("fb%d, not support!", hisifd->index);
-		return -EINVAL;
-	}
-
-	HISI_FB_INFO("+\n");
-
-	// check if still in single mode working state
-	if ((ce_ctrl->ctrl_ce_mode == CE_MODE_SINGLE) &&
-		(g_single_mode_info.single_mode_state & EN_HIACE_SINGLE_MODE_WORKING)) {
-		HISI_FB_ERR("can not set in single mode working state!");
-		return -EINVAL;
-	}
-
-	ret = (int)copy_from_user(&block_once_num, argp, sizeof(uint32_t));
-	if (ret) {
-		HISI_FB_ERR("copy_from_user(param) failed! ret=%d.\n", ret);
-		return -EINVAL;
-	}
-
-	if ((block_once_num > XBLOCKNUM * YBLOCKNUM) || (block_once_num == 0)) {
-		g_single_mode_info.block_once_num = XBLOCKNUM * YBLOCKNUM;
-		HISI_FB_WARNING("block_num=%d is not in limit, use the default value\n", block_once_num);
-	} else {
-		g_single_mode_info.block_once_num = block_once_num;
-	}
-
-	HISI_FB_INFO("-\n");
-	return 0;
-}
-
-int hisifb_hiace_hist_get(struct fb_info *info, void __user *argp)
-{
-	struct hisi_fb_data_type *hisifd = NULL;
-	dss_display_effect_ce_t *ce_ctrl = NULL;
-	uint32_t *hist_ptr = NULL;
-	uint32_t hist_size;
-	int ret;
-
-	if (!g_single_mode_init) {
-		HISI_FB_ERR("hiace single mode is not init\n");
-		return -EINVAL;
-	}
-
-	if ((info == NULL) || (argp == NULL)) {
-		HISI_FB_ERR("info or argp is NULL\n");
-		return -EINVAL;
-	}
-
-	hisifd = (struct hisi_fb_data_type *)info->par;
-	if (hisifd == NULL) {
-		HISI_FB_ERR("hisifd is NULL\n");
-		return -EINVAL;
-	}
-
-	if (hisifd->index == PRIMARY_PANEL_IDX) {
-		ce_ctrl = &(hisifd->ce_ctrl);
-	} else {
-		HISI_FB_ERR("fb%d, not support!", hisifd->index);
-		return -EINVAL;
-	}
-
-	if (g_single_mode_info.ioctl_info.info_type > EN_HIACE_INFO_TYPE_HIST) {
-		HISI_FB_ERR("mis match with trigger info type(%d)!", g_single_mode_info.ioctl_info.info_type);
-		return -EINVAL;
-	}
-
-	HISI_FB_INFO("+\n");
-
-	ret = hiace_single_mode_wait_state(info);
-	if (ret != 0) {
-		HISI_FB_WARNING("fail to get loacl_hist due to wait state fail!\n");
-		return ret;
-	}
-
-	// next, means succeed to wait single mode working done
-	mutex_lock(&g_single_mode_info.hist_lock);
-
-	// copy the complete info to user
-	if (g_single_mode_info.ioctl_info.info_type == EN_HIACE_INFO_TYPE_GLOBAL_HIST) {
-		hist_ptr = &g_single_mode_info.hist[0];
-		hist_size = HIACE_GHIST_RANK*2*sizeof(uint32_t);
-		HISI_FB_INFO("copy global hist to user!\n");
-	} else if (g_single_mode_info.ioctl_info.info_type == EN_HIACE_INFO_TYPE_LOCAL_HIST) {
-		hist_ptr = &g_single_mode_info.hist[HIACE_GHIST_RANK*2];
-		hist_size = YBLOCKNUM * XBLOCKNUM * HIACE_LHIST_RANK*sizeof(uint32_t);
-		HISI_FB_INFO("copy local hist to user!\n");
-	} else {  // means EN_HIACE_INFO_TYPE_HIST case
-		hist_ptr = &g_single_mode_info.hist[0];
-		hist_size = sizeof(g_single_mode_info.hist);
-		HISI_FB_INFO("copy global & local hist to user!\n");
-	}
-	ret = (int)copy_to_user(argp, hist_ptr, hist_size);
-	if (ret) {
-		HISI_FB_ERR("[effect] copy_to_user failed(param)! ret=%d\n", ret);
-		ret = -1;
-	}
-
-	g_single_mode_info.single_mode_state = EN_HIACE_SINGLE_MODE_IDLE;
-	mutex_unlock(&g_single_mode_info.hist_lock);
-
-	HISI_FB_INFO("-\n");
-	return ret;
-}
-
-int hisifb_hiace_fna_get(struct fb_info *info, void __user *argp)
-{
-	struct hisi_fb_data_type *hisifd = NULL;
-	dss_display_effect_ce_t *ce_ctrl = NULL;
-	int ret;
-
-	if (!g_single_mode_init) {
-		HISI_FB_ERR("hiace single mode is not init\n");
-		return -EINVAL;
-	}
-
-	if ((info == NULL) || (argp == NULL)) {
-		HISI_FB_ERR("info or argp is NULL\n");
-		return -EINVAL;
-	}
-
-	hisifd = (struct hisi_fb_data_type *)info->par;
-	if (hisifd == NULL) {
-		HISI_FB_ERR("hisifd is NULL\n");
-		return -EINVAL;
-	}
-
-	if (hisifd->index == PRIMARY_PANEL_IDX) {
-		ce_ctrl = &(hisifd->ce_ctrl);
-	} else {
-		HISI_FB_ERR("fb%d, not support!", hisifd->index);
-		return -EINVAL;
-	}
-
-	if (g_single_mode_info.ioctl_info.info_type != EN_HIACE_INFO_TYPE_FNA) {
-		HISI_FB_ERR("mis-match with trigger info type(%d)!", g_single_mode_info.ioctl_info.info_type);
-		return -EINVAL;
-	}
-
-	HISI_FB_INFO("+\n");
-
-	ret = hiace_single_mode_wait_state(info);
-	if (ret) {
-		HISI_FB_WARNING("fail to get loacl_hist due to wait state fail!\n");
-		return ret;
-	}
-
-	// next, means succeed to wait single mode working done
-	mutex_lock(&g_single_mode_info.hist_lock);
-
-	// copy the complete info to user
-	ret = (int)copy_to_user(argp, g_single_mode_info.fna, sizeof(g_single_mode_info.fna));
-	if (ret) {
-		HISI_FB_ERR("[effect] copy_to_user failed(param)! ret=%d\n", ret);
-		ret = -1;
-	}
-
-	g_single_mode_info.single_mode_state = EN_HIACE_SINGLE_MODE_IDLE;
-	mutex_unlock(&g_single_mode_info.hist_lock);
-
-	HISI_FB_INFO("-\n");
-	return ret;
-}
-
-
-void hisi_hiace_single_mode_wq_handler(struct work_struct *work)
-{
-	struct hisi_fb_data_type *hisifd = NULL;
-	char __iomem *hiace_base = NULL;
-
-	if (work == NULL) {
-		HISI_FB_ERR("[effect] hisifd is NULL\n");
-		return;
-	}
-
-	if (!g_single_mode_init) {
-		HISI_FB_ERR("hiace single mode is not init\n");
-		return;
-	}
-
-	hisifd = container_of(work, struct hisi_fb_data_type, hiace_end_work);
-	if (hisifd == NULL) {
-		HISI_FB_ERR("[effect] hisifd is NULL\n");
-		return;
-	}
-
-	if (hisifd->index != PRIMARY_PANEL_IDX) {
-		HISI_FB_ERR("[effect] fb%d, not support!\n", hisifd->index);
-		return;
-	}
-
-	HISI_FB_INFO("+\n");
-
-	hiace_base = hisifd->dss_base + DSS_HI_ACE_OFFSET;
-
-	down(&g_single_mode_info.wq_sem);    // one entry work queue handler
-
-	down(&hisifd->blank_sem);
-	if (!hisifd->panel_power_on) {
-		HISI_FB_DEBUG("[effect] panel power off!\n");
-		up(&hisifd->blank_sem);
-
-		up(&g_single_mode_info.wq_sem);
-		return;
-	}
-
-	hisifb_activate_vsync(hisifd);
-
-	if (!(g_single_mode_info.single_mode_state & EN_HIACE_SINGLE_MODE_WORKING)) {
-		HISI_FB_WARNING("not in working state, do nothing!");
-		goto error_exit;
-	}
-
-	// start working to get info
-	mutex_lock(&g_single_mode_info.hist_lock);
-
-	if (g_single_mode_info.single_mode_state == EN_HIACE_SINGLE_MODE_WORKING_GLOBAL_HIST) {
-		// get global hist
-		hiace_single_mode_global_hist_get(hisifd);
-	} else if (g_single_mode_info.single_mode_state == EN_HIACE_SINGLE_MODE_WORKING_LOCAL_HIST) {
-		// get specified blocks of local hist
-		hiace_single_mode_local_hist_get(hisifd);
-	} else if (g_single_mode_info.single_mode_state == EN_HIACE_SINGLE_MODE_WORKING_FNA) {
-		// get fna
-		hiace_single_mode_fna_data_get(hisifd);
-	}
-
-	mutex_unlock(&g_single_mode_info.hist_lock);
-
-error_exit:
-	/* clear INT */
-	outp32(hiace_base + DPE_INT_STAT, 0x1);
-
-
-	hisifb_deactivate_vsync(hisifd);
-	up(&hisifd->blank_sem);
-
-	up(&g_single_mode_info.wq_sem);
-
-	HISI_FB_INFO("-\n");
-}
-
-bool hisi_hiace_single_mode_handle_isr(struct hisi_fb_data_type *hisifd)
-{
-	bool ret = false;
-	char __iomem *hiace_base = NULL;
-
-	if (hisifd == NULL) {
-		HISI_FB_ERR("hisifd is NULL\n");
-		return false;
-	}
-
-	hiace_base = hisifd->dss_base + DSS_HI_ACE_OFFSET;
-
-	if (hisifd->ce_ctrl.ctrl_ce_mode != CE_MODE_SINGLE)
-		return false;
-
-	if (g_single_mode_info.single_mode_state == EN_HIACE_SINGLE_MODE_WORKING_ISR_FNA) {
-		hiace_single_mode_fna_data_get(hisifd);
-
-		/* clear INT */
-		outp32(hiace_base + DPE_INT_STAT, 0x1);
-		ret = true;
-	}
-
-	return ret;
-}
-
 /*lint +e571, +e573, +e737, +e732, +e850, +e730, +e713, +e529, +e574, +e679, +e732, +e845, +e570,
 +e774 +e568 +e587 +e685*/
 #pragma GCC diagnostic pop

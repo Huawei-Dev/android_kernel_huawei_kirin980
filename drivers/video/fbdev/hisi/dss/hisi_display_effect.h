@@ -83,9 +83,7 @@
 #define LG_NT36772A_RGBW_ID          8
 #define LG_NT36772A_RGBW_ID_HMA          12
 #define BOE_HX83112E_RGBW_ID_HMA          13
-extern const int JDI_TD4336_RT8555_RGBW_ID;
-extern const int SHARP_TD4336_RT8555_RGBW_ID;
-extern const int LG_NT36772A_RT8555_RGBW_ID;
+
 /*
 *1542 = gamma_r + gamma_g + gamma_b = (257 + 257 + 257) * sizeof(u16);
 *1542 = degamma_r + degamma_g + degamma_b = (257 + 257 +257) * sizeof(u16);
@@ -117,7 +115,6 @@ typedef enum {
 	CE_MODE_DISABLE = 0,
 	CE_MODE_VIDEO,
 	CE_MODE_IMAGE,
-	CE_MODE_SINGLE,
 	CE_MODE_COUNT,
 } ce_mode;
 
@@ -160,11 +157,6 @@ typedef struct dss_display_effect_metadata {
 	struct mutex ctrl_lock;
 } dss_display_effect_metadata_t;
 
-typedef struct dss_display_effect_xcc {
-	uint32_t xcc_enable;
-	int xcc_table[12];
-} dss_display_effect_xcc_t;
-
 typedef struct display_engine_info {
 	bool is_ready;
 	bool blc_used;
@@ -192,42 +184,6 @@ typedef struct display_engine_info {
 	struct mutex param_lock;
 	struct display_engine_amoled_param amoled_param;
 } display_engine_info_t;
-
-#if defined(CONFIG_HISI_FB_V501) || defined(CONFIG_HISI_FB_V510)
-/* for hiace single mode */
-#define HIACE_TIMEOUT_PER_FRAME 20000	// 20ms
-
-enum {
-	EN_HIACE_SINGLE_MODE_IDLE = 0,
-	EN_HIACE_SINGLE_MODE_WORKING = 0x10,
-	EN_HIACE_SINGLE_MODE_WORKING_GLOBAL_HIST = 0x11,
-	EN_HIACE_SINGLE_MODE_WORKING_LOCAL_HIST = 0x12,
-	EN_HIACE_SINGLE_MODE_WORKING_FNA = 0x13,
-	EN_HIACE_SINGLE_MODE_WORKING_ISR_FNA = 0x14,
-	EN_HIACE_SINGLE_MODE_DONE = 0x20,
-};
-
-struct hiace_single_mode_info {
-	// for ioctl
-	struct dss_hiace_single_mode_ctrl_info ioctl_info;
-
-	// for internal ctrl
-	uint8_t single_mode_state;    // idle, working or done
-	uint8_t ioctl_blocking_mode;  // 0:blocking mode, 1:non-blocking mode
-	wait_queue_head_t wq_hist;
-	struct semaphore wq_sem;
-	struct mutex hist_lock;
-
-	// for information readback
-	uint32_t block_once_num;
-	uint32_t hist_block_h_ptr;
-	uint32_t hist_block_v_ptr;
-
-	// readback info
-	uint32_t hist[HIACE_GHIST_RANK + HIACE_GHIST_RANK + YBLOCKNUM * XBLOCKNUM * HIACE_LHIST_RANK];
-	uint32_t fna[YBLOCKNUM * XBLOCKNUM * HIACE_FNA_RANK];
-};
-#endif
 
 typedef struct dss_ce_info {
 	// Running control
@@ -346,8 +302,6 @@ int hisifb_ce_service_enable_hiace(struct fb_info *info, const void __user *argp
 int hisifb_ce_service_get_hist(struct fb_info *info, void __user *argp);
 int hisifb_ce_service_set_lut(struct fb_info *info, const void __user *argp);
 int hisifb_ce_service_set_HDR10_lut(struct fb_info *info, void __user *argp);
-int hisifb_get_hiace_enable(struct fb_info *info, void __user *argp);
-int hisifb_get_hiace_roi(struct fb_info *info, void __user *argp);
 int hisifb_get_reg_val(struct fb_info *info, void __user *argp);
 int hisifb_display_engine_register(struct hisi_fb_data_type *hisifd);
 int hisifb_display_engine_unregister(struct hisi_fb_data_type *hisifd);
@@ -372,7 +326,6 @@ ssize_t hisifb_display_effect_metadata_ctrl_store(struct fb_info *info, const ch
 void hisifb_display_effect_func_switch(struct hisi_fb_data_type *hisifd, const char *command);
 
 bool hisifb_display_effect_is_need_ace(struct hisi_fb_data_type *hisifd);
-bool hisifb_hiace_roi_is_disable(struct hisi_fb_data_type *hisifd);
 bool hisifb_display_effect_is_need_blc(struct hisi_fb_data_type *hisifd);
 bool hisifb_display_effect_check_bl_value(int curr, int last);
 bool hisifb_display_effect_check_bl_delta(int curr, int last);
@@ -413,7 +366,6 @@ int hisi_effect_lcp_info_set(struct hisi_fb_data_type *hisifd, struct lcp_info *
 int hisi_effect_gmp_info_set(struct hisi_fb_data_type *hisifd, struct lcp_info *lcp_src);
 int hisi_effect_igm_info_set(struct hisi_fb_data_type *hisifd, struct lcp_info *lcp_src);
 int hisi_effect_xcc_info_set(struct hisi_fb_data_type *hisifd, struct lcp_info *lcp_src);
-int hisi_effect_xcc_info_set_kernel(struct hisi_fb_data_type *hisifd, struct dss_display_effect_xcc *lcp_src);
 
 int hisi_effect_gamma_info_set(struct hisi_fb_data_type *hisifd, struct gamma_info *gamma);
 
@@ -429,30 +381,8 @@ int hisi_effect_arsr2p_config(struct arsr2p_info *arsr2p_effect_dst, int ih_inc,
 int hisi_effect_arsr1p_config(struct hisi_fb_data_type *hisifd, dss_overlay_t *pov_req);
 int hisi_effect_hiace_config(struct hisi_fb_data_type *hisifd);
 
-#if defined (CONFIG_HISI_FB_V501)
-void hisi_dss_roi_config(struct hisi_fb_data_type *hisifd, dss_overlay_t *pov_req);
-int hisifb_hiace_roi_info_init(struct hisi_fb_data_type *hisifd, dss_overlay_t *pov_req);
-void update_hiace_roi_by_dirty_region(struct hisi_fb_data_type *hisifd, dss_overlay_t *pov_req);
-void hisifb_hiace_roi_reg_set(struct hisi_fb_data_type *hisifd, dss_overlay_t *pov_req);
-void update_gamma_xcc_roi_by_dirty_region(struct hisi_fb_data_type *hisifd,
-	uint32_t *top_left, uint32_t *bot_right);
-void hisifb_gamma_xcc_reg_set(struct hisi_fb_data_type *hisifd,
-	uint32_t top_left, uint32_t bot_right);
-void hiace_size_config(struct hisi_fb_data_type *hisifd, uint32_t width, uint32_t height);
-#endif
-
 #if defined(CONFIG_HISI_FB_V501) || defined(CONFIG_HISI_FB_V510) || defined(CONFIG_HISI_FB_V330)
 void hisifb_effect_gmp_lut_workqueue_handler(struct work_struct *work);
-#endif
-
-#if defined(CONFIG_HISI_FB_V501) || defined(CONFIG_HISI_FB_V510)
-// for hiace single mode
-int hisifb_hiace_single_mode_trigger(struct fb_info *info, const void __user *argp);
-int hisifb_hiace_single_mode_block_once_set(struct fb_info *info, const void __user *argp);
-int hisifb_hiace_hist_get(struct fb_info *info, void __user *argp);
-int hisifb_hiace_fna_get(struct fb_info *info, void __user *argp);
-void hisi_hiace_single_mode_wq_handler(struct work_struct *work);
-bool hisi_hiace_single_mode_handle_isr(struct hisi_fb_data_type *hisifd);
 #endif
 
 #endif  //HISI_DISPLAY_EFFECT_H

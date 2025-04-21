@@ -378,7 +378,7 @@ static int dptx_link_check_ch_eq_done(struct dp_ctrl *dptx,
 				      bool *out_ch_eq_done)
 {
 	int retval;
-	bool done = false;
+	bool done;
 
 	if (dptx == NULL) {
 		HISI_FB_ERR("[DP] NULL Pointer\n");
@@ -497,7 +497,6 @@ int dptx_link_adjust_drive_settings(struct dp_ctrl *dptx, int *out_changed)
 	HISI_FB_INFO("[DP] Lane: %d \n",lanes);
 
 	switch (lanes) {
-	/* This case (value 4) is not terminated by a 'break' statement */
 	case 4:
 		retval = dptx_read_dpcd(dptx, DP_ADJUST_REQUEST_LANE2_3, &byte);
 		if (retval)
@@ -537,7 +536,7 @@ int dptx_link_adjust_drive_settings(struct dp_ctrl *dptx, int *out_changed)
 	if (retval)
 		return retval;
 
-	if (out_changed != NULL)
+	if (out_changed)
 		*out_changed = changed;
 
 	return 0;
@@ -777,8 +776,8 @@ int dptx_link_cr(struct dp_ctrl *dptx)
 int dptx_link_ch_eq(struct dp_ctrl *dptx)
 {
 	int retval;
-	bool cr_done = false;
-	bool ch_eq_done = false;
+	bool cr_done;
+	bool ch_eq_done;
 	uint32_t pattern;
 	uint32_t i;
 	uint8_t dp_pattern;

@@ -24,6 +24,8 @@
 #define GPIO_VSN	"gpio_lcd_vsn"
 #define GPIO_LCD_BL_ENABLE_NAME	"gpio_lcd_bl_enable"
 
+static struct hisi_fb_panel_data g_panel_data;
+
 static int hkadc_buf = 0;
 static uint32_t bl_enable_flag = 0;
 static uint32_t gpio_lcd_bl_enable = 0;
@@ -432,6 +434,7 @@ static int mipi_fake_probe(struct platform_device *pdev)
 	} else {
 		memcpy(lcd_bl_ic_name_buf, lcd_bl_ic_name, strlen(lcd_bl_ic_name) + 1);
 	}
+	HISI_FB_INFO("lcd_bl_ic_name=%s!\n", lcd_bl_ic_name_buf);
 
 	ret = of_property_read_u32(np, "bl_enable_flag", &bl_enable_flag);
 	if (ret) {

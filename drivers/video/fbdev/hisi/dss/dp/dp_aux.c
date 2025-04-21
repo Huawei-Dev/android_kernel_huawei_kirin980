@@ -32,7 +32,7 @@ static void dptx_aux_clear_data(struct dp_ctrl *dptx)
 static int dptx_aux_read_data(struct dp_ctrl *dptx, uint8_t *bytes, uint32_t len)
 {
 	uint32_t i;
-	uint32_t *data = NULL;
+	uint32_t *data;
 
 	if (dptx == NULL) {
 		HISI_FB_ERR("[DP] NULL Pointer\n");

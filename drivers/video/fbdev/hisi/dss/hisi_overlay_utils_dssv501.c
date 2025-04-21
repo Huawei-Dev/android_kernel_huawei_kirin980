@@ -1017,7 +1017,7 @@ void hisi_dss_smmu_ch_set_reg(struct hisi_fb_data_type *hisifd,
 
 	for (i = 0; i < g_dss_chn_sid_num[chn_idx]; i++) {
 		idx = g_dss_smmu_smrx_idx[chn_idx] + i;
-		if (idx >= SMMU_SID_NUM) {
+		if ((idx < 0) || (idx >= SMMU_SID_NUM)) {
 			HISI_FB_ERR("idx is invalid");
 			return;
 		}
@@ -1059,7 +1059,7 @@ int hisi_dss_smmu_ch_config(struct hisi_fb_data_type *hisifd,
 
 	for (i = 0; i < g_dss_chn_sid_num[chn_idx]; i++) {
 		idx = g_dss_smmu_smrx_idx[chn_idx] + i;
-		if (idx >= SMMU_SID_NUM) {
+		if ((idx < 0) || (idx >= SMMU_SID_NUM)) {
 			HISI_FB_ERR("idx is invalid");
 			return -EINVAL;
 		}
@@ -2805,7 +2805,6 @@ void hisi_dss_post_clip_set_reg(struct hisi_fb_data_type *hisifd,
 /*******************************************************************************
 **
 */
-#if CONFIG_ION_ALLOC_BUFFER
 static bool hisi_check_wblayer_buff_paremeters_validate(struct hisi_fb_data_type *hisifd, dss_wb_layer_t *wb_layer)
 {
 	if (!hisifd || !(hisifd->pdev)) {
@@ -2825,7 +2824,6 @@ static bool hisi_check_wblayer_buff_paremeters_validate(struct hisi_fb_data_type
 
 	return true;
 }
-#endif
 
 /*lint -e613*/
 static int hisi_dss_check_wblayer_buff(struct hisi_fb_data_type *hisifd, dss_wb_layer_t *wb_layer)
@@ -2844,6 +2842,7 @@ static int hisi_dss_check_wblayer_buff(struct hisi_fb_data_type *hisifd, dss_wb_
 	if (wb_layer && (wb_layer->dst.shared_fd >= 0)) {
 		ionhnd = ion_import_dma_buf_fd(hisifd->buffer_client, wb_layer->dst.shared_fd);
 		if (IS_ERR(ionhnd)) {
+			ionhnd = NULL;
 			HISI_FB_INFO("fb%d, failed to ion_import_dma_buf, shared_fd=%d!\n",
 				hisifd->index, wb_layer->dst.shared_fd);
 		} else {
@@ -3088,7 +3087,7 @@ int hisi_dss_check_userdata(struct hisi_fb_data_type *hisifd,
 					wb_layer->dst.stride);
 				return -EINVAL;
 			}
-		/*lint +e574 +e737*/
+		/*lint +e574 +737*/
 			if (hisi_dss_check_wblayer_buff(hisifd, wb_layer)) {
 				HISI_FB_ERR("fb%d, failed to check_wblayer_buff!", hisifd->index);
 				return -EINVAL;
@@ -3138,7 +3137,6 @@ int hisi_dss_check_userdata(struct hisi_fb_data_type *hisifd,
 	return 0;
 }
 
-#if CONFIG_ION_ALLOC_BUFFER
 static bool hisi_check_layer_buff_paremeters_validate(struct hisi_fb_data_type *hisifd, dss_layer_t *layer)
 {
 	if (!hisifd || !(hisifd->pdev)) {
@@ -3158,7 +3156,6 @@ static bool hisi_check_layer_buff_paremeters_validate(struct hisi_fb_data_type *
 
 	return true;
 }
-#endif
 
 /*lint -e613*/
 static int hisi_dss_check_layer_buff(struct hisi_fb_data_type *hisifd, dss_layer_t *layer)
@@ -3177,6 +3174,7 @@ static int hisi_dss_check_layer_buff(struct hisi_fb_data_type *hisifd, dss_layer
 	if (layer && layer->img.shared_fd >= 0) {
 		ionhnd = ion_import_dma_buf_fd(hisifd->buffer_client, layer->img.shared_fd);
 		if (IS_ERR(ionhnd)) {
+			ionhnd = NULL;
 			HISI_FB_ERR("fb%d, layer_idx%d, failed to ion_import_dma_buf, shared_fd=%d!\n",
 				hisifd->index, layer->layer_idx, layer->img.shared_fd);
 			return -EINVAL;
@@ -4292,7 +4290,7 @@ void hisi_dss_dpp_acm_gm_set_reg(struct hisi_fb_data_type *hisifd)
 func_exit:
 	return;//lint !e438
 }//lint !e550
-void hisi_dss_post_scf_init(const char __iomem *dss_base, const char __iomem *post_scf_base, dss_arsr1p_t *s_post_scf)
+void hisi_dss_post_scf_init(char __iomem * dss_base, const char __iomem *post_scf_base, dss_arsr1p_t *s_post_scf)
 {
 	if (NULL == post_scf_base) {
 		HISI_FB_ERR("post_scf_base is NULL");
@@ -4433,19 +4431,10 @@ int hisi_dss_post_scf_config(struct hisi_fb_data_type *hisifd, dss_overlay_t *po
 		src_rect.h = pinfo->yres;
 	}
 
-	if (pinfo->cascadeic_support && pov_req &&
-		(pov_req->rog_width > 0 && pov_req->rog_height > 0)) {
-		// for foldable display ROG partial update
-		dst_rect.x = pov_req->res_updt_rect.x;
-		dst_rect.y = pov_req->res_updt_rect.y;
-		dst_rect.w = pov_req->res_updt_rect.w;
-		dst_rect.h = pov_req->res_updt_rect.h;
-	} else {
-		dst_rect.x = 0;
-		dst_rect.y = 0;
-		dst_rect.w = pinfo->xres;
-		dst_rect.h = pinfo->yres;
-	}
+	dst_rect.x = 0;
+	dst_rect.y = 0;
+	dst_rect.w = pinfo->xres;
+	dst_rect.h = pinfo->yres;
 
 	post_scf = &(hisifd->dss_module.post_scf);
 	hisifd->dss_module.post_scf_used = 1;
@@ -4756,112 +4745,3 @@ int hisi_dss_mdc_module_default(struct hisi_fb_data_type *hisifd)
 	return 0;
 }
 /*lint +e747 +e778 +e774 +e732 +e838*/
-
-static void hisi_dump_vote_info(struct hisi_fb_data_type *hisifd)
-{
-	struct hisi_fb_data_type *fb0 = hisifd_list[PRIMARY_PANEL_IDX];
-	struct hisi_fb_data_type *fb1 = hisifd_list[EXTERNAL_PANEL_IDX];
-	struct hisi_fb_data_type *fb2 = hisifd_list[AUXILIARY_PANEL_IDX];
-	struct hisi_fb_data_type *fb3 = hisifd_list[MEDIACOMMON_PANEL_IDX];
-
-	HISI_FB_INFO("fb%d, voltage[%d, %d, %d, %d], edc[%llu, %llu, %llu, %llu]\n", hisifd->index,
-		(fb0 != NULL) ? fb0->dss_vote_cmd.dss_voltage_level : 0,
-		(fb1 != NULL) ? fb1->dss_vote_cmd.dss_voltage_level : 0,
-		(fb2 != NULL) ? fb2->dss_vote_cmd.dss_voltage_level : 0,
-		(fb3 != NULL) ? fb3->dss_vote_cmd.dss_voltage_level : 0,
-		(fb0 != NULL) ? fb0->dss_vote_cmd.dss_pri_clk_rate : 0,
-		(fb1 != NULL) ? fb1->dss_vote_cmd.dss_pri_clk_rate : 0,
-		(fb2 != NULL) ? fb2->dss_vote_cmd.dss_pri_clk_rate : 0,
-		(fb3 != NULL) ? fb3->dss_vote_cmd.dss_pri_clk_rate : 0);
-}
-
-void hisi_dump_current_info(struct hisi_fb_data_type *hisifd)
-{
-	int i;
-	struct hisi_panel_info *pinfo;
-
-	pinfo = &(hisifd->panel_info);
-	if (!pinfo->cascadeic_support)
-		return;
-
-	if (hisifd->index != PRIMARY_PANEL_IDX)
-		return;
-
-	for (i = 0; i < DSS_CHN_MAX_DEFINE; i++) {
-		if (g_dss_module_base[i][MODULE_DMA] == 0)
-			continue;
-		HISI_FB_INFO("chn%d DMA_BUF_DBG0=0x%x, DMA_BUF_DBG1=0x%x\n", i,
-			inp32(hisifd->dss_base + g_dss_module_base[i][MODULE_DMA] + DMA_BUF_DBG0),
-			inp32(hisifd->dss_base + g_dss_module_base[i][MODULE_DMA] + DMA_BUF_DBG1));
-	}
-
-	HISI_FB_INFO("AIF0 status: 0x%x, 0x%x, 0x%x, 0x%x, 0x%x\n",
-		inp32(hisifd->dss_base + AIF0_MONITOR_OS_R0),
-		inp32(hisifd->dss_base + AIF0_MONITOR_OS_R1),
-		inp32(hisifd->dss_base + AIF0_MONITOR_OS_R2),
-		inp32(hisifd->dss_base + AIF0_MONITOR_OS_R3),
-		inp32(hisifd->dss_base + AIF0_MONITOR_OS_R4));
-
-	HISI_FB_INFO("PERI_STAT: 0x%x, 0x%x, 0x%x\n",
-		inp32(hisifd->pctrl_base + PERI_STAT0),
-		inp32(hisifd->pmctrl_base + NOC_POWER_IDLEREQ),
-		inp32(hisifd->pmctrl_base + NOC_POWER_IDLEACK));
-
-	hisi_dump_vote_info(hisifd);
-
-	HISI_FB_INFO("arsr_post: 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x\n",
-		inp32(hisifd->dss_module.post_scf_base + ARSR_POST_MODE),
-		inp32(hisifd->dss_base + DSS_TOP_OFFSET + DPP_IMG_SIZE_BEF_SR),
-		inp32(hisifd->dss_base + DSS_TOP_OFFSET + DPP_IMG_SIZE_AFT_SR),
-		inp32(hisifd->dss_module.post_scf_base + ARSR_POST_IHLEFT),
-		inp32(hisifd->dss_module.post_scf_base + ARSR_POST_IHLEFT1),
-		inp32(hisifd->dss_module.post_scf_base + ARSR_POST_IHRIGHT),
-		inp32(hisifd->dss_module.post_scf_base + ARSR_POST_IHRIGHT1),
-		inp32(hisifd->dss_module.post_scf_base + ARSR_POST_IVTOP),
-		inp32(hisifd->dss_module.post_scf_base + ARSR_POST_IVBOTTOM),
-		inp32(hisifd->dss_module.post_scf_base + ARSR_POST_IHINC),
-		inp32(hisifd->dss_module.post_scf_base + ARSR_POST_IVINC));
-
-	HISI_FB_INFO("dpp: 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x\n",
-		inp32(hisifd->dss_base + DSS_DPP_GAMA_OFFSET + GAMA_EN),
-		inp32(hisifd->dss_base + DSS_DPP_DEGAMMA_OFFSET + DEGAMA_EN),
-		inp32(hisifd->dss_base + DSS_DPP_GMP_OFFSET + GMP_EN),
-		inp32(hisifd->dss_base + DSS_DPP_XCC_OFFSET + XCC_EN),
-		inp32(hisifd->dss_base + DSS_HI_ACE_OFFSET + DPE_BYPASS_ACE),
-		inp32(hisifd->dss_base + DSS_HI_ACE_OFFSET + DPE_BYPASS_NR),
-		inp32(hisifd->dss_base + DSS_HI_ACE_OFFSET + DPE_IMAGE_INFO),
-		inp32(hisifd->dss_base + DSS_DPP_DITHER_OFFSET + DITHER_CTL0));
-
-	HISI_FB_INFO("ov:0x%x,dbuf:0x%x,0x%x,dsc:0x%x\n",
-		inp32(hisifd->dss_base + DSS_OVL0_OFFSET + OV_SIZE),
-		inp32(hisifd->dss_base + DSS_DBUF0_OFFSET + DBUF_FRM_SIZE),
-		inp32(hisifd->dss_base + DSS_DBUF0_OFFSET + DBUF_FRM_HSIZE),
-		inp32(hisifd->dss_base + DSS_DSC_OFFSET + DSC_PIC_SIZE));
-
-	HISI_FB_INFO("ldi-dsi:0x%x,0x%x\n",
-		inp32(hisifd->mipi_dsi0_base + MIPIDSI_EDPI_CMD_SIZE_OFFSET),
-		inp32(hisifd->mipi_dsi0_base + MIPIDSI_VID_VACTIVE_LINES_OFFSET));
-
-	HISI_FB_INFO("dpi0_hsize:0x%x, vsize:0x%x, dpi1_hsize:0x%x, overlap_size:0x%x\n",
-		inp32(hisifd->dss_base + DSS_LDI0_OFFSET + LDI_DPI0_HRZ_CTRL2),
-		inp32(hisifd->dss_base + DSS_LDI0_OFFSET + LDI_VRT_CTRL2),
-		inp32(hisifd->dss_base + DSS_LDI0_OFFSET + LDI_DPI1_HRZ_CTRL2),
-		inp32(hisifd->dss_base + DSS_LDI0_OFFSET + LDI_OVERLAP_SIZE));
-
-	HISI_FB_INFO("Mediacrg CLKDIV: 0x%x,0x%x,0x%x,0x%x,0x%x,0x%x,0x%x,0x%x,0x%x,0x%x\n",
-		inp32(hisifd->media_crg_base + MEDIA_CLKDIV1 + 0 * 4),
-		inp32(hisifd->media_crg_base + MEDIA_CLKDIV1 + 1 * 4),
-		inp32(hisifd->media_crg_base + MEDIA_CLKDIV1 + 2 * 4),
-		inp32(hisifd->media_crg_base + MEDIA_CLKDIV1 + 3 * 4),
-		inp32(hisifd->media_crg_base + MEDIA_CLKDIV1 + 4 * 4),
-		inp32(hisifd->media_crg_base + MEDIA_CLKDIV1 + 5 * 4),
-		inp32(hisifd->media_crg_base + MEDIA_CLKDIV1 + 6 * 4),
-		inp32(hisifd->media_crg_base + MEDIA_CLKDIV1 + 7 * 4),
-		inp32(hisifd->media_crg_base + MEDIA_CLKDIV1 + 8 * 4),
-		inp32(hisifd->media_crg_base + MEDIA_CLKDIV1 + 9 * 4));
-
-
-	HISI_FB_INFO("PMCTRL PERI_CTRL4, CTRL5 = 0x%x, 0x%x \n",
-		inp32(hisifd->pmctrl_base + PMCTRL_PERI_CTRL4),
-		inp32(hisifd->pmctrl_base + PMCTRL_PERI_CTRL5));
-}

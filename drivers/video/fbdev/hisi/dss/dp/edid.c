@@ -28,7 +28,7 @@ int parse_edid(struct dp_ctrl *dptx, uint16_t len)
 {
 	int16_t i, ext_block_num;
 	int ret;
-	uint8_t* edid_t = NULL;
+	uint8_t* edid_t;
 
 	if (dptx == NULL) {
 		HISI_FB_ERR("[DP] dptx is NULL pointer\n");
@@ -142,8 +142,8 @@ int parse_main(struct dp_ctrl *dptx)
 {
 	int16_t i;
 	int ret;
-	uint8_t* block = NULL;
-	uint8_t* edid_t = NULL;
+	uint8_t* block;
+	uint8_t* edid_t;
 	struct edid_video *vid_info;
 
 	if (dptx == NULL) {
@@ -288,8 +288,8 @@ int parse_extension_timing_description(struct dp_ctrl * dptx, uint8_t* dtdBlock,
 int parse_extension(struct dp_ctrl * dptx, uint8_t* exten)
 {
 	int ret;
-	uint8_t* dtdBlock = NULL;
-	uint8_t* ceaBlock = NULL;
+	uint8_t* dtdBlock;
+	uint8_t* ceaBlock;
 	uint8_t dtd_start_byte = 0;
 	uint8_t cea_data_block_collection = 0;
 	uint16_t DTDtotal =0;
@@ -391,7 +391,7 @@ int parse_timing_description(struct dp_ctrl *dptx, uint8_t *dtd)
 	}
 	//node
 	node = kzalloc(sizeof(struct timing_info), GFP_KERNEL);
-	if (node != NULL) {
+	if (node) {
 		node->hActivePixels = H_ACTIVE;
 		node->hBlanking = H_BLANKING;
 		node->hSyncOffset = H_SYNC_OFFSET;
@@ -467,7 +467,7 @@ int parse_timing_description_by_vesaid(struct edid_video *vid_info, uint8_t vesa
 
 	//node
 	node = kzalloc(sizeof(struct timing_info), GFP_KERNEL);
-	if (node != NULL) {
+	if (node) {
 		node->hActivePixels = mdtd.h_active;
 		node->hBlanking = mdtd.h_blanking;
 		node->hSyncOffset = mdtd.h_sync_offset;
@@ -519,7 +519,7 @@ int parse_hdmi_vic_id(uint8_t vic_id)
 
 	//node
 	node = kzalloc(sizeof(struct dptx_hdmi_vic), GFP_KERNEL);
-	if (node != NULL) {
+	if (node) {
 		node->vic_id = vic_id;
 		HISI_FB_INFO("[DP] vic_id = %d!\n", vic_id);
 		list_add_tail(&node->list_node, dptx_hdmi_list);
@@ -558,7 +558,7 @@ int parse_audio_spec_info(struct edid_audio *aud_info, struct edid_audio_info *s
 int parse_extension_audio_tag(struct edid_audio *aud_info, uint8_t* cDblock, uint8_t tempL)
 {
 	uint8_t i, xa;
-	void *temp_ptr = NULL;
+	void *temp_ptr;
 	if ((aud_info == NULL) ||(cDblock == NULL)) {
 		HISI_FB_ERR("[DP] The pointer is NULL.\n");
 		return -EINVAL;
@@ -653,8 +653,8 @@ int parse_extension_vsdb_tag(struct edid_video *vid_info, uint8_t* cDblock, uint
 	uint8_t I_Latency_Fields_Present;
 	uint8_t HDMI_VIDEO_Present;
 	uint8_t VESA_ID;
-	bool support_ai = false;
-	bool b3dpresent = false;
+	bool support_ai;
+	bool b3dpresent;
 	//struct dptx_hdmi_vic *hdmi_vic_node, *_node_;
 
 	VESA_ID = 0;

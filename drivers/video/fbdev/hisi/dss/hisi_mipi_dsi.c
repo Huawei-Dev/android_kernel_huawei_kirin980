@@ -55,34 +55,34 @@ static int mipi_dsi_remove(struct platform_device *pdev)
 	ret = panel_next_remove(pdev);
 
 	if (hisifd->index == PRIMARY_PANEL_IDX) {
-		if (hisifd->dss_dphy0_ref_clk != NULL) {
+		if (hisifd->dss_dphy0_ref_clk) {
 			clk_put(hisifd->dss_dphy0_ref_clk);
 			hisifd->dss_dphy0_ref_clk = NULL;
 		}
 
-		if (hisifd->dss_dphy0_cfg_clk != NULL) {
+		if (hisifd->dss_dphy0_cfg_clk) {
 			clk_put(hisifd->dss_dphy0_cfg_clk);
 			hisifd->dss_dphy0_cfg_clk = NULL;
 		}
 
 		if (is_dual_mipi_panel(hisifd)) {
-			if (hisifd->dss_dphy1_ref_clk != NULL) {
+			if (hisifd->dss_dphy1_ref_clk) {
 				clk_put(hisifd->dss_dphy1_ref_clk);
 				hisifd->dss_dphy1_ref_clk = NULL;
 			}
 
-			if (hisifd->dss_dphy1_cfg_clk != NULL) {
+			if (hisifd->dss_dphy1_cfg_clk) {
 				clk_put(hisifd->dss_dphy1_cfg_clk);
 				hisifd->dss_dphy1_cfg_clk = NULL;
 			}
 		}
 	} else if (hisifd->index == EXTERNAL_PANEL_IDX) {
-		if (hisifd->dss_dphy1_ref_clk != NULL) {
+		if (hisifd->dss_dphy1_ref_clk) {
 			clk_put(hisifd->dss_dphy1_ref_clk);
 			hisifd->dss_dphy1_ref_clk = NULL;
 		}
 
-		if (hisifd->dss_dphy1_cfg_clk != NULL) {
+		if (hisifd->dss_dphy1_cfg_clk) {
 			clk_put(hisifd->dss_dphy1_cfg_clk);
 			hisifd->dss_dphy1_cfg_clk = NULL;
 		}
@@ -1271,7 +1271,7 @@ static int mipi_dsi_probe(struct platform_device *pdev)
 
 	/* alloc device */
 	dpp_dev = platform_device_alloc(DEV_NAME_DSS_DPE, pdev->id);
-	if (dpp_dev == NULL) {
+	if (!dpp_dev) {
 		dev_err(&pdev->dev, "fb%d platform_device_alloc failed, error=%d!\n", hisifd->index, ret);
 		ret = -ENOMEM;
 		goto err_device_alloc;

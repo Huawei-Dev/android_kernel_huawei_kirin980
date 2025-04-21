@@ -39,7 +39,7 @@
 	<PanelCheckRegCommandState>0</PanelCheckRegCommandState>
 
 	<!-- for inversion -->
-	<PanelDotInversionCommand>"0x29, 0x01, 0x00, 0x00, 0x0a, 0x00, 0x02, 0xB2, 0x03"</PanelDotInversionCommand>
+	<PanelDotInversionCommand>"0x29, 0x01, 0x00, 0x00, 0x0a, 0x00, 0x02, 0xB2, 0x02"</PanelDotInversionCommand>
 	<PanelColumnInversionCommand>"0x29, 0x01, 0x00, 0x00, 0x0a, 0x00, 0x02, 0xB2, 0x00"</PanelColumnInversionCommand>
 	<PanelDotInversionCommandState>0</PanelDotInversionCommandState>
 	<PanelColumnInversionCommandState>0</PanelColumnInversionCommandState>

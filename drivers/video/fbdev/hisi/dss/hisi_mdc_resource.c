@@ -23,8 +23,15 @@ static int mdc_refresh_handle_thread(void *data)
 	while (!kthread_should_stop()) {
 		ret = wait_event_interruptible(hisifd->mdc_ops.refresh_handle_wait, hisifd->need_refresh);
 		if (!ret && hisifd->need_refresh) {
-			hisi_fb_frame_refresh(hisifd, "mdc");
+			char *envp[2];
+			char buf[64];
+			snprintf(buf, sizeof(buf), "Refresh=1");
+			envp[0] = buf;
+			envp[1] = NULL;
+			kobject_uevent_env(&(hisifd->fbi->dev->kobj), KOBJ_CHANGE, envp);
+
 			hisifd->need_refresh = false;
+			HISI_FB_INFO("Refresh=1!\n");
 		}
 	}
 	return 0;
@@ -139,6 +146,7 @@ static int mdc_chn_request_handle(struct hisi_fb_data_type *hisifd,
 		}
 
 		if ((mdc_chn->status == MDC_USED) && (chn_info->hold_flag == HWC_REQUEST)) {
+
 			continue;
 		}
 
@@ -281,7 +289,7 @@ int hisi_mdc_chn_request(struct fb_info *info, void __user *argp)
 		}
 	}
 
-	if (mdc_ops->chn_request_handle != NULL) {
+	if (mdc_ops->chn_request_handle) {
 		if (mdc_ops->chn_request_handle(hisifd, &chn_info)) {
 			HISI_FB_INFO("fb%d, request chn failed!\n", hisifd->index);
 			up(&mdc_ops->mdc_req_sem);
@@ -292,7 +300,7 @@ int hisi_mdc_chn_request(struct fb_info *info, void __user *argp)
 	ret = copy_to_user(argp, &chn_info, sizeof(mdc_ch_info_t));
 	if (ret) {
 		HISI_FB_ERR("fb%d, copy to user failed! ret=%d.", hisifd->index, ret);
-		if (mdc_ops->chn_release_handle != NULL) {
+		if (mdc_ops->chn_release_handle) {
 			mdc_ops->chn_release_handle(hisifd, &chn_info);
 		}
 	}
@@ -338,7 +346,7 @@ int hisi_mdc_chn_release(struct fb_info *info, const void __user *argp)
 		return -EINVAL;
 	}
 
-	if (mdc_ops->chn_release_handle != NULL) {
+	if (mdc_ops->chn_release_handle) {
 		ret = mdc_ops->chn_release_handle(hisifd, &chn_info);
 	}
 
@@ -351,7 +359,7 @@ int hisi_mdc_resource_init(struct hisi_fb_data_type *hisifd, unsigned int platfo
 	int ret = 0;
 	mdc_func_ops_t *mdc_ops;
 
-	if (hisifd == NULL) {
+	if (!hisifd) {
 		HISI_FB_ERR("hisifd is null pointer!\n");
 		return -EINVAL;
 	}

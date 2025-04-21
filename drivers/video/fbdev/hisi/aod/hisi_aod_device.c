@@ -148,9 +148,7 @@ int hisi_aod_report_dmd_err(AOD_DMD_TYPE_T type)
 	return 0;
 }
 
-#if CONFIG_SH_AOD_ENABLE
 extern void hisi_aod_schedule_wq(void);
-#endif
 
 static int hisi_aod_sendcmd2SensorHub(struct write_info *wr, struct read_info *rd, bool is_lock)
 {
@@ -303,7 +301,7 @@ static ssize_t hisi_aod_read(struct file *file, char __user *buf, size_t count, 
 	struct aod_data_t *aod_data;
 	aod_notif_t notify_data;
 
-	if((NULL == file)||(NULL == buf)||(NULL == ppos))
+	if((NULL == file)||(NULL == buf)||(NULL == ppos)) 
 	{
 		HISI_AOD_ERR("enter param is NULL Pointer!\n");
 		return -EINVAL;
@@ -422,9 +420,7 @@ int dss_sr_of_sh_callback(const pkt_header_t *cmd)
 		}
 
 		my_timer.expires = jiffies + 5*HZ;
-		if (!timer_pending(&my_timer)) {
-			add_timer(&my_timer);
-		}
+		add_timer(&my_timer);
 
 		ret = hisi_sensorhub_aod_unblank();
 		if(ret)
@@ -484,6 +480,8 @@ int dss_sr_of_sh_callback(const pkt_header_t *cmd)
 /*lint -e455, -e456*/
 void aod_timer_process(void)
 {
+	//int ret = 0;
+
 	HISI_AOD_INFO("aod_timer_process enter!\n");
 	mutex_lock(&dss_on_off_lock);
 	if(dss_off_status)
@@ -499,6 +497,7 @@ void aod_timer_process(void)
 		mutex_unlock(&dss_on_off_lock);
 		return ;
 	}
+
 
 	mutex_unlock(&dss_on_off_lock);
 	wake_unlock(&g_aod_data->wlock);
@@ -606,8 +605,8 @@ static int hisi_aod_sensorhub_cmd_req(obj_cmd_t cmd)
 
 	HISI_AOD_INFO("+.\n");
 
-	memset(&pkg_ap, 0, sizeof(pkg_ap)); // unsafe_function_ignore: memset
-	memset(&pkg_mcu, 0, sizeof(pkg_mcu)); // unsafe_function_ignore: memset
+	memset(&pkg_ap, 0, sizeof(pkg_ap));
+	memset(&pkg_mcu, 0, sizeof(pkg_mcu));
 
 	HISI_AOD_INFO("+1.\n");
 
@@ -644,8 +643,8 @@ static int hisi_aod_set_display_space_req(aod_display_spaces_mcu_t *display_spac
 		return -1;
 	}
 
-	memset(&pkg_ap, 0, sizeof(pkg_ap)); // unsafe_function_ignore: memset
-	memset(&pkg_mcu, 0, sizeof(pkg_mcu)); // unsafe_function_ignore: memset
+	memset(&pkg_ap, 0, sizeof(pkg_ap));
+	memset(&pkg_mcu, 0, sizeof(pkg_mcu));
 
 	pkg_ap.tag = TAG_AOD;
 	pkg_ap.cmd = CMD_CMN_CONFIG_REQ;
@@ -715,8 +714,8 @@ static int hisi_aod_setup_req(aod_set_config_mcu_t *set_config)
 		return -1;
 	}
 
-	memset(&pkg_ap, 0, sizeof(pkg_ap)); // unsafe_function_ignore: memset
-	memset(&pkg_mcu, 0, sizeof(pkg_mcu)); // unsafe_function_ignore: memset
+	memset(&pkg_ap, 0, sizeof(pkg_ap));
+	memset(&pkg_mcu, 0, sizeof(pkg_mcu));
 
 	pkg_ap.tag = TAG_AOD;
 	pkg_ap.cmd = CMD_CMN_CONFIG_REQ;
@@ -770,7 +769,7 @@ static int hisi_aod_set_time_req(aod_time_config_mcu_t *time_config)
 		return -1;
 	}
 
-	memset(&pkg_ap, 0, sizeof(pkg_ap)); // unsafe_function_ignore: memset
+	memset(&pkg_ap, 0, sizeof(pkg_ap));
 
 	pkg_ap.tag = TAG_AOD;
 	pkg_ap.cmd = CMD_CMN_CONFIG_REQ;
@@ -878,16 +877,15 @@ static int hisi_aod_stop_req(aod_display_pos_t *display_pos)
 		return -1;
 	}
 
-	memset(&pkg_ap, 0, sizeof(pkg_ap)); // unsafe_function_ignore: memset
-	memset(&pkg_mcu, 0, sizeof(pkg_mcu)); // unsafe_function_ignore: memset
+	memset(&pkg_ap, 0, sizeof(pkg_ap));
+	memset(&pkg_mcu, 0, sizeof(pkg_mcu));
 
 	pkg_ap.tag = TAG_AOD;
 	pkg_ap.cmd = CMD_CMN_CONFIG_REQ;
 	pkt.subtype = SUB_CMD_AOD_STOP_REQ;
 	pkg_ap.wr_buf = &hd[1];
 	pkg_ap.wr_len = sizeof(pkt.subtype);
-	/* set is_lock be false to avoid blocking face lock */
-	ret = hisi_aod_sendcmd2SensorHub(&pkg_ap, &pkg_mcu, 0);
+	ret = hisi_aod_sendcmd2SensorHub(&pkg_ap, &pkg_mcu, 1);
 	if (ret) {
 		HISI_AOD_ERR("tag is %d, cmd is %d\n", pkg_ap.tag, pkg_ap.cmd);
 	}
@@ -972,8 +970,8 @@ static int hisi_aod_end_updating_req(aod_display_pos_t *pos_data, uint32_t aod_t
 
 	HISI_AOD_INFO("+.\n");
 
-	memset(&pkg_ap, 0, sizeof(pkg_ap)); // unsafe_function_ignore: memset
-	memset(&pkg_mcu, 0, sizeof(pkg_mcu)); // unsafe_function_ignore: memset
+	memset(&pkg_ap, 0, sizeof(pkg_ap));
+	memset(&pkg_mcu, 0, sizeof(pkg_mcu));
 
 	if(NULL == pos_data) {
 		HISI_AOD_ERR("pos_data is NULL Pointer\n");
@@ -1017,8 +1015,8 @@ static int hisi_aod_start_updating_req(aod_display_pos_t *display_pos)
 
 	HISI_AOD_INFO("+.\n");
 
-	memset(&pkg_ap, 0, sizeof(pkg_ap)); // unsafe_function_ignore: memset
-	memset(&pkg_mcu, 0, sizeof(pkg_mcu)); // unsafe_function_ignore: memset
+	memset(&pkg_ap, 0, sizeof(pkg_ap));
+	memset(&pkg_mcu, 0, sizeof(pkg_mcu));
 
 	pkg_ap.tag = TAG_AOD;
 	pkg_ap.cmd = CMD_CMN_CONFIG_REQ;
@@ -1085,6 +1083,8 @@ static int hisi_set_bitmap_size(struct aod_data_t *aod_data, void __user* arg)
 			return -EINVAL;
 		}
 	}
+
+	//HISI_AOD_INFO("bitmap_count %u.\n", bitmap_count);
 
 	aod_data->bitmaps_size_mcu.bitmap_type_count = bitmap_count;
 	for (i = 0; i < bitmap_count; i ++) {
@@ -1171,7 +1171,7 @@ static int hisi_set_display_space(struct aod_data_t *aod_data, const void __user
 	display_spaces.display_space_count = (unsigned char)display_spaces_temp.display_space_count - DIFF_NUMBER;
 	display_spaces.size = display_spaces_temp.size;
 	display_spaces.pd_logo_final_pos_y = display_spaces_temp.display_spaces[display_spaces.display_space_count].y_start;
-	memcpy(display_spaces.display_spaces, display_spaces_temp.display_spaces, sizeof(display_spaces.display_spaces[0])*MAX_DISPLAY_SPACE_COUNT); // unsafe_function_ignore: memcpy
+	memcpy(display_spaces.display_spaces, display_spaces_temp.display_spaces, sizeof(display_spaces.display_spaces[0])*MAX_DISPLAY_SPACE_COUNT);
 
 	if((display_spaces.dual_clocks < 0)
 		|| (display_spaces.display_space_count <= 0)
@@ -1553,6 +1553,8 @@ static int hisi_start_updating(struct aod_data_t *aod_data, void __user* arg)
 
 	HISI_AOD_INFO("+.\n");
 
+	//aod_data->aod_status = 1;
+
 	if (NULL == arg) {
 		HISI_AOD_ERR("arg NULL Pointer!\n");
 		return -EINVAL;
@@ -1613,15 +1615,6 @@ static int hisi_set_max_and_min_backlight(struct aod_data_t *aod_data, const voi
 		HISI_AOD_ERR("hisifd NULL Pointer!\n");
 		return -EINVAL;
 	}
-
-	// UD Finger FWK set min_backlight = max_backlight+1, for HBM ahead solution
-	if (backlight_config.min_backlight == (backlight_config.max_backlight + 1)) {
-		hisifd->hbm_need_to_open = true;
-		g_max_backlight_from_app = backlight_config.max_backlight;
-		HISI_AOD_INFO("hisifd->hbm_need_to_open = true\n");
-		return ret;
-	}
-
 	if((backlight_config.max_backlight < 0)||(backlight_config.min_backlight < 0))
 	{
 		HISI_AOD_ERR("max_backlight or min_backlight is invlid!\n");
@@ -2197,6 +2190,7 @@ static int hisi_aod_probe(struct platform_device *pdev)
 	init_completion(&iom3_status_completion);
 
 	init_timer(&my_timer);
+	//my_timer.expires = jiffies + 1000;
 	my_timer.function = (void *)aod_timer_process;
 	my_timer.data = 0;
 

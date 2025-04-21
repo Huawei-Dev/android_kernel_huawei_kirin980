@@ -459,6 +459,7 @@ static int lcd_check_support(int index)
 		case FRAME_UPDATE_INDEX:
 			return disp_info->vr_support;
 		case MIPI_DSI_CLK_UPT_INDEX:
+			//return hisifd->panel_info.dsi_bit_clk_upt_support;
 		case FPS_SCENCE_INDEX:
 			return disp_info->fps.support;
 		case ALPM_FUNCTION_INDEX:

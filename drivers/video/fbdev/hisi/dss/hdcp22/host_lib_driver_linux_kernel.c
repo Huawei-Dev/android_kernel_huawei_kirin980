@@ -156,19 +156,19 @@ static void release_resources(esm_device *esm)
 		return;
 	}
 
-	if (esm->code != NULL)
+	if (esm->code)
 	{
 		iounmap(esm->code);
 		esm->code = NULL;
 	}
 
-	if (esm->data != NULL)
+	if (esm->data)
 	{
 		iounmap(esm->data);
 		esm->code = NULL;
 	}
 
-	if (esm->hpi != NULL)
+	if (esm->hpi)
 	{
 		iounmap(esm->hpi);
 		esm->code = NULL;
@@ -756,7 +756,7 @@ static long cmd_esm_open(struct file *f, esm_hld_ioctl_esm_open *request)
 					//esm->code = phys_to_virt(esm->code_base);
 					esm->code = ioremap_wc(esm->code_base, esm->code_size);
 					//HISI_FB_INFO( "Code is at virtual address 0x%lx\n", (ulong)(esm->code));
-					if (esm->code == NULL)
+					if (!esm->code)
 					{
 						ret_val = HL_DRIVER_NO_MEMORY;
 						goto ErrorExit;
@@ -788,7 +788,7 @@ static long cmd_esm_open(struct file *f, esm_hld_ioctl_esm_open *request)
 					//esm->data = phys_to_virt(esm->data_base);
 					esm->data = ioremap_wc(esm->data_base, esm->data_size);
 					//HISI_FB_INFO( "Data is at virtual address 0x%lx\n", (ulong)(esm->data));
-					if (esm->data == NULL)
+					if (!esm->data)
 					{
 						ret_val = HL_DRIVER_NO_MEMORY;
 						goto ErrorExit;
@@ -827,7 +827,7 @@ static long cmd_esm_open(struct file *f, esm_hld_ioctl_esm_open *request)
 				esm->hpi_mem_region_requested = 1;
 				esm->hpi = ioremap_nocache(esm->hpi_base, esm->hpi_size);
 				HISI_FB_INFO("%s ioremap_nocache over; esm->hpi =%pK \n", MY_TAG, esm->hpi);
-				if (esm->hpi == NULL)
+				if (!esm->hpi)
 				{
 					ret_val = HL_DRIVER_NO_MEMORY;
 					goto ErrorExit;
@@ -1092,19 +1092,19 @@ static long useless_ioctl(struct file *f, unsigned int cmd, unsigned long arg)
 	{
 		case ESM_HLD_IOCTL_LOAD_CODE:
 			ret = cmd_load_code((esm_device *)f->private_data,
-		                  (esm_hld_ioctl_load_code *)(uintptr_t)arg);
+		                  (esm_hld_ioctl_load_code *)arg);
 			break;
 		case ESM_HLD_IOCTL_GET_CODE_PHYS_ADDR:
 			ret = cmd_get_code_phys_addr((esm_device *)f->private_data,
-		                           (esm_hld_ioctl_get_code_phys_addr *)(uintptr_t)arg);
+		                           (esm_hld_ioctl_get_code_phys_addr *)arg);
 			break;
 		case ESM_HLD_IOCTL_GET_DATA_PHYS_ADDR:
 			ret = cmd_get_data_phys_addr((esm_device *)f->private_data,
-		                           (esm_hld_ioctl_get_data_phys_addr *)(uintptr_t)arg);
+		                           (esm_hld_ioctl_get_data_phys_addr *)arg);
 			break;
 		case ESM_HLD_IOCTL_GET_DATA_SIZE:
 			ret = cmd_get_data_size((esm_device *)f->private_data,
-		                      (esm_hld_ioctl_get_data_size *)(uintptr_t)arg);
+		                      (esm_hld_ioctl_get_data_size *)arg);
 			break;
 		default:
 			HISI_FB_ERR( "%sUnknown IOCTL request %d.\n", MY_TAG, cmd);
@@ -1145,35 +1145,35 @@ static long device_ioctl(struct file *f, unsigned int cmd, unsigned long arg)
 			break;*/
 		case ESM_HLD_IOCTL_HPI_READ:
 			ret = cmd_hpi_read((esm_device *)f->private_data,
-		                 (esm_hld_ioctl_hpi_read *)(uintptr_t)arg);
+		                 (esm_hld_ioctl_hpi_read *)arg);
 			break;
 		case ESM_HLD_IOCTL_HPI_WRITE:
 			ret = cmd_hpi_write((esm_device *)f->private_data,
-		                  (esm_hld_ioctl_hpi_write *)(uintptr_t)arg);
+		                  (esm_hld_ioctl_hpi_write *)arg);
 			break;
 		case ESM_HLD_IOCTL_DATA_READ:
 			ret = cmd_data_read((esm_device *)f->private_data,
-		                  (esm_hld_ioctl_data_read *)(uintptr_t)arg);
+		                  (esm_hld_ioctl_data_read *)arg);
 			break;
 		case ESM_HLD_IOCTL_DATA_WRITE:
 			ret = cmd_data_write((esm_device *)f->private_data,
-		                   (esm_hld_ioctl_data_write *)(uintptr_t)arg);
+		                   (esm_hld_ioctl_data_write *)arg);
 			break;
 		case ESM_HLD_IOCTL_DATA_SET:
 			ret = cmd_data_set((esm_device *)f->private_data,
-		                 (esm_hld_ioctl_data_set *)(uintptr_t)arg);
+		                 (esm_hld_ioctl_data_set *)arg);
 			break;
 		case ESM_HLD_IOCTL_ESM_OPEN:
-			ret = cmd_esm_open(f, (esm_hld_ioctl_esm_open *)(uintptr_t)arg);
+			ret = cmd_esm_open(f, (esm_hld_ioctl_esm_open *)arg);
 			break;
 		case ESM_HLD_IOCTL_ESM_START:
-			ret = cmd_esm_start((esm_device *)f->private_data, (esm_hld_ioctl_esm_start *)(uintptr_t)arg);
+			ret = cmd_esm_start((esm_device *)f->private_data, (esm_hld_ioctl_esm_start *)arg);
 			break;
 		case ESM_HLD_IOCTL_GET_TE_INFO:
-			ret = cmd_get_te_info((esm_device *)f->private_data, (esm_hld_ioctl_get_te_info*)(uintptr_t)arg);
+			ret = cmd_get_te_info((esm_device *)f->private_data, (esm_hld_ioctl_get_te_info*)arg);
 			break;
 		case ESM_HLD_IOCTL_STATE_SET:
-			ret = cmd_set_hdcp_state((esm_device *)f->private_data, (esm_hld_ioctl_state_set*)(uintptr_t)arg);
+			ret = cmd_set_hdcp_state((esm_device *)f->private_data, (esm_hld_ioctl_state_set*)arg);
 			break;
 		default:
 			ret = useless_ioctl(f, cmd, arg);

@@ -135,7 +135,7 @@ int hisi_pwm_on(struct platform_device *pdev)
 	outp32(hisifd->peri_crg_base + PERRSTDIS2, 0x1);
 
 	clk_tmp = g_pwm_clk;
-	if (clk_tmp != NULL) {
+	if (clk_tmp) {
 		ret = clk_prepare(clk_tmp);
 		if (ret) {
 			HISI_FB_ERR("dss_pwm_clk clk_prepare failed, error=%d!\n", ret);
@@ -192,7 +192,7 @@ int hisi_pwm_off(struct platform_device *pdev)
 		ARRAY_SIZE(pwm_pinctrl_lowpower_cmds));
 
 	clk_tmp = g_pwm_clk;
-	if (clk_tmp != NULL) {
+	if (clk_tmp) {
 		clk_disable(clk_tmp);
 		clk_unprepare(clk_tmp);
 	}
@@ -220,7 +220,7 @@ static int hisi_pwm_probe(struct platform_device *pdev)
 	g_pwm_pdev = pdev;
 
 	np = of_find_compatible_node(NULL, NULL, DTS_COMP_PWM_NAME);
-	if (np == NULL) {
+	if (!np) {
 		dev_err(&pdev->dev, "NOT FOUND device node %s!\n", DTS_COMP_PWM_NAME);
 		ret = -ENXIO;
 		goto err_return;
@@ -285,7 +285,7 @@ static int hisi_pwm_remove(struct platform_device *pdev)
 		ARRAY_SIZE(pwm_pinctrl_finit_cmds));
 
 	clk_tmp = g_pwm_clk;
-	if (clk_tmp != NULL) {
+	if (clk_tmp) {
 		clk_put(clk_tmp);
 		clk_tmp = NULL;
 	}

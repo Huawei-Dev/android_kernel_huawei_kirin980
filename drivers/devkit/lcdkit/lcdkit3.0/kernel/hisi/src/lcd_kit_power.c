@@ -204,7 +204,7 @@ void lcd_kit_gpio_tx(uint32_t type, uint32_t op)
 	int i = 0;
 	struct gpio_power_arra* gpio_cm = NULL;
 
-	if (lcd_kit_get_power_status()) {
+	if ((lcd_kit_get_power_status()) && (type != LCD_KIT_AOD)) {
 		LCD_KIT_INFO("panel is power on, not need operate gpio, type = %d, op = %d\n", type, op);
 		return;
 	}
@@ -227,9 +227,6 @@ void lcd_kit_gpio_tx(uint32_t type, uint32_t op)
 			break;
 		case LCD_KIT_BL:
 			g_lcd_kit_gpio = power_hdl->lcd_backlight.buf[1];
-			break;
-		case LCD_KIT_VDD:
-			g_lcd_kit_gpio = power_hdl->lcd_vdd.buf[POWER_NUMBER];
 			break;
 		case LCD_KIT_AOD:
 			g_lcd_kit_gpio = power_hdl->lcd_aod.buf[1];
@@ -494,43 +491,6 @@ int lcd_kit_power_finit(struct platform_device* pdev)
 	}
 	return ret;
 }
-
-static int lcd_power_set_vdd_vol(void)
-{
-	int ret = LCD_KIT_OK;
-
-	if (power_hdl->lcd_vdd.buf == NULL) {
-		LCD_KIT_ERR("vdd buf is null\n");
-		return LCD_KIT_FAIL;
-	}
-	if (power_hdl->lcd_vdd.buf[POWER_TYPE] == REGULATOR_MODE &&
-		power_hdl->lcd_vdd.buf[POWER_NUM] > 0) {
-		lcd_kit_power_set(vdd_init_cmds, ARRAY_SIZE(vdd_init_cmds));
-		ret = vcc_cmds_tx(NULL, &vdd_init_cmds[1], 1);
-		if (ret != 0) {
-			LCD_KIT_ERR("LCD vdd init failed!\n");
-			return LCD_KIT_FAIL;
-		}
-	}
-	return ret;
-}
-
-int lcd_power_set_vol(uint32_t type)
-{
-	int ret;
-
-	switch (type) {
-	case LCD_KIT_VDD:
-		ret = lcd_power_set_vdd_vol();
-		break;
-	default:
-		LCD_KIT_ERR("not support type:%d\n", type);
-		ret = LCD_KIT_FAIL;
-		break;
-	}
-	return ret;
-}
-
 /*****************debug interface********************/
 
 int lcd_kit_dbg_set_voltage(void)

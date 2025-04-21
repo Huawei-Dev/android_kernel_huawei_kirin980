@@ -31,7 +31,7 @@ extern struct platform_device *g_hdss_platform_device;
 
 static inline struct device *__hdss_get_dev(void)
 {
-	if (g_hdss_platform_device == NULL) {
+	if (!g_hdss_platform_device) {
 		pr_err("g_hdss_platform_device is null.\n");
 		return NULL;
 	}
@@ -46,7 +46,7 @@ bool hisi_dss_check_addr_validate(dss_img_t *img);
 struct dma_buf *hisi_dss_get_buffer_by_sharefd(uint64_t *iova, int fd, uint32_t size);
 void hisi_dss_put_buffer_by_dmabuf(uint64_t iova, struct dma_buf *dmabuf);
 int hisi_dss_buffer_map_iova(struct fb_info *info, void __user *arg);
-int hisi_dss_buffer_unmap_iova(struct fb_info *info, const void __user *arg);
+int hisi_dss_buffer_unmap_iova(struct fb_info *info, void __user *arg);
 #endif
 
 int hisi_dss_iommu_enable(struct platform_device *pdev);

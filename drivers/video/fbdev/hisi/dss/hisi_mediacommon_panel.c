@@ -72,12 +72,12 @@ static int hisi_mediacommon_panel_remove(struct platform_device *pdev)
 	int ret = 0;
 	struct hisi_fb_data_type *hisifd = NULL;
 
-	if (pdev == NULL) {
+	if (!pdev) {
 		return 0;
 	}
 	hisifd = platform_get_drvdata(pdev);
 
-	if (hisifd == NULL) {
+	if (!hisifd) {
 		return 0;
 	}
 

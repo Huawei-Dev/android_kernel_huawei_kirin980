@@ -193,11 +193,8 @@ struct lcp_info {
 
     //add for 980
     uint32_t xcc_pre_enable;
-    uint32_t xcc_dual_lcd_top;
-    uint32_t xcc_dual_lcd_left;
-    uint32_t xcc_dual_lcd_bot;
-    uint32_t xcc_dual_lcd_right;
-
+    uint32_t xcc_dual_lcd_top_left;
+    uint32_t xcc_dual_lcd_bot_right;
 
     uint32_t igm_enable;
     compat_pointer(gmp_table_low32); //gmp lut length is 17*17*17
@@ -214,11 +211,8 @@ struct gamma_info {
 
     //add for 980
     uint32_t pre_enable;
-    uint32_t gamma_dual_lcd_top;
-    uint32_t gamma_dual_lcd_left;
-    uint32_t gamma_dual_lcd_bot;
-    uint32_t gamma_dual_lcd_right;
-
+    uint32_t gamma_dual_lcd_top_left;
+    uint32_t gamma_dual_lcd_bot_right;
 
     uint32_t para_mode;
     compat_pointer(gamma_r_table); //gamma lut length 257
@@ -298,15 +292,6 @@ struct hiace_info {
     compat_pointer(loglum_eotf_table);
     compat_pointer(luma_gamma_table);
 
-};
-
-struct gamma_xcc_roi_info {
-    bool gamma_pre_enable;
-    bool xcc_pre_enable;
-    uint32_t roi_top;
-    uint32_t roi_left;
-    uint32_t roi_bot;
-    uint32_t roi_right;
 };
 
 struct dss_effect {

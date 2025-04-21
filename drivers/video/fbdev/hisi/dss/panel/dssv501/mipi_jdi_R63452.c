@@ -1175,6 +1175,7 @@ static uint32_t check_jdi_R63452_lcd_pwr_state(struct hisi_fb_data_type *hisifd)
 	while (status & 0x10) {
 		udelay(50);
 		if (++try_times > 100) {
+			try_times = 0;
 			HISI_FB_ERR("Read lcd power status timeout!\n");
 			break;
 		}
@@ -1412,14 +1413,14 @@ static int mipi_jdi_R63452_panel_set_display_region(struct platform_device *pdev
 			dirty->x, dirty->y, dirty->w, dirty->h);
 	}
 
-	lcd_disp_x[1] = ((uint32_t)dirty->x >> 8) & 0xff;
-	lcd_disp_x[2] = (uint32_t)dirty->x & 0xff;
-	lcd_disp_x[3] = (((uint32_t)dirty->x + (uint32_t)dirty->w - 1) >> 8) & 0xff;
-	lcd_disp_x[4] = ((uint32_t)dirty->x + (uint32_t)dirty->w - 1) & 0xff;
-	lcd_disp_y[1] = ((uint32_t)dirty->y >> 8) & 0xff;
-	lcd_disp_y[2] = (uint32_t)dirty->y & 0xff;
-	lcd_disp_y[3] = (((uint32_t)dirty->y + (uint32_t)dirty->h - 1) >> 8) & 0xff;
-	lcd_disp_y[4] = ((uint32_t)dirty->y + (uint32_t)dirty->h - 1) & 0xff;
+	lcd_disp_x[1] = (dirty->x >> 8) & 0xff;
+	lcd_disp_x[2] = dirty->x & 0xff;
+	lcd_disp_x[3] = ((dirty->x + dirty->w - 1) >> 8) & 0xff;
+	lcd_disp_x[4] = (dirty->x + dirty->w - 1) & 0xff;
+	lcd_disp_y[1] = (dirty->y >> 8) & 0xff;
+	lcd_disp_y[2] = dirty->y & 0xff;
+	lcd_disp_y[3] = ((dirty->y + dirty->h - 1) >> 8) & 0xff;
+	lcd_disp_y[4] = (dirty->y + dirty->h - 1) & 0xff;
 
 	mipi_dsi_cmds_tx(set_display_address, \
 		ARRAY_SIZE(set_display_address), hisifd->mipi_dsi0_base);

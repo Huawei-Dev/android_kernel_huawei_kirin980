@@ -49,7 +49,7 @@ static void hisifb_masklayer_backlight_notify(struct hisi_fb_data_type *hisifd)
 	}
 
 	if (hisifd->index == PRIMARY_PANEL_IDX) {
-		if (hisifd->masklayer_backlight_notify_wq != NULL) {
+		if (hisifd->masklayer_backlight_notify_wq) {
 			queue_work(hisifd->masklayer_backlight_notify_wq, &hisifd->masklayer_backlight_notify_work);
 		}
 	}
@@ -71,9 +71,7 @@ void hisifb_masklayer_backlight_notify_handler(struct work_struct *work)
 		return;
 	}
 
-	//CONFIG_SH_AOD_ENABLE
-	if ((hisifd->index == PRIMARY_PANEL_IDX) && ((g_dss_version_tag == FB_ACCEL_DSSV501)
-        || (g_dss_version_tag == FB_ACCEL_DSSV330) || (g_dss_version_tag == FB_ACCEL_DSSV320) || (g_dss_version_tag == FB_ACCEL_DSSV510))) {
+	if ((hisifd->index == PRIMARY_PANEL_IDX) && (g_dss_version_tag == FB_ACCEL_DSSV501)) {
 		if (g_debug_online_vsync) {
 			HISI_FB_DEBUG("flag=%d, vsync_count=%d.\n", hisifd->masklayer_maxbacklight_flag, vsync_count);
 		}
@@ -140,8 +138,8 @@ void hisifb_vsync_isr_handler(struct hisi_fb_data_type *hisifd)
 				if (hisifd->panel_info.fps_updt_support
 					&& (!hisifd->panel_info.fps_updt_panel_only)
 					&& pdata->lcd_fps_scence_handle) {
-					pdata->lcd_fps_scence_handle(hisifd->pdev, LCD_FPS_SCENCE_IDLE);
-				}
+						pdata->lcd_fps_scence_handle(hisifd->pdev, LCD_FPS_SCENCE_IDLE);
+					}
 			}
 
 			if (vsync_ctrl->vsync_ctrl_expire_count == 0)
@@ -150,7 +148,7 @@ void hisifb_vsync_isr_handler(struct hisi_fb_data_type *hisifd)
 		spin_unlock(&vsync_ctrl->spin_lock);
 	}
 
-	if (vsync_ctrl->vsync_report_fnc != NULL) {
+	if (vsync_ctrl->vsync_report_fnc) {
 		if (hisifd->vsync_ctrl.vsync_enabled) {
 			buffer_updated = atomic_dec_return(&(vsync_ctrl->buffer_updated));
 		} else {
@@ -350,7 +348,7 @@ static void hisifb_vsync_ctrl_workqueue_handler(struct work_struct *work)
 		HISI_FB_DEBUG("fb%d, dss clk off!\n", hisifd->index);
 
 		spin_lock_irqsave(&(vsync_ctrl->spin_lock), flags);
-		if (pdata->vsync_ctrl != NULL) {
+		if (pdata->vsync_ctrl) {
 			pdata->vsync_ctrl(hisifd->pdev, 0);
 		} else {
 			HISI_FB_ERR("fb%d, vsync_ctrl not supported!\n", hisifd->index);
@@ -364,7 +362,7 @@ static void hisifb_vsync_ctrl_workqueue_handler(struct work_struct *work)
 		}
 
 		if (hisifd->panel_info.vsync_ctrl_type & VSYNC_CTRL_VCC_OFF) {
-			if (hisifd->lp_fnc != NULL)
+			if (hisifd->lp_fnc)
 				hisifd->lp_fnc(hisifd, true);
 		}
 
@@ -377,13 +375,11 @@ static void hisifb_vsync_ctrl_workqueue_handler(struct work_struct *work)
 		if (hisifd->panel_info.vsync_ctrl_type & VSYNC_CTRL_VCC_OFF) {
 			dpe_regulator_disable(hisifd);
 		}
-
-		hisifd->enter_idle = true;
 		//hisifb_buf_sync_suspend(hisifd);
 	}
 	mutex_unlock(&(vsync_ctrl->vsync_lock));
 
-	if (vsync_ctrl->vsync_report_fnc != NULL) {
+	if (vsync_ctrl->vsync_report_fnc) {
 		if (is_mipi_video_panel(hisifd)) {
 			vsync_ctrl->vsync_report_fnc(0);
 		} else {
@@ -432,7 +428,7 @@ void hisifb_vsync_register(struct platform_device *pdev)
 	atomic_set(&(vsync_ctrl->buffer_updated), 1);
 	vsync_ctrl->vsync_report_fnc = mali_kbase_pm_report_vsync;
 
-	if (hisifd->sysfs_attrs_append_fnc != NULL) {
+	if (hisifd->sysfs_attrs_append_fnc) {
 		hisifd->sysfs_attrs_append_fnc(hisifd, &dev_attr_vsync_event.attr);
 		hisifd->sysfs_attrs_append_fnc(hisifd, &dev_attr_vsync_timestamp.attr);
 	}
@@ -538,12 +534,12 @@ void hisifb_activate_vsync(struct hisi_fb_data_type *hisifd)
 
 		if (hisifd->panel_info.vsync_ctrl_type & VSYNC_CTRL_CLK_OFF) {
 			mipi_dsi_clk_enable(hisifd);
-			(void)dpe_common_clk_enable(hisifd);
-			(void)dpe_inner_clk_enable(hisifd);
+			dpe_common_clk_enable(hisifd);
+			dpe_inner_clk_enable(hisifd);
 		}
 
 		if (hisifd->panel_info.vsync_ctrl_type & VSYNC_CTRL_VCC_OFF) {
-			if (hisifd->lp_fnc != NULL)
+			if (hisifd->lp_fnc)
 				hisifd->lp_fnc(hisifd, false);
 		}
 
@@ -571,7 +567,7 @@ void hisifb_activate_vsync(struct hisi_fb_data_type *hisifd)
 	}
 
 	if (clk_enabled) {
-		if (pdata->vsync_ctrl != NULL) {
+		if (pdata->vsync_ctrl) {
 			pdata->vsync_ctrl(hisifd->pdev, 1);
 		} else {
 			HISI_FB_ERR("fb%d, vsync_ctrl not supported!\n", hisifd->index);
@@ -623,7 +619,7 @@ void hisifb_deactivate_vsync(struct hisi_fb_data_type *hisifd)
 	mutex_unlock(&(vsync_ctrl->vsync_lock));
 }
 
-int hisifb_vsync_ctrl(struct fb_info *info, const void __user *argp)
+int hisifb_vsync_ctrl(struct fb_info *info, void __user *argp)
 {
 	int ret = 0;
 	struct hisi_fb_data_type *hisifd = NULL;

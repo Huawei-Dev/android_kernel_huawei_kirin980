@@ -319,7 +319,7 @@ static int get_jdi_project_id_nt36860c(char *out)
 	}
 
 	mipi_dsi_cmds_tx(page22_cmd, ARRAY_SIZE(page22_cmd), hisifd_primary->mipi_dsi0_base);
-	(void)mipi_dsi_lread_reg(read_value, project_id_cmd, 10, hisifd_primary->mipi_dsi0_base);
+	mipi_dsi_lread_reg(read_value, project_id_cmd, 10, hisifd_primary->mipi_dsi0_base);
 	mipi_dsi_cmds_tx(page10_cmd, ARRAY_SIZE(page10_cmd), hisifd_primary->mipi_dsi0_base);
 
 	for (i = 0; i < (10 + 3) / 4; i++) {

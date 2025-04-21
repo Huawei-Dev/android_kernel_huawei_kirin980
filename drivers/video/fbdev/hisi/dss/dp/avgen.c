@@ -254,7 +254,7 @@ void dptx_disable_sdp(struct dp_ctrl *dptx, uint32_t *payload)
 
 void dptx_enable_sdp(struct dp_ctrl *dptx, struct sdp_full_data *data)
 {
-	uint32_t i;
+	int i;
 	uint32_t reg;
 	int reg_num;
 	uint32_t header;
@@ -417,9 +417,9 @@ void dptx_video_reset(struct dp_ctrl *dptx, int enable, int stream)
 
 	reg = (uint32_t)dptx_readl(dptx, DPTX_SRST_CTRL);
 	if (enable)
-		reg |= DPTX_SRST_VIDEO_RESET_N((uint32_t)stream);
+		reg |= DPTX_SRST_VIDEO_RESET_N(stream);
 	else
-		reg &= ~DPTX_SRST_VIDEO_RESET_N((uint32_t)stream);
+		reg &= ~DPTX_SRST_VIDEO_RESET_N(stream);
 	dptx_writel(dptx, DPTX_SRST_CTRL, reg);
 }
 
@@ -610,7 +610,7 @@ int dptx_change_video_mode_user(struct dp_ctrl *dptx)
 {
 	struct video_params *vparams;
 	int retval;
-	bool needchanged = false;
+	bool needchanged;
 
 	if (dptx == NULL) {
 		HISI_FB_ERR("[DP] NULL Pointer\n");
@@ -618,6 +618,7 @@ int dptx_change_video_mode_user(struct dp_ctrl *dptx)
 	}
 
 	vparams = &dptx->vparams;
+	needchanged = FALSE;
 	if (!dptx->same_source) {
 		if((vparams->mdtd.h_active > FHD_TIMING_H_ACTIVE) || (vparams->mdtd.v_active > FHD_TIMING_V_ACTIVE)) {
 			vparams->video_format = VCEA;

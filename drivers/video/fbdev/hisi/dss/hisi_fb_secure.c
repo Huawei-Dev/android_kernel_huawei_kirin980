@@ -398,7 +398,7 @@ void hisi_drm_layer_online_config(struct hisi_fb_data_type *hisifd, dss_overlay_
 		return;
 	}
 
-	pov_h_block_infos = (dss_overlay_block_t *)(uintptr_t)(pov_req->ov_block_infos_ptr);
+	pov_h_block_infos = (dss_overlay_block_t *)(pov_req->ov_block_infos_ptr);
 	for (m = 0; m < (int)pov_req->ov_block_nums; m++) {
 		pov_h_block = &(pov_h_block_infos[m]);
 
@@ -463,7 +463,7 @@ void hisi_drm_layer_online_clear(struct hisi_fb_data_type *hisifd, dss_overlay_t
 	}
 
 	secure_ctrl = &(hisifd->secure_ctrl);//lint !e838
-	pov_h_block_infos = (dss_overlay_block_t *)(uintptr_t)(pov_req_prev->ov_block_infos_ptr);//lint !e838
+	pov_h_block_infos = (dss_overlay_block_t *)(pov_req_prev->ov_block_infos_ptr);//lint !e838
 
 	for (i = 0; i < (int)pov_req_prev->ov_block_nums; i++) {//lint !e838
 		pov_h_block = &(pov_h_block_infos[i]);
@@ -525,7 +525,7 @@ void hisi_drm_layer_offline_config(struct hisi_fb_data_type *hisifd, dss_overlay
 	secure_ctrl = &(hisifd_list[PRIMARY_PANEL_IDX]->secure_ctrl);
 	compose_mode = (pov_req->ovl_idx == DSS_OVL2) ? OFFLINE_COMPOSE_MODE : OVL3_OFFLINE_COMPOSE_MODE;
 
-	pov_h_block_infos = (dss_overlay_block_t *)(uintptr_t)pov_req->ov_block_infos_ptr;
+	pov_h_block_infos = (dss_overlay_block_t *)pov_req->ov_block_infos_ptr;
 	if (pov_h_block_infos == NULL) {
 		HISI_FB_ERR("fb%d, offline config invalid pov_h_block_infos!\n", hisifd->index);
 		return ;
@@ -600,7 +600,7 @@ void hisi_drm_layer_offline_clear(struct hisi_fb_data_type *hisifd, dss_overlay_
 	secure_ctrl = &(hisifd_list[PRIMARY_PANEL_IDX]->secure_ctrl);//lint !e838
 	compose_mode = (pov_req->ovl_idx == DSS_OVL2) ? OFFLINE_COMPOSE_MODE : OVL3_OFFLINE_COMPOSE_MODE;
 
-	pov_h_block_infos = (dss_overlay_block_t *)(uintptr_t)pov_req->ov_block_infos_ptr;//lint !e838
+	pov_h_block_infos = (dss_overlay_block_t *)pov_req->ov_block_infos_ptr;//lint !e838
 	if (pov_h_block_infos == NULL) {
 		HISI_FB_ERR("fb%d, drm layer offline clear invalid pov_h_block_infos!\n", hisifd->index);
 		return ;
@@ -652,7 +652,7 @@ static bool check_tui_layer_chn_cfg_ok(struct hisi_fb_data_type *hisifd)
 	dss_overlay_block_t *pov_h_block_infos = NULL;
 
 	pov_req_prev = &(hisifd->ov_req_prev);
-	pov_h_block_infos = (dss_overlay_block_t *)(uintptr_t)(pov_req_prev->ov_block_infos_ptr);
+	pov_h_block_infos = (dss_overlay_block_t *)(pov_req_prev->ov_block_infos_ptr);
 
 	/* gpu compose only one block */
 	if (pov_req_prev->ov_block_nums > 1) {
@@ -667,6 +667,11 @@ static bool check_tui_layer_chn_cfg_ok(struct hisi_fb_data_type *hisifd)
 	/* gpu compose only one layer */
 	pov_h_block = &(pov_h_block_infos[0]);
 	if (pov_h_block->layer_nums > 1) {
+		return false;
+	}
+
+	if (pov_h_block->layer_infos == NULL) { //lint !e774
+		HISI_FB_INFO("pov_h_block->layer_infos is null!\n");
 		return false;
 	}
 
@@ -751,7 +756,7 @@ void hisifb_secure_register(struct platform_device *pdev)
 	secure_ctrl->secure_created = 1;
 
 	if (hisifd->index == PRIMARY_PANEL_IDX) {
-		if (hisifd->sysfs_attrs_append_fnc != NULL)
+		if (hisifd->sysfs_attrs_append_fnc)
 			hisifd->sysfs_attrs_append_fnc(hisifd, &dev_attr_dss_secure.attr);
 	}
 }

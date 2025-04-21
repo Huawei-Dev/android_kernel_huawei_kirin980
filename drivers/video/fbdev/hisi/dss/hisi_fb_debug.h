@@ -92,19 +92,18 @@ extern int g_debug_ldi_underflow_clear;
 
 extern int g_debug_panel_mode_switch;
 extern int g_debug_mmu_error;
-extern int g_debug_underflow_error;
 extern int g_debug_set_reg_val;
 extern int g_debug_online_vsync;
 extern int g_debug_ovl_online_composer;
 extern int g_debug_ovl_online_composer_hold;
 extern int g_debug_ovl_online_composer_return;
-extern uint32_t g_debug_ovl_online_composer_timediff;
+extern int g_debug_ovl_online_composer_timediff;
 extern int g_debug_ovl_online_composer_time_threshold;
 
 extern int g_debug_ovl_offline_composer;
 extern int g_debug_ovl_block_composer;
 extern int g_debug_ovl_offline_composer_hold;
-extern uint32_t g_debug_ovl_offline_composer_timediff;
+extern int g_debug_ovl_offline_composer_timediff;
 extern int g_debug_ovl_offline_composer_time_threshold;
 extern int g_debug_ovl_offline_block_num;
 extern int g_debug_ovl_copybit_composer;
@@ -134,7 +133,6 @@ extern int g_dss_effect_sharpness2D_en;
 extern int g_dss_effect_acm_ce_en;
 extern int g_debug_dump_mmbuf;
 extern int g_debug_dump_iova;
-extern int g_debug_online_play_bypass;
 extern uint32_t g_mmbuf_addr_test;
 extern uint32_t g_dump_sensorhub_aod_hwlock;
 #if !defined(CONFIG_HISI_FB_3650) && !defined (CONFIG_HISI_FB_6250)
@@ -143,14 +141,11 @@ extern uint32_t g_dss_min_bandwidth_inbusbusy;
 
 extern uint32_t g_err_status;
 extern int g_debug_enable_lcd_sleep_in;
-extern uint32_t g_underflow_count;
+
 
 #if defined (CONFIG_HUAWEI_DSM)
 extern struct dsm_client *lcd_dclient;
 #endif
-
-void hisi_dss_underflow_dump_cmdlist(struct hisi_fb_data_type *hisifd,
-	dss_overlay_t *pov_req_prev, dss_overlay_t *pov_req_prev_prev);
 
 void hisifb_debug_register(struct platform_device *pdev);
 void hisifb_debug_unregister(struct platform_device *pdev);

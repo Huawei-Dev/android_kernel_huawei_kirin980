@@ -41,7 +41,7 @@ static const uint8_t edid_v1_header[8] = {0x00, 0xff, 0xff, 0xff,
 #define GET_CEA_DATA_BLOCK_LEN( x ) \
 			((uint8_t)0x1F & x[0])
 
-#define EDID_LENGTH                0x80 //lint !e547
+#define EDID_LENGTH                0x80
 
 #define EDID_HEADER	               0x00
 #define EDID_HEADER_END	           0x07

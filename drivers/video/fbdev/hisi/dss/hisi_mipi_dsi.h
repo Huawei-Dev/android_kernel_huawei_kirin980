@@ -201,7 +201,6 @@ int mipi_dsi_clk_enable(struct hisi_fb_data_type *hisifd);
 int mipi_dsi_clk_disable(struct hisi_fb_data_type *hisifd);
 int mipi_dsi_bit_clk_upt_isr_handler(struct hisi_fb_data_type *hisifd);
 void mipi_dsi_reset(struct hisi_fb_data_type *hisifd);
-int mipi_dsi_reset_underflow_clear(struct hisi_fb_data_type *hisifd);
 void mipi_init(struct hisi_fb_data_type *hisifd, char __iomem *mipi_dsi_base);
 
 int mipi_dsi_cmds_tx_with_check_fifo(struct dsi_cmd_desc *cmds, int cnt, char __iomem *dsi_base);

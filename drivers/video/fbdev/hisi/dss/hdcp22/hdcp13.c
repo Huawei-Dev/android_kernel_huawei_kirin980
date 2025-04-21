@@ -39,7 +39,7 @@ static int GetKSVListFromDPCD(struct dp_ctrl *dptx, uint8_t* sha1_buffer, uint32
 	uint32_t dev_count,  i;
 	uint8_t temp[16];
 	uint32_t ptr=0;
-	uint8_t* pKSVList = NULL;
+	uint8_t* pKSVList;
 	uint32_t len = 10;
 	int retval;
 
@@ -260,7 +260,7 @@ static int hdcp_polling_thread(void *p)
 	struct dp_ctrl *dptx;
 
 	dptx = (struct dp_ctrl *)p;
-	if(dptx == NULL){
+	if(!dptx){
 		HISI_FB_ERR("dptx is null!\n");
 		return -1;
 	}
@@ -331,7 +331,7 @@ int HDCP_CheckEnable(uint32_t IsCheckEnable)
 	dptx = &(hisifd->dp);
 
 	HISI_FB_ERR("HDCP_CheckEnable enter!\n");
-	if (hdcp_polling_task == NULL) {
+	if (!hdcp_polling_task) {
 		hdcp_polling_task = kthread_create(hdcp_polling_thread, dptx, "hdcp_polling_task");
 		if(IS_ERR(hdcp_polling_task)) {
 			HISI_FB_ERR("Unable to start kernel hdcp_polling_task./n");
@@ -375,7 +375,7 @@ static void HDCP_Init(struct dp_ctrl *dptx)
 	hdcp_control.dptx = dptx;
 	hdcp_control.notification = 0;
 	hdcp_control.hdcp_notify_wq = create_singlethread_workqueue("hdcp_notify");
-	if (hdcp_control.hdcp_notify_wq == NULL) {
+	if (!hdcp_control.hdcp_notify_wq) {
 		HISI_FB_ERR("[HDCP]create hdcp_wq failed!\n");
 		return;
 	}
@@ -387,7 +387,7 @@ static void HDCP_DeInit(void)
 {
 	hdcp_control.dptx = NULL;
 	hdcp_control.notification = 0;
-	if (hdcp_control.hdcp_notify_wq != NULL) {
+	if (hdcp_control.hdcp_notify_wq) {
 		destroy_workqueue(hdcp_control.hdcp_notify_wq);
 		hdcp_control.hdcp_notify_wq = NULL;
 	}
@@ -401,7 +401,7 @@ void HDCP_DP_on(struct dp_ctrl *dptx, bool en)
 		return;
 	}
 
-	if (hdcp_polling_task != NULL) {
+	if (hdcp_polling_task) {
 		kthread_stop(hdcp_polling_task);
 		hdcp_polling_task = NULL;
 		hdcp_polling_flag = HDCP_POLL_STOP;
@@ -417,7 +417,7 @@ void HDCP_DP_on(struct dp_ctrl *dptx, bool en)
 void HDCP_SendNotification(uint32_t notification)
 {
 	hdcp_control.notification = notification;
-	if (hdcp_control.hdcp_notify_wq != NULL) {
+	if (hdcp_control.hdcp_notify_wq) {
 		queue_work(hdcp_control.hdcp_notify_wq, &(hdcp_control.hdcp_notify_work));
 	}
 }

@@ -208,6 +208,7 @@ void lcd_kit_pinfo_init(struct device_node* np, struct mtk_panel_info* pinfo)
 	LCD_KIT_ERR("pinfo->panel_lcm_type [%d]\n", pinfo->panel_lcm_type);
 	OF_PROPERTY_READ_U32_DEFAULT(np, "lcd-kit,panel-ldi-dsi-mode", &pinfo->panel_dsi_mode, 0);
 	OF_PROPERTY_READ_U32_DEFAULT(np, "lcd-kit,panel-dsi-switch-mode", &pinfo->panel_dsi_switch_mode, 0);
+	//OF_PROPERTY_READ_U32_DEFAULT(np, "lcd-kit,panel-dsi-switch-mode-en", &pinfo->mipi.phy_m_n_count_update, 0);
 	OF_PROPERTY_READ_U32_DEFAULT(np, "lcd-kit,panel-ldi-trans-seq", &pinfo->panel_trans_seq, 0);
 	OF_PROPERTY_READ_U32_DEFAULT(np, "lcd-kit,panel-ldi-data-padding", &pinfo->panel_data_padding, 0);
 	OF_PROPERTY_READ_U32_DEFAULT(np, "lcd-kit,panel-ldi-packet-size", &pinfo->panel_packtet_size, 0);
@@ -222,6 +223,30 @@ void lcd_kit_pinfo_init(struct device_node* np, struct mtk_panel_info* pinfo)
 	}
 	return;
 }
+//
+//void lcd_kit_factory_init(struct hisi_panel_info* pinfo)
+//{
+//	if (runmode_is_factory()) {
+//		pinfo->esd_enable = 0;
+//		pinfo->dirty_region_updt_support = 0;
+//		pinfo->prefix_ce_support = 0;
+//		pinfo->prefix_sharpness1D_support = 0;
+//		pinfo->prefix_sharpness2D_support = 0;
+//		pinfo->sbl_support = 0;
+//		pinfo->acm_support = 0;
+//		pinfo->acm_ce_support = 0;
+//		pinfo->esd_enable = 0;
+//		pinfo->comform_mode_support = 0;
+//		pinfo->color_temp_rectify_support = 0;
+//		pinfo->hiace_support = 0;
+//		pinfo->arsr1p_sharpness_support = 0;
+//		pinfo->blpwm_input_ena = 0;
+//		pinfo->gmp_support = 0;
+//		common_info->effect_on.support = 0;
+//		common_info->effect_color.support = 0;
+//		disp_info->fps.support = 0;
+//	}
+//}
 
 void lcd_kit_parse_running(struct device_node* np)
 {

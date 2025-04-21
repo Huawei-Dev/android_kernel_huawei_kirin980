@@ -164,6 +164,7 @@ int lcd_kit_parse_dcs_cmds(struct device_node* np, char* cmd_key,
 	len = buflen;
 	while (len >= (int)sizeof(struct lcd_kit_dsi_cmd_desc_header)) {
 		dchdr = (struct lcd_kit_dsi_cmd_desc_header*)bp;
+		//dchdr->dlen = ntohs(dchdr->dlen);
 		bp += sizeof(struct lcd_kit_dsi_cmd_desc_header);
 		len -= (int)sizeof(struct lcd_kit_dsi_cmd_desc_header);
 		if (dchdr->dlen > len) {

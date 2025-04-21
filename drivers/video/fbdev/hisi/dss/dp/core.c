@@ -297,14 +297,9 @@ void dptx_core_init_phy(struct dp_ctrl *dptx)
 */
 bool dptx_sink_enabled_ssc(struct dp_ctrl *dptx)
 {
-	uint8_t byte = 0;
-	int retval = 0;
+	uint8_t byte;
 
-	retval = dptx_read_dpcd(dptx, DP_MAX_DOWNSPREAD, &byte);
-	if (retval) {
-		HISI_FB_ERR("[DP] Read DPCD error\n");
-		return FALSE;
-	}
+	dptx_read_dpcd(dptx, DP_MAX_DOWNSPREAD, &byte);
 
 	return byte & 1;
 }
@@ -533,11 +528,9 @@ int dptx_phy_wait_busy(struct dp_ctrl *dptx, uint32_t lanes)
 		return 0;
 	}
 	switch (lanes) {
-	/* This case (value 4) is not terminated by a 'break' statement */
 	case 4:
 		mask |= DPTX_PHYIF_CTRL_BUSY(3);
 		mask |= DPTX_PHYIF_CTRL_BUSY(2);
-	/* This case (value 2) is not terminated by a 'break' statement */
 	case 2:
 		mask |= DPTX_PHYIF_CTRL_BUSY(1);
 	case 1:
@@ -656,11 +649,9 @@ void dptx_phy_enable_xmit(struct dp_ctrl *dptx, uint32_t lanes, bool enable)
 	phyifctrl = dptx_readl(dptx, DPTX_PHYIF_CTRL);
 
 	switch (lanes) {
-	/* This case (value 4) is not terminated by a 'break' statement */
 	case 4:
 		mask |= DPTX_PHYIF_CTRL_XMIT_EN(3);
 		mask |= DPTX_PHYIF_CTRL_XMIT_EN(2);
-	/* This case (value 2) is not terminated by a 'break' statement */
 	case 2:
 		mask |= DPTX_PHYIF_CTRL_XMIT_EN(1);
 	case 1:

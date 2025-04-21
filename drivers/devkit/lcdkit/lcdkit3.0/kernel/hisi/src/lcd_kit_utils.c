@@ -511,197 +511,6 @@ int lcd_kit_rgbw_set_backlight(struct hisi_fb_data_type* hisifd, int bl_level)
 	return ret;
 }
 
-static int lcd_get_dual_cmd_by_type(unsigned char type,
-	struct lcd_kit_dsi_panel_cmds **cmds0,
-	struct lcd_kit_dsi_panel_cmds **cmds1)
-{
-	switch (type) {
-	case LCD_DEMURA_WRITE_PREPARE:
-		*cmds0 = &(disp_info->demura.d0_w_pre_cmds);
-		*cmds1 = &(disp_info->demura.d1_w_pre_cmds);
-		break;
-	case LCD_DEMURA_WRITE_FIRST:
-		*cmds0 = &(disp_info->demura.d0_w_fir_cmds);
-		*cmds1 = &(disp_info->demura.d1_w_fir_cmds);
-		break;
-	case LCD_DEMURA_WRITE_CONTINUE:
-		*cmds0 = &(disp_info->demura.d0_w_con_cmds);
-		*cmds1 = &(disp_info->demura.d1_w_con_cmds);
-		break;
-	case LCD_DEMURA_WRITE_END:
-		*cmds0 = &(disp_info->demura.d0_w_end_cmds);
-		*cmds1 = &(disp_info->demura.d1_w_end_cmds);
-		break;
-	case LCD_DEMURA_WRITE_IRDROP_PREPARE:
-		*cmds0 = &(disp_info->demura.d0_w_ird_pre_cmds);
-		*cmds1 = &(disp_info->demura.d1_w_ird_pre_cmds);
-		break;
-	case LCD_DEMURA_WRITE_IRDROP:
-		*cmds0 = &(disp_info->demura.d0_w_ird_cmds);
-		*cmds1 = &(disp_info->demura.d1_w_ird_cmds);
-		break;
-	case LCD_DEMURA_WRITE_IRDROP_END:
-		*cmds0 = &(disp_info->demura.d0_w_ird_end_cmds);
-		*cmds1 = &(disp_info->demura.d1_w_ird_end_cmds);
-		break;
-	default:
-		LCD_KIT_ERR("[DEMURA]invalid type\n");
-		return LCD_KIT_FAIL;
-	}
-	return LCD_KIT_OK;
-}
-
-static int lcd_upt_payload_and_send(struct hisi_fb_data_type *hisifd,
-	struct lcd_kit_dsi_panel_cmds *cmds0,
-	struct lcd_kit_dsi_panel_cmds *cmds1,
-	unsigned char type, const demura_set_info_t *info)
-{
-	int ret;
-	char *payload0 = NULL;
-	char *payload1 = NULL;
-	char *temp_payload0 = NULL;
-	char *temp_payload1 = NULL;
-	char dlen0;
-	char dlen1;
-
-	dlen0 = cmds0->cmds->dlen;
-	payload0 = kzalloc((info->len0 + dlen0), GFP_KERNEL);
-	if (!payload0) {
-		LCD_KIT_ERR("[DEMURA]alloc payload0 fail\n");
-		return LCD_KIT_FAIL;
-	}
-	memcpy(payload0, cmds0->cmds->payload, dlen0);
-	memcpy(payload0 + dlen0, info->data0, info->len0);
-	temp_payload0 = cmds0->cmds->payload;
-	cmds0->cmds->payload = payload0;
-	cmds0->cmds->dlen = info->len0 + dlen0;
-	dlen1 = cmds1->cmds->dlen;
-	payload1 = kzalloc((info->len1 + dlen1), GFP_KERNEL);
-	if (!payload1) {
-		LCD_KIT_ERR("[DEMURA]alloc payload1 fail\n");
-		cmds0->cmds->payload = temp_payload0;
-		cmds0->cmds->dlen = dlen0;
-		kfree(payload0);
-		return LCD_KIT_FAIL;
-	}
-	memcpy(payload1, cmds1->cmds->payload, dlen1);
-	memcpy(payload1 + dlen1, info->data1, info->len1);
-	temp_payload1 = cmds1->cmds->payload;
-	cmds1->cmds->payload = payload1;
-	cmds1->cmds->dlen = info->len1 + dlen1;
-	ret = lcd_kit_dsi_diff_cmds_tx(hisifd, cmds0, cmds1);
-	if (ret)
-		LCD_KIT_ERR("[DEMURA]lcd_kit_dsi_diff_cmds_tx fail\n");
-	cmds0->cmds->payload = temp_payload0;
-	cmds0->cmds->dlen = dlen0;
-	kfree(payload0);
-	cmds1->cmds->payload = temp_payload1;
-	cmds1->cmds->dlen = dlen1;
-	kfree(payload1);
-	return ret;
-}
-
-int lcd_set_demura_handle(struct hisi_fb_data_type *hisifd,
-	unsigned char type, const demura_set_info_t *info)
-{
-	struct lcd_kit_dsi_panel_cmds *cmds0 = NULL;
-	struct lcd_kit_dsi_panel_cmds *cmds1 = NULL;
-	int ret;
-
-	if ((!hisifd) || (!info)) {
-		LCD_KIT_ERR("[DEMURA]invalid input param\n");
-		return LCD_KIT_FAIL;
-	}
-	if ((info->len0 > WRITE_MAX_LEN) || (info->len1 > WRITE_MAX_LEN)) {
-		LCD_KIT_ERR("[DEMURA]invalid len, max = %d\n", WRITE_MAX_LEN);
-		return LCD_KIT_FAIL;
-	}
-	ret = lcd_get_dual_cmd_by_type(type, &cmds0, &cmds1);
-	if (ret)
-		return ret;
-	if ((info->len0 != 0) && (info->len1 != 0)) {
-		ret = lcd_upt_payload_and_send(hisifd, cmds0, cmds1,
-			type, info);
-	} else if ((info->len0 == 0) && (info->len1 == 0)) {
-		ret = lcd_kit_dsi_diff_cmds_tx(hisifd, cmds0, cmds1);
-	} else {
-		LCD_KIT_ERR("[DEMURA]not support type!\n");
-		return LCD_KIT_FAIL;
-	}
-	if (ret)
-		LCD_KIT_ERR("[DEMURA]lcd_kit_dsi_diff_cmds_tx fail\n");
-	return ret;
-}
-
-int lcd_get_demura_handle(struct hisi_fb_data_type *hisifd,
-	unsigned char dsi, unsigned char *out,
-	unsigned char read_type, unsigned char len)
-{
-	int ret;
-	struct lcd_kit_dsi_panel_cmds *cmds = NULL;
-
-	if ((!hisifd) || (!out)) {
-		LCD_KIT_ERR("[DEMURA]invalid input param\n");
-		return LCD_KIT_FAIL;
-	}
-	if (len > READ_MAX_LEN) {
-		LCD_KIT_ERR("[DEMURA]invalid len, max len %d\n", READ_MAX_LEN);
-		return LCD_KIT_FAIL;
-	}
-	switch (read_type) {
-	case LCD_DEMURA_READ_FIRST:
-		cmds = &(disp_info->demura.r_fir_cmds);
-		break;
-	case LCD_DEMURA_READ_CONTINUE:
-		cmds = &(disp_info->demura.r_con_cmds);
-		break;
-	case LCD_DEMURA_READ_CHECKSUM:
-		cmds = &(disp_info->demura.rr_chksum_cmds);
-		break;
-	case LCD_DEMURA_READ_WRITED_CHKSUM:
-		cmds = &(disp_info->demura.rw_chksum_cmds);
-		break;
-	default:
-		LCD_KIT_ERR("[DEMURA]invalid type\n");
-		return LCD_KIT_FAIL;
-	}
-	if (dsi == LCD_DSI0)
-		ret = lcd_kit_dsi_cmds_rx(hisifd, out, cmds);
-	else if (dsi == LCD_DSI1)
-		ret = lcd_kit_dsi1_cmds_rx(hisifd, out, cmds);
-	else
-		return LCD_KIT_FAIL;
-	if (ret) {
-		LCD_KIT_ERR("[DEMURA]first read ret = %d\n", ret);
-		return LCD_KIT_FAIL;
-	}
-	LCD_KIT_ERR("[DEMURA]read success\n");
-	return ret;
-}
-
-static int lcd_kit_rgbw_pix_gain(struct hisi_fb_data_type *hisifd)
-{
-	uint32_t pix_gain;
-	static uint32_t pix_gain_old = 0;
-	int rgbw_mode;
-	int ret = LCD_KIT_OK;
-
-	if (disp_info->rgbw.pixel_gain_limit_cmds.cmds == NULL) {
-		LCD_KIT_INFO("not support pixel_gain_limit\n");
-		return LCD_KIT_FAIL;
-	}
-	rgbw_mode = hisifd->de_info.ddic_rgbw_mode;
-	pix_gain = (uint32_t)hisifd->de_info.pixel_gain_limit;
-	if ((pix_gain != pix_gain_old) && (rgbw_mode == RGBW_SET4_MODE)) {
-		disp_info->rgbw.pixel_gain_limit_cmds.cmds[0].payload[1] = pix_gain;
-		ret = lcd_kit_dsi_cmds_tx(hisifd, &disp_info->rgbw.pixel_gain_limit_cmds);
-		LCD_KIT_DEBUG("[RGBW] pixel_gain=%d,pix_gain_old=%d!\n",
-			pix_gain, pix_gain_old);
-		pix_gain_old = pix_gain;
-	}
-	return ret;
-}
-
 int lcd_kit_rgbw_set_handle(struct hisi_fb_data_type* hisifd)
 {
 	int ret = LCD_KIT_OK;
@@ -728,13 +537,6 @@ int lcd_kit_rgbw_set_handle(struct hisi_fb_data_type* hisifd)
 		}
 	}
 	old_rgbw_backlight = rgbw_backlight;
-
-	/* set gain */
-	ret = lcd_kit_rgbw_pix_gain(hisifd);
-	if (ret) {
-		LCD_KIT_ERR("[RGBW]set pix_gain fail\n");
-		return LCD_KIT_FAIL;
-	}
 
 	return ret;
 }
@@ -1031,352 +833,6 @@ int lcd_kit_blpwm_set_backlight(struct hisi_fb_data_type* hisifd, uint32_t level
 	return ret;
 }
 
-static void lcd_last_time_clear(uint8_t curr_mode)
-{
-	struct timeval curr_time;
-
-	do_gettimeofday(&curr_time);
-	switch (curr_mode) {
-	case EN_DISPLAY_REGION_A:
-		disp_info->dbv_stat.last_time[PRIMARY_REGION] = curr_time;
-		disp_info->dbv_stat.pwon_last_time[PRIMARY_REGION] = curr_time;
-		break;
-	case EN_DISPLAY_REGION_B:
-		disp_info->dbv_stat.last_time[SLAVE_REGION] = curr_time;
-		disp_info->dbv_stat.pwon_last_time[SLAVE_REGION] = curr_time;
-		break;
-	case EN_DISPLAY_REGION_AB:
-	case EN_DISPLAY_REGION_AB_FOLDED:
-		disp_info->dbv_stat.last_time[PRIMARY_REGION] = curr_time;
-		disp_info->dbv_stat.last_time[SLAVE_REGION] = curr_time;
-		disp_info->dbv_stat.last_time[FOLD_REGION] = curr_time;
-		disp_info->dbv_stat.pwon_last_time[PRIMARY_REGION] = curr_time;
-		disp_info->dbv_stat.pwon_last_time[SLAVE_REGION] = curr_time;
-		disp_info->dbv_stat.pwon_last_time[FOLD_REGION] = curr_time;
-		break;
-	default:
-		break;
-	}
-}
-
-static void _lcd_set_dbv_stat(int region, unsigned int level)
-{
-	uint32_t delta;
-	struct timeval curr_time, tmp;
-
-	do_gettimeofday(&curr_time);
-	switch (region) {
-	case PRIMARY_REGION:
-		tmp = disp_info->dbv_stat.last_time[PRIMARY_REGION];
-		delta = (curr_time.tv_sec - tmp.tv_sec) * 1000 +
-			(curr_time.tv_usec - tmp.tv_usec) / 1000;
-		disp_info->dbv_stat.dbv[PRIMARY_REGION] += (level * delta);
-		do_gettimeofday(&disp_info->dbv_stat.last_time[PRIMARY_REGION]);
-		break;
-	case SLAVE_REGION:
-		tmp = disp_info->dbv_stat.last_time[SLAVE_REGION];
-		delta = (curr_time.tv_sec - tmp.tv_sec) * 1000 +
-			(curr_time.tv_usec - tmp.tv_usec) / 1000;
-		disp_info->dbv_stat.dbv[SLAVE_REGION] += (level * delta);
-		do_gettimeofday(&disp_info->dbv_stat.last_time[SLAVE_REGION]);
-		break;
-	case FOLD_REGION:
-		tmp = disp_info->dbv_stat.last_time[FOLD_REGION];
-		delta = (curr_time.tv_sec - tmp.tv_sec) * 1000 +
-			(curr_time.tv_usec - tmp.tv_usec) / 1000;
-		disp_info->dbv_stat.dbv[FOLD_REGION] += (level * delta);
-		do_gettimeofday(&disp_info->dbv_stat.last_time[FOLD_REGION]);
-		break;
-	case REGION_MAX:
-		tmp = disp_info->dbv_stat.last_time[PRIMARY_REGION];
-		delta = (curr_time.tv_sec - tmp.tv_sec) * 1000 +
-			(curr_time.tv_usec - tmp.tv_usec) / 1000;
-		disp_info->dbv_stat.dbv[PRIMARY_REGION] += (level * delta);
-		tmp = disp_info->dbv_stat.last_time[SLAVE_REGION];
-		delta = (curr_time.tv_sec - tmp.tv_sec) * 1000 +
-			(curr_time.tv_usec - tmp.tv_usec) / 1000;
-		disp_info->dbv_stat.dbv[SLAVE_REGION] += (level * delta);
-		tmp = disp_info->dbv_stat.last_time[FOLD_REGION];
-		delta = (curr_time.tv_sec - tmp.tv_sec) * 1000 +
-			(curr_time.tv_usec - tmp.tv_usec) / 1000;
-		disp_info->dbv_stat.dbv[FOLD_REGION] += (level * delta);
-		do_gettimeofday(&disp_info->dbv_stat.last_time[PRIMARY_REGION]);
-		do_gettimeofday(&disp_info->dbv_stat.last_time[SLAVE_REGION]);
-		do_gettimeofday(&disp_info->dbv_stat.last_time[FOLD_REGION]);
-		break;
-	default:
-		break;
-	}
-}
-
-static void _lcd_set_pwon_stat(int region)
-{
-	uint32_t delta;
-	struct timeval curr_time, tmp;
-
-	do_gettimeofday(&curr_time);
-	switch (region) {
-	case PRIMARY_REGION:
-		tmp = disp_info->dbv_stat.pwon_last_time[PRIMARY_REGION];
-		delta = (curr_time.tv_sec - tmp.tv_sec) * 1000 +
-			(curr_time.tv_usec - tmp.tv_usec) / 1000;
-		disp_info->dbv_stat.pwon[PRIMARY_REGION] += delta;
-		break;
-	case SLAVE_REGION:
-		tmp = disp_info->dbv_stat.pwon_last_time[SLAVE_REGION];
-		delta = (curr_time.tv_sec - tmp.tv_sec) * 1000 +
-			(curr_time.tv_usec - tmp.tv_usec) / 1000;
-		disp_info->dbv_stat.pwon[SLAVE_REGION] += delta;
-		break;
-	case FOLD_REGION:
-		tmp = disp_info->dbv_stat.pwon_last_time[FOLD_REGION];
-		delta = (curr_time.tv_sec - tmp.tv_sec) * 1000 +
-			(curr_time.tv_usec - tmp.tv_usec) / 1000;
-		disp_info->dbv_stat.pwon[FOLD_REGION] += delta;
-		break;
-	case REGION_MAX:
-		tmp = disp_info->dbv_stat.pwon_last_time[PRIMARY_REGION];
-		delta = (curr_time.tv_sec - tmp.tv_sec) * 1000 +
-			(curr_time.tv_usec - tmp.tv_usec) / 1000;
-		disp_info->dbv_stat.pwon[PRIMARY_REGION] += delta;
-		tmp = disp_info->dbv_stat.pwon_last_time[SLAVE_REGION];
-		delta = (curr_time.tv_sec - tmp.tv_sec) * 1000 +
-			(curr_time.tv_usec - tmp.tv_usec) / 1000;
-		disp_info->dbv_stat.pwon[SLAVE_REGION] += delta;
-		tmp = disp_info->dbv_stat.pwon_last_time[FOLD_REGION];
-		delta = (curr_time.tv_sec - tmp.tv_sec) * 1000 +
-			(curr_time.tv_usec - tmp.tv_usec) / 1000;
-		disp_info->dbv_stat.pwon[FOLD_REGION] += delta;
-		break;
-	default:
-		break;
-	}
-}
-
-static void lcd_set_dbv_stat(struct hisi_fb_data_type *hisifd,
-	uint32_t level)
-{
-	static uint32_t last_level;
-	static int is_first;
-	struct hisi_panel_info *pinfo = NULL;
-	int region;
-
-	if (!disp_info->dbv_stat.support)
-		return;
-	pinfo = &(hisifd->panel_info);
-	if (!pinfo)
-		LCD_KIT_ERR("pinfo is null!\n");
-	if (!is_first) {
-		lcd_last_time_clear(pinfo->current_display_region);
-		last_level = level;
-		is_first = 1;
-		return;
-	}
-	if (lcd_is_power_on(level))
-		lcd_last_time_clear(pinfo->current_display_region);
-	switch (pinfo->current_display_region) {
-	case EN_DISPLAY_REGION_A:
-		region = PRIMARY_REGION;
-		break;
-	case EN_DISPLAY_REGION_B:
-		region = SLAVE_REGION;
-		break;
-	case EN_DISPLAY_REGION_AB:
-	case EN_DISPLAY_REGION_AB_FOLDED:
-		region = REGION_MAX;
-		break;
-	default:
-		region = REGION_MAX;
-		break;
-	}
-	_lcd_set_dbv_stat(region, last_level);
-	last_level = level;
-	LCD_KIT_INFO("disp_info->dbv_stat.dbv[PRIMARY_REGION]:%d\n",
-		disp_info->dbv_stat.dbv[PRIMARY_REGION]);
-	LCD_KIT_INFO("disp_info->dbv_stat.dbv[SLAVE_REGION]:%d\n",
-		disp_info->dbv_stat.dbv[SLAVE_REGION]);
-	LCD_KIT_INFO("disp_info->dbv_stat.dbv[FOLD_REGION]:%d\n",
-		disp_info->dbv_stat.dbv[FOLD_REGION]);
-}
-
-static void _lcd_get_dbv_stat(struct hisi_fb_data_type *hisifd,
-	uint32_t *dbv_stat, uint32_t dbv_len)
-{
-	struct hisi_panel_info *pinfo = NULL;
-	int region;
-
-	pinfo = &(hisifd->panel_info);
-	if (!pinfo) {
-		LCD_KIT_ERR("pinfo is null!\n");
-		return;
-	}
-	switch (pinfo->current_display_region) {
-	case EN_DISPLAY_REGION_A:
-		region = PRIMARY_REGION;
-		break;
-	case EN_DISPLAY_REGION_B:
-		region = SLAVE_REGION;
-		break;
-	case EN_DISPLAY_REGION_AB:
-	case EN_DISPLAY_REGION_AB_FOLDED:
-		region = REGION_MAX;
-		break;
-	default:
-		region = REGION_MAX;
-		break;
-	}
-	_lcd_set_dbv_stat(region, hisifd->bl_level);
-	LCD_KIT_INFO("disp_info->dbv_stat.dbv[PRIMARY_REGION]:%d\n",
-		disp_info->dbv_stat.dbv[PRIMARY_REGION]);
-	LCD_KIT_INFO("disp_info->dbv_stat.dbv[SLAVE_REGION]:%d\n",
-		disp_info->dbv_stat.dbv[SLAVE_REGION]);
-	LCD_KIT_INFO("disp_info->dbv_stat.dbv[FOLD_REGION]:%d\n",
-		disp_info->dbv_stat.dbv[FOLD_REGION]);
-	memcpy(dbv_stat, disp_info->dbv_stat.dbv, dbv_len);
-	memset(disp_info->dbv_stat.dbv, 0,
-		sizeof(disp_info->dbv_stat.dbv));
-}
-
-static void _lcd_get_pwon_stat(struct hisi_fb_data_type *hisifd,
-	uint32_t *pwon_stat, uint32_t pwon_len)
-{
-	struct hisi_panel_info *pinfo = NULL;
-	int region;
-
-	pinfo = &(hisifd->panel_info);
-	if (!pinfo) {
-		LCD_KIT_ERR("pinfo is null!\n");
-		return;
-	}
-	switch (pinfo->current_display_region) {
-	case EN_DISPLAY_REGION_A:
-		region = PRIMARY_REGION;
-		break;
-	case EN_DISPLAY_REGION_B:
-		region = SLAVE_REGION;
-		break;
-	case EN_DISPLAY_REGION_AB:
-	case EN_DISPLAY_REGION_AB_FOLDED:
-		region = REGION_MAX;
-		break;
-	default:
-		region = REGION_MAX;
-		break;
-	}
-	_lcd_set_pwon_stat(region);
-	LCD_KIT_INFO("disp_info->dbv_stat.pwon[PRIMARY_REGION]:%d\n",
-		disp_info->dbv_stat.pwon[PRIMARY_REGION]);
-	LCD_KIT_INFO("disp_info->dbv_stat.pwon[SLAVE_REGION]:%d\n",
-		disp_info->dbv_stat.pwon[SLAVE_REGION]);
-	LCD_KIT_INFO("disp_info->dbv_stat.pwon[FOLD_REGION]:%d\n",
-		disp_info->dbv_stat.pwon[FOLD_REGION]);
-	memcpy(pwon_stat, disp_info->dbv_stat.pwon, pwon_len);
-	memset(disp_info->dbv_stat.pwon, 0,
-		sizeof(disp_info->dbv_stat.pwon));
-}
-
-void lcd_switch_region(struct hisi_fb_data_type *hisifd,
-	uint8_t curr_mode, uint8_t pre_mode)
-{
-	struct timeval tmp;
-
-	if (!disp_info->dbv_stat.support)
-		return;
-	if (!hisifd) {
-		LCD_KIT_ERR("hisifd is null!\n");
-		return;
-	}
-	if ((curr_mode == EN_DISPLAY_REGION_A) &&
-		(pre_mode == EN_DISPLAY_REGION_B)) {
-		do_gettimeofday(&tmp);
-		disp_info->dbv_stat.last_time[PRIMARY_REGION] = tmp;
-		disp_info->dbv_stat.pwon_last_time[PRIMARY_REGION] = tmp;
-		_lcd_set_dbv_stat(SLAVE_REGION, hisifd->bl_level);
-		_lcd_set_pwon_stat(SLAVE_REGION);
-	} else if ((curr_mode == EN_DISPLAY_REGION_A) &&
-		((pre_mode == EN_DISPLAY_REGION_AB) ||
-		(pre_mode == EN_DISPLAY_REGION_AB_FOLDED))) {
-		_lcd_set_dbv_stat(SLAVE_REGION, hisifd->bl_level);
-		_lcd_set_dbv_stat(FOLD_REGION, hisifd->bl_level);
-		_lcd_set_pwon_stat(SLAVE_REGION);
-		_lcd_set_pwon_stat(FOLD_REGION);
-	} else if ((curr_mode == EN_DISPLAY_REGION_B) &&
-		(pre_mode == EN_DISPLAY_REGION_A)) {
-		do_gettimeofday(&tmp);
-		disp_info->dbv_stat.last_time[SLAVE_REGION] = tmp;
-		disp_info->dbv_stat.pwon_last_time[SLAVE_REGION] = tmp;
-		_lcd_set_dbv_stat(PRIMARY_REGION, hisifd->bl_level);
-		_lcd_set_pwon_stat(PRIMARY_REGION);
-	} else if ((curr_mode == EN_DISPLAY_REGION_B) &&
-		((pre_mode == EN_DISPLAY_REGION_AB) ||
-		(pre_mode == EN_DISPLAY_REGION_AB_FOLDED))) {
-		_lcd_set_dbv_stat(PRIMARY_REGION, hisifd->bl_level);
-		_lcd_set_dbv_stat(FOLD_REGION, hisifd->bl_level);
-		_lcd_set_pwon_stat(PRIMARY_REGION);
-		_lcd_set_pwon_stat(FOLD_REGION);
-	} else if (((curr_mode == EN_DISPLAY_REGION_AB) ||
-		(curr_mode == EN_DISPLAY_REGION_AB_FOLDED)) &&
-		(pre_mode == EN_DISPLAY_REGION_A)) {
-		do_gettimeofday(&tmp);
-		disp_info->dbv_stat.last_time[SLAVE_REGION] = tmp;
-		disp_info->dbv_stat.pwon_last_time[SLAVE_REGION] = tmp;
-		do_gettimeofday(&tmp);
-		disp_info->dbv_stat.last_time[FOLD_REGION] = tmp;
-		disp_info->dbv_stat.pwon_last_time[FOLD_REGION] = tmp;
-	} else if (((curr_mode == EN_DISPLAY_REGION_AB) ||
-		(curr_mode == EN_DISPLAY_REGION_AB_FOLDED)) &&
-		(pre_mode == EN_DISPLAY_REGION_B)) {
-		do_gettimeofday(&tmp);
-		disp_info->dbv_stat.last_time[PRIMARY_REGION] = tmp;
-		disp_info->dbv_stat.pwon_last_time[PRIMARY_REGION] = tmp;
-		do_gettimeofday(&tmp);
-		disp_info->dbv_stat.last_time[FOLD_REGION] = tmp;
-		disp_info->dbv_stat.pwon_last_time[FOLD_REGION] = tmp;
-	}
-}
-
-int lcd_get_dbv_stat(struct hisi_fb_data_type *hisifd,
-	uint32_t *dbv_stat, uint32_t dbv_len,
-	uint32_t *pwon_stat, uint32_t pwon_len)
-{
-	struct hisi_panel_info *pinfo = NULL;
-
-	if (!disp_info->dbv_stat.support)
-		return LCD_KIT_OK;
-	if (!hisifd) {
-		LCD_KIT_ERR("hisifd is null\n");
-		return LCD_KIT_FAIL;
-	}
-	if (!dbv_stat) {
-		LCD_KIT_ERR("dbv_stat is null!\n");
-		return LCD_KIT_FAIL;
-	}
-	if (!pwon_stat) {
-		LCD_KIT_ERR("pwon_stat is null!\n");
-		return LCD_KIT_FAIL;
-	}
-	pinfo = &(hisifd->panel_info);
-	if (!pinfo) {
-		LCD_KIT_ERR("pinfo is null!\n");
-		return LCD_KIT_FAIL;
-	}
-	_lcd_get_dbv_stat(hisifd, dbv_stat, dbv_len);
-	_lcd_get_pwon_stat(hisifd, pwon_stat, pwon_len);
-	lcd_last_time_clear(pinfo->current_display_region);
-	return LCD_KIT_OK;
-}
-
-bool lcd_is_power_on(uint32_t level)
-{
-	static uint32_t last_level = MAX_BL_LEVEL;
-	bool is_pwon = false;
-
-	if (last_level == 0 && level != 0)
-		is_pwon = true;
-	last_level = level;
-	return is_pwon;
-}
-
 int lcd_kit_mipi_set_backlight(struct hisi_fb_data_type* hisifd, uint32_t level)
 {
 	uint32_t bl_level = 0;
@@ -1388,16 +844,7 @@ int lcd_kit_mipi_set_backlight(struct hisi_fb_data_type* hisifd, uint32_t level)
 	bl_level = (level < hisifd->panel_info.bl_max) ? level : hisifd->panel_info.bl_max;
 	hisifb_display_effect_fine_tune_backlight(hisifd, (int)bl_level, (int*)&bl_level);
 	bl_flicker_detector_collect_device_bl(bl_level);
-
-	if (pinfo->hbm_entry_delay > 0) {
-		mutex_lock(&common_info->hbm.hbm_lock);
-		ret = common_ops->set_mipi_backlight(hisifd, bl_level);
-		pinfo->hbm_blcode_ts = ktime_get();
-		mutex_unlock(&common_info->hbm.hbm_lock);
-	} else {
-		ret = common_ops->set_mipi_backlight(hisifd, bl_level);
-	}
-	lcd_set_dbv_stat(hisifd, bl_level);
+	ret = common_ops->set_mipi_backlight(hisifd, bl_level);
 	if (power_hdl->lcd_backlight.buf[0] == REGULATOR_MODE) {
 		/*enable/disable backlight*/
 		down(&disp_info->lcd_kit_sem);
@@ -1538,7 +985,6 @@ void lcd_kit_pinfo_init(struct device_node* np, struct hisi_panel_info* pinfo)
 	OF_PROPERTY_READ_U8_DEFAULT(np, "lcd-kit,cinema-mode-support", &pinfo->cinema_mode_support, 0);
 	OF_PROPERTY_READ_U8_DEFAULT(np, "lcd-kit,xcc-support", &pinfo->xcc_support, 0);
 	OF_PROPERTY_READ_U8_DEFAULT(np, "lcd-kit,hiace-support", &pinfo->hiace_support, 0);
-	OF_PROPERTY_READ_U8_DEFAULT(np, "lcd-kit,dither-support", &pinfo->dither_support, 0);
 	OF_PROPERTY_READ_U8_DEFAULT(np, "lcd-kit,panel-ce-support", &pinfo->panel_effect_support, 0);
 	OF_PROPERTY_READ_U8_DEFAULT(np, "lcd-kit,arsr1p-sharpness-support", &pinfo->arsr1p_sharpness_support, 0);
 	OF_PROPERTY_READ_U8_DEFAULT(np, "lcd-kit,prefix-sharp-1D-support", &pinfo->prefix_sharpness1D_support, 0);
@@ -1591,10 +1037,7 @@ void lcd_kit_pinfo_init(struct device_node* np, struct hisi_panel_info* pinfo)
 	OF_PROPERTY_READ_U32_RETURN(np, "lcd-kit,r_video_lh6", &pinfo->video_r6_lh);
 	OF_PROPERTY_READ_U32_RETURN(np, "lcd-kit,mask-delay-time-before-fp", &pinfo->mask_delay_time_before_fp);
 	OF_PROPERTY_READ_U32_RETURN(np, "lcd-kit,mask-delay-time-after-fp", &pinfo->mask_delay_time_after_fp);
-	OF_PROPERTY_READ_U32_RETURN(np, "lcd-kit,vsync-delay-th", &pinfo->vsync_delay_th);
-	OF_PROPERTY_READ_U32_RETURN(np, "lcd-kit,vsync-delay-time-fp", &pinfo->vsync_delay_time_fp);
 	OF_PROPERTY_READ_U32_RETURN(np, "lcd-kit,bl-delay-frame", &pinfo->bl_delay_frame);
-	OF_PROPERTY_READ_U32_DEFAULT(np, "lcd-kit,fphbm-entry-delay-afterBL", &pinfo->hbm_entry_delay, 0);
 
 	/*sbl info*/
 	OF_PROPERTY_READ_U32_RETURN(np, "lcd-kit,sbl-stren-limit", &pinfo->smart_bl.strength_limit);
@@ -1630,10 +1073,6 @@ void lcd_kit_pinfo_init(struct device_node* np, struct hisi_panel_info* pinfo)
 	OF_PROPERTY_READ_U8_RETURN(np, "lcd-kit,ldi-data-en-plr", &pinfo->ldi.data_en_plr);
 	OF_PROPERTY_READ_U8_DEFAULT(np, "lcd-kit,ldi-dpi0-overlap-size", &pinfo->ldi.dpi0_overlap_size, 0);
 	OF_PROPERTY_READ_U8_DEFAULT(np, "lcd-kit,ldi-dpi1-overlap-size", &pinfo->ldi.dpi1_overlap_size, 0);
-	OF_PROPERTY_READ_U64_RETURN(np, "lcd-kit,ldi-pipe-clk-rate-pre-set",
-		&pinfo->ldi.pipe_clk_rate_pre_set);
-	OF_PROPERTY_READ_U32_DEFAULT(np, "lcd-kit,ldi-div-pre-set",
-		&pinfo->ldi.div_pre_set, 1);
 
 	/*mipi info*/
 	OF_PROPERTY_READ_U8_DEFAULT(np, "lcd-kit,mipi-lane-nums", &pinfo->mipi.lane_nums, 0);
@@ -1700,9 +1139,6 @@ void lcd_kit_pinfo_init(struct device_node* np, struct hisi_panel_info* pinfo)
 	if (common_info->esd.support) {
 		pinfo->esd_enable = 1;
 		OF_PROPERTY_READ_U32_DEFAULT(np, "lcd-kit,esd-recovery-max-count", &pinfo->esd_recovery_max_count, 10);
-		/* esd_check_max_count set 3 times as default */
-		OF_PROPERTY_READ_U32_DEFAULT(np, "lcd-kit,esd-check-max-count",
-			&pinfo->esd_check_max_count, 3);
 	}
 
 	return ;
@@ -1762,10 +1198,7 @@ int lcd_kit_panel_version_init(struct hisi_fb_data_type* hisifd)
 void lcd_kit_factory_init(struct hisi_panel_info* pinfo)
 {
 	if (runmode_is_factory()) {
-		if (common_info->esd.fac_esd_support == 1)
-			pinfo->esd_enable = 1;
-		else
-			pinfo->esd_enable = 0;
+		pinfo->esd_enable = 0;
 		pinfo->dirty_region_updt_support = 0;
 		pinfo->prefix_ce_support = 0;
 		pinfo->prefix_sharpness1D_support = 0;
@@ -1773,6 +1206,7 @@ void lcd_kit_factory_init(struct hisi_panel_info* pinfo)
 		pinfo->sbl_support = 0;
 		pinfo->acm_support = 0;
 		pinfo->acm_ce_support = 0;
+		pinfo->esd_enable = 0;
 		pinfo->comform_mode_support = 0;
 		pinfo->color_temp_rectify_support = 0;
 		pinfo->hiace_support = 0;
@@ -1807,26 +1241,7 @@ void lcd_kit_parse_running(struct device_node* np)
 							   &disp_info->checksum.disable_cmds);
 		lcd_kit_parse_dcs_cmds(np, "lcd-kit,checksum-cmds", "lcd-kit,checksum-cmds-state",
 							   &disp_info->checksum.checksum_cmds);
-		lcd_kit_parse_arrays_data(np, "lcd-kit,checksum-value",
-			&disp_info->checksum.value, CHECKSUM_VALUE_SIZE);
-		if (lcd_is_dual_mipi()) {
-			lcd_kit_parse_arrays_data(np,
-				"lcd-kit,checksum-dsi1-value",
-				&disp_info->checksum.dsi1_value,
-				CHECKSUM_VALUE_SIZE);
-		}
-		/* checksum stress test */
-		OF_PROPERTY_READ_U32_DEFAULT(np,
-			"lcd-kit,checksum-stress-test-support",
-			&disp_info->checksum.stress_test_support, 0);
-		if (disp_info->checksum.stress_test_support) {
-			OF_PROPERTY_READ_U32_DEFAULT(np,
-				"lcd-kit,checksum-stress-test-vdd",
-				&disp_info->checksum.vdd, 0);
-			OF_PROPERTY_READ_U32_DEFAULT(np,
-				"lcd-kit,checksum-stress-test-mipi",
-				&disp_info->checksum.mipi_clk, 0);
-		}
+		lcd_kit_parse_array_data(np, "lcd-kit,checksum-value", &disp_info->checksum.value);
 	}
 	/*hkadc*/
 	OF_PROPERTY_READ_U32_DEFAULT(np, "lcd-kit,hkadc-support", &disp_info->hkadc.support, 0);
@@ -1872,29 +1287,11 @@ void lcd_kit_parse_running(struct device_node* np)
 			}
 		}
 	}
-	/* vertical line test */
-	OF_PROPERTY_READ_U32_DEFAULT(np, "lcd-kit,vtc-line-support",
-		&disp_info->vtc_line.support, 0);
-	if (disp_info->vtc_line.support)
-		lcd_kit_parse_dcs_cmds(np, "lcd-kit,vtc-line-cmds",
-			"lcd-kit,vtc-line-cmds-state",
-			&disp_info->vtc_line.vtc_cmds);
-	/* horizontal line test */
-	OF_PROPERTY_READ_U32_DEFAULT(np, "lcd-kit,hor-line-support",
-		&disp_info->hor_line.support, 0);
-	if (disp_info->hor_line.support) {
-		OF_PROPERTY_READ_U32_DEFAULT(np, "lcd-kit,hor-line-duration",
-			&disp_info->hor_line.duration, 0);
-
-		lcd_kit_parse_dcs_cmds(np, "lcd-kit,hor-line-cmds",
-			"lcd-kit,hor-line-cmds-state",
-			&disp_info->hor_line.hl_cmds);
-	}
+	return ;
 }
 
 void lcd_kit_parse_effect(struct device_node* np)
 {
-	int ret;
 	/*gamma calibration*/
 	OF_PROPERTY_READ_U32_DEFAULT(np, "lcd-kit,gamma-cal-support", &disp_info->gamma_cal.support, 0);
 	if (disp_info->gamma_cal.support) {
@@ -1948,69 +1345,6 @@ void lcd_kit_parse_effect(struct device_node* np)
 		lcd_kit_parse_dcs_cmds(np, "lcd-kit,rgbw-pwm-gain-cmds", "lcd-kit,rgbw-pwm-gain-cmds-state",
 								&disp_info->rgbw.pwm_gain_cmds);
 	}
-	/* demura */
-	ret = of_property_read_u32(np, "lcd-kit,demura-support",
-		&disp_info->demura.support);
-	if (ret) {
-		LCD_KIT_INFO("of_property_read_u32:demura-support not find\n");
-		disp_info->demura.support = NOT_SUPPORT;
-	}
-	if (disp_info->demura.support) {
-		lcd_kit_parse_dcs_cmds(np, "lcd-kit,demura-read-fir-cmds",
-			"lcd-kit,demura-read-fir-cmds-state",
-			&disp_info->demura.r_fir_cmds);
-		lcd_kit_parse_dcs_cmds(np, "lcd-kit,demura-read-con-cmds",
-			"lcd-kit,demura-read-con-cmds-state",
-			&disp_info->demura.r_con_cmds);
-		lcd_kit_parse_dcs_cmds(np, "lcd-kit,demura-read-chksum-cmds",
-			"lcd-kit,demura-read-chksum-cmds-state",
-			&disp_info->demura.rr_chksum_cmds);
-		lcd_kit_parse_dcs_cmds(np, "lcd-kit,demura-rw-chksum-cmds",
-			"lcd-kit,demura-rw-chksum-cmds-state",
-			&disp_info->demura.rw_chksum_cmds);
-		lcd_kit_parse_dcs_cmds(np, "lcd-kit,demura-dsi0-pre-cmds",
-			"lcd-kit,demura-dsi0-pre-cmds-state",
-			&disp_info->demura.d0_w_pre_cmds);
-		lcd_kit_parse_dcs_cmds(np, "lcd-kit,demura-dsi1-pre-cmds",
-			"lcd-kit,demura-dsi1-pre-cmds-state",
-			&disp_info->demura.d1_w_pre_cmds);
-		lcd_kit_parse_dcs_cmds(np, "lcd-kit,demura-dsi0-w-fir-cmds",
-			"lcd-kit,demura-dsi0-w-fir-cmds-state",
-			&disp_info->demura.d0_w_fir_cmds);
-		lcd_kit_parse_dcs_cmds(np, "lcd-kit,demura-dsi1-w-fir-cmds",
-			"lcd-kit,demura-dsi1-w-fir-cmds-state",
-			&disp_info->demura.d1_w_fir_cmds);
-		lcd_kit_parse_dcs_cmds(np, "lcd-kit,demura-dsi0-w-con-cmds",
-			"lcd-kit,demura-dsi1-w-con-cmds-state",
-			&disp_info->demura.d0_w_con_cmds);
-		lcd_kit_parse_dcs_cmds(np, "lcd-kit,demura-dsi1-w-con-cmds",
-			"lcd-kit,demura-dsi1-w-con-cmds-state",
-			&disp_info->demura.d1_w_con_cmds);
-		lcd_kit_parse_dcs_cmds(np, "lcd-kit,demura-dsi0-w-end-cmds",
-			"lcd-kit,demura-dsi0-w-end-cmds-state",
-			&disp_info->demura.d0_w_end_cmds);
-		lcd_kit_parse_dcs_cmds(np, "lcd-kit,demura-dsi1-w-end-cmds",
-			"lcd-kit,demura-dsi1-w-end-cmds-state",
-			&disp_info->demura.d1_w_end_cmds);
-		lcd_kit_parse_dcs_cmds(np, "lcd-kit,demura-dsi0-w-irdrop-cmds",
-			"lcd-kit,demura-dsi0-w-irdrop-cmds-state",
-			&disp_info->demura.d0_w_ird_cmds);
-		lcd_kit_parse_dcs_cmds(np, "lcd-kit,demura-dsi1-w-irdrop-cmds",
-			"lcd-kit,demura-dsi1-w-irdrop-cmds-state",
-			&disp_info->demura.d1_w_ird_cmds);
-		lcd_kit_parse_dcs_cmds(np, "lcd-kit,demura-d0-w-ird-pre-cmds",
-			"lcd-kit,demura-d0-w-ird-pre-cmds-state",
-			&disp_info->demura.d0_w_ird_pre_cmds);
-		lcd_kit_parse_dcs_cmds(np, "lcd-kit,demura-d1-w-ird-pre-cmds",
-			"lcd-kit,demura-d1-w-ird-pre-cmds-state",
-			&disp_info->demura.d1_w_ird_pre_cmds);
-		lcd_kit_parse_dcs_cmds(np, "lcd-kit,demura-d0-w-ird-end-cmds",
-			"lcd-kit,demura-d0-w-ird-end-cmds-state",
-			&disp_info->demura.d0_w_ird_end_cmds);
-		lcd_kit_parse_dcs_cmds(np, "lcd-kit,demura-d1-w-ird-end-cmds",
-			"lcd-kit,demura-d1-w-ird-end-cmds-state",
-			&disp_info->demura.d1_w_ird_end_cmds);
-	}
 	return ;
 }
 /*lint -save -e* */
@@ -2056,6 +1390,7 @@ void lcd_kit_parse_util(struct device_node* np)
 							   &disp_info->project_id.cmds);
 		disp_info->project_id.default_project_id = (char*)of_get_property(np, "lcd-kit,default-project-id", NULL);
 	}
+	OF_PROPERTY_READ_U32_DEFAULT(np, "lcd-kit,dsi1-support", &disp_info->dsi1_cmd_support, 0);
 
 	OF_PROPERTY_READ_U8_DEFAULT(np, "lcd-kit,cascade-ic-support",
 				&disp_info->cascade_ic.support, 0);
@@ -2098,18 +1433,26 @@ void lcd_kit_parse_util(struct device_node* np)
 		}
 	}
 	/*gamma otp*/
-	OF_PROPERTY_READ_U32_DEFAULT(np, "lcd-kit,otp-gamma-support",
-		&disp_info->otp_gamma.support, 0);
+	OF_PROPERTY_READ_U32_DEFAULT(np, "lcd-kit,otp-gamma-support", &disp_info->otp_gamma.support, 0);
 	if (disp_info->otp_gamma.support) {
-		lcd_kit_parse_dcs_cmds(np, "lcd-kit,elvss-cmds",
-			"lcd-kit,elvss-cmds-state",
-			&disp_info->otp_gamma.elvss_cmds);
-		lcd_kit_parse_dcs_cmds(np, "lcd-kit,otp-gamma-cmds",
-			"lcd-kit,otp-gamma-cmds-state",
-			&disp_info->otp_gamma.gamma_cmds);
-		lcd_kit_parse_dcs_cmds(np, "lcd-kit,otp-gray-cmds",
-			"lcd-kit,otp-gray-cmds-state",
-			&disp_info->otp_gamma.gray_cmds);
+		lcd_kit_parse_dcs_cmds(np, "lcd-kit,elvss-cmds", "lcd-kit,elvss-cmds-state",
+							   &disp_info->otp_gamma.elvss_cmds);
+		lcd_kit_parse_dcs_cmds(np, "lcd-kit,otp-gamma-cmds", "lcd-kit,otp-gamma-cmds-state",
+							   &disp_info->otp_gamma.gamma_cmds);
+	}
+	/*vertical line test*/
+	OF_PROPERTY_READ_U32_DEFAULT(np, "lcd-kit,vertical-line-test-support", &disp_info->vertical_line.support, 0);
+	if (disp_info->vertical_line.support) {
+		OF_PROPERTY_READ_U32_DEFAULT(np, "lcd-kit,vertical-line-test-period",
+						&disp_info->vertical_line.test_period, 0);
+
+		lcd_kit_parse_dcs_cmds(np, "lcd-kit,vertical-line-test-avdd-cmds",
+						"lcd-kit,vertical-line-avdd-cmds-state",
+						&disp_info->vertical_line.avdd_cmds);
+
+		lcd_kit_parse_dcs_cmds(np, "lcd-kit,vertical-line-test-gnd-cmds",
+						"lcd-kit,vertical-line-gnd-cmds-state",
+						&disp_info->vertical_line.gnd_cmds);
 	}
 	/*pcd errflag*/
 	OF_PROPERTY_READ_U32_DEFAULT(np, "lcd-kit,pcd-cmds-support",
@@ -2131,8 +1474,6 @@ void lcd_kit_parse_util(struct device_node* np)
 			"lcd-kit,errflag-read-cmds-state",
 			&disp_info->pcd_errflag.read_errflag_cmds);
 	}
-	OF_PROPERTY_READ_U32_DEFAULT(np, "lcd-kit,dbv-stat-support",
-		&disp_info->dbv_stat.support, 0);
 	return;
 }
 /*lint -restore*/
@@ -2142,8 +1483,6 @@ void lcd_kit_parse_dt(struct device_node* np)
 		LCD_KIT_ERR("np is null\n");
 		return ;
 	}
-	OF_PROPERTY_READ_U32_DEFAULT(np, "lcd-kit,dsi1-support",
-		&disp_info->dsi1_cmd_support, 0);
 	/*parse running test*/
 	lcd_kit_parse_running(np);
 	/*parse effect info*/
@@ -2152,171 +1491,44 @@ void lcd_kit_parse_dt(struct device_node* np)
 	lcd_kit_parse_util(np);
 }
 
-static void lcd_enable_checksum(struct hisi_fb_data_type *hisifd)
-{
-	/* disable esd */
-	lcd_esd_enable(hisifd, 0);
-	disp_info->checksum.status = LCD_KIT_CHECKSUM_START;
-	lcd_kit_dsi_cmds_tx(hisifd, &disp_info->checksum.enable_cmds);
-	disp_info->checksum.pic_index = INVALID_INDEX;
-	LCD_KIT_INFO("Enable checksum\n");
-}
-
-int lcd_kit_checksum_set(struct hisi_fb_data_type *hisifd,
-	int pic_index)
+int lcd_kit_checksum_set(struct hisi_fb_data_type* hisifd, int pic_index)
 {
 	int ret = LCD_KIT_OK;
 
-	if (!hisifd) {
-		LCD_KIT_ERR("hisifd is null\n");
-		return LCD_KIT_FAIL;
-	}
 	if (disp_info->checksum.status == LCD_KIT_CHECKSUM_END) {
-		if (pic_index == TEST_PIC_0) {
-			LCD_KIT_INFO("start gram checksum\n");
-			lcd_enable_checksum(hisifd);
+		if (TEST_PIC_0 == pic_index) {
+			LCD_KIT_INFO("start gram checksum...\n");
+			disp_info->checksum.status = LCD_KIT_CHECKSUM_START;
+			lcd_kit_effect_switch_ctrl(hisifd, 1);
+			lcd_kit_dsi_cmds_tx(hisifd, &disp_info->checksum.enable_cmds);
+			disp_info->checksum.pic_index = 0xff;
+			LCD_KIT_INFO("Enable checksum\n");
 			return ret;
 		} else {
 			LCD_KIT_INFO("pic index error\n");
 			return LCD_KIT_FAIL;
 		}
 	} else {
-		if (pic_index == TEST_PIC_2)
+		if (TEST_PIC_2 == pic_index) {
 			disp_info->checksum.check_count++;
-		if (disp_info->checksum.check_count == CHECKSUM_CHECKCOUNT) {
-			LCD_KIT_INFO("check 5 times, set checksum end\n");
+		}
+		if (CHECKSUM_CHECKCOUNT == disp_info->checksum.check_count) {
+			LCD_KIT_INFO("gram checksum pic %d test 5 times, set checkout end\n", pic_index);
 			disp_info->checksum.status = LCD_KIT_CHECKSUM_END;
 			disp_info->checksum.check_count = 0;
 		}
 	}
 	switch (pic_index) {
-	case TEST_PIC_0:
-	case TEST_PIC_1:
-	case TEST_PIC_2:
-		LCD_KIT_INFO("set pic [%d]\n", pic_index);
-		disp_info->checksum.pic_index = pic_index;
-		break;
-	default:
-		LCD_KIT_INFO("set pic [%d] unknown\n", pic_index);
-		disp_info->checksum.pic_index = INVALID_INDEX;
-		break;
-	}
-	return ret;
-}
-
-static int lcd_checksum_compare(uint8_t *read_value, uint32_t *value,
-	int len)
-{
-	int i;
-	int err_no = 0;
-	uint8_t tmp;
-
-	for (i = 0; i < len; i++) {
-		tmp = (uint8_t)value[i];
-		if (read_value[i] != tmp) {
-			LCD_KIT_ERR("gram check error\n");
-			LCD_KIT_ERR("read_value[%d]:0x%x\n", i, read_value[i]);
-			LCD_KIT_ERR("expect_value[%d]:0x%x\n", i, tmp);
-			err_no++;
-		}
-	}
-	return err_no;
-}
-
-static int lcd_check_checksum(struct hisi_fb_data_type *hisifd)
-{
-	int ret, err_cnt, check_cnt;
-	uint8_t read_value[LCD_KIT_CHECKSUM_SIZE + 1] = {0};
-	uint32_t *checksum = NULL;
-	uint32_t pic_index;
-
-	if (disp_info->checksum.value.arry_data == NULL) {
-		LCD_KIT_ERR("null pointer\n");
-		return LCD_KIT_FAIL;
-	}
-	pic_index = disp_info->checksum.pic_index;
-	ret = lcd_kit_dsi_cmds_rx(hisifd, read_value,
-		&disp_info->checksum.checksum_cmds);
-	if (ret) {
-		LCD_KIT_ERR("checksum read dsi0 error\n");
-		return LCD_KIT_FAIL;
-	}
-	check_cnt = disp_info->checksum.value.arry_data[pic_index].cnt;
-	if (check_cnt > LCD_KIT_CHECKSUM_SIZE) {
-		LCD_KIT_ERR("checksum count is larger than checksum size\n");
-		return LCD_KIT_FAIL;
-	}
-	checksum = disp_info->checksum.value.arry_data[pic_index].buf;
-	err_cnt = lcd_checksum_compare(read_value, checksum, check_cnt);
-	if (err_cnt) {
-		LCD_KIT_ERR("err_cnt:%d\n", err_cnt);
-		ret = LCD_KIT_FAIL;
-	}
-	return ret;
-}
-
-static int lcd_check_dsi1_checksum(struct hisi_fb_data_type *hisifd)
-{
-	int ret, err_cnt, check_cnt;
-	uint8_t read_value[LCD_KIT_CHECKSUM_SIZE + 1] = {0};
-	uint32_t *checksum = NULL;
-	uint32_t pic_index;
-
-	if (disp_info->checksum.dsi1_value.arry_data == NULL) {
-		LCD_KIT_ERR("null pointer\n");
-		return LCD_KIT_FAIL;
-	}
-	pic_index = disp_info->checksum.pic_index;
-	ret = lcd_kit_dsi1_cmds_rx(hisifd, read_value,
-		&disp_info->checksum.checksum_cmds);
-	if (ret) {
-		LCD_KIT_ERR("checksum read dsi1 error\n");
-		return LCD_KIT_FAIL;
-	}
-	check_cnt = disp_info->checksum.dsi1_value.arry_data[pic_index].cnt;
-	if (check_cnt > LCD_KIT_CHECKSUM_SIZE) {
-		LCD_KIT_ERR("checksum count is larger than checksum size\n");
-		return LCD_KIT_FAIL;
-	}
-	checksum = disp_info->checksum.dsi1_value.arry_data[pic_index].buf;
-	err_cnt = lcd_checksum_compare(read_value, checksum, check_cnt);
-	if (err_cnt) {
-		LCD_KIT_ERR("err_cnt:%d\n", err_cnt);
-		ret = LCD_KIT_FAIL;
-	}
-	return ret;
-}
-
-int lcd_kit_checksum_check(struct hisi_fb_data_type *hisifd)
-{
-	int ret;
-	uint32_t pic_index;
-
-	pic_index = disp_info->checksum.pic_index;
-	LCD_KIT_INFO("checksum pic num:%d\n", pic_index);
-	if (pic_index > TEST_PIC_2) {
-		LCD_KIT_ERR("checksum pic num unknown:%d\n", pic_index);
-		return LCD_KIT_FAIL;
-	}
-	ret = lcd_check_checksum(hisifd);
-	if (ret) {
-		LCD_KIT_ERR("checksum error\n");
-		goto fail;
-	}
-	if (lcd_is_dual_mipi()) {
-		ret = lcd_check_dsi1_checksum(hisifd);
-		if (ret)
-			LCD_KIT_ERR("dsi1 checksum error\n");
-	}
-fail:
-	if (ret && disp_info->checksum.pic_index == TEST_PIC_2)
-		disp_info->checksum.status = LCD_KIT_CHECKSUM_END;
-
-	if (disp_info->checksum.status == LCD_KIT_CHECKSUM_END) {
-		lcd_kit_dsi_cmds_tx(hisifd, &disp_info->checksum.disable_cmds);
-		LCD_KIT_INFO("gram checksum end, disable checksum\n");
-		/* enable esd */
-		lcd_esd_enable(hisifd, 1);
+		case TEST_PIC_0:
+		case TEST_PIC_1:
+		case TEST_PIC_2:
+			LCD_KIT_INFO("gram checksum set pic [%d]\n", pic_index);
+			disp_info->checksum.pic_index = pic_index;
+			break;
+		default:
+			LCD_KIT_INFO("gram checksum set pic [%d] unknown\n", pic_index);
+			disp_info->checksum.pic_index = 0xff;
+			break;
 	}
 	return ret;
 }
@@ -2337,8 +1549,8 @@ static void lcd_dmd_report_err(uint32_t err_no, char *info)
 
 int lcd_kit_check_pcd_errflag_check(struct hisi_fb_data_type *hisifd)
 {
-	uint8_t result = PCD_ERRFLAG_SUCCESS;
-	int ret;
+	int result = LCD_KIT_OK;
+	int ret    = LCD_KIT_OK;
 	uint8_t read_pcd[LCD_KIT_PCD_SIZE] = {0};
 	uint8_t read_errflag[LCD_KIT_ERRFLAG_SIZE] = {0};
 	char err_info[DMD_ERR_INFO_LEN] = {0};
@@ -2346,7 +1558,7 @@ int lcd_kit_check_pcd_errflag_check(struct hisi_fb_data_type *hisifd)
 	int i;
 
 	if (!hisifd) {
-		LCD_KIT_ERR("hisifd is NULL\n");
+		LCD_KIT_ERR("hisifd is NULL.\n");
 		return -1;
 	}
 	if (disp_info->pcd_errflag.pcd_support) {
@@ -2356,13 +1568,13 @@ int lcd_kit_check_pcd_errflag_check(struct hisi_fb_data_type *hisifd)
 			&disp_info->pcd_errflag.read_pcd_cmds);
 		expect_value = (char *)disp_info->pcd_errflag.pcd_value.buf;
 		if (ret == LCD_KIT_OK) {
-			/* novatek noly detects the third parameter */
+			/*novatek noly detects the third parameter*/
 			if (expect_value != NULL) {
 				if (read_pcd[2] != *expect_value)
 					result |= PCD_FAIL;
 			}
 		} else {
-			LCD_KIT_ERR("read pcd err\n");
+			LCD_KIT_ERR("read pcd err.\n");
 			result |= PCD_FAIL;
 		}
 		if (result == PCD_FAIL) {
@@ -2375,9 +1587,9 @@ int lcd_kit_check_pcd_errflag_check(struct hisi_fb_data_type *hisifd)
 		}
 		LCD_KIT_INFO("pcd REG read result is 0x%x.0x%x.0x%x\n",
 			read_pcd[0], read_pcd[1], read_pcd[2]);
-		LCD_KIT_INFO("pcd check result is %d\n", result);
+		LCD_KIT_INFO("pcd check result is %d.\n", result);
 	}
-	/* Reserve interface, redevelop when needed */
+	/*Reserve interface, redevelop when needed.*/
 	if (disp_info->pcd_errflag.errflag_support) {
 		(void)lcd_kit_dsi_cmds_rx(hisifd, read_errflag,
 			&disp_info->pcd_errflag.read_errflag_cmds);
@@ -2388,9 +1600,138 @@ int lcd_kit_check_pcd_errflag_check(struct hisi_fb_data_type *hisifd)
 			}
 		}
 	}
-	return (int)result;
+
+	return result;
 }
 
+int lcd_kit_checksum_check(struct hisi_fb_data_type* hisifd)
+{
+	int ret = LCD_KIT_OK;
+	int checksum_result = 0;
+	int i = 0;
+	uint8_t read_value[LCD_KIT_CHECKSUM_SIZE] = {0};
+
+	if (disp_info->checksum.support) {
+		switch (disp_info->checksum.pic_index) {
+			case TEST_PIC_0:
+			case TEST_PIC_1:
+			case TEST_PIC_2:
+				LCD_KIT_INFO("start check gram checksum:[%d]\n", disp_info->checksum.pic_index);
+				break;
+			default:
+				LCD_KIT_ERR("gram checksum pic num unknown(%d)\n", disp_info->checksum.pic_index);
+				ret = LCD_KIT_FAIL;
+				return ret;
+		}
+	}
+	lcd_kit_dsi_cmds_rx(hisifd, read_value, &disp_info->checksum.checksum_cmds);
+	if (disp_info->checksum.value.buf == NULL)
+	{
+		LCD_KIT_ERR("Null pointer.\n");
+		return LCD_KIT_FAIL;
+	}
+	for (i = 0; i < disp_info->checksum.checksum_cmds.cmd_cnt; i++) {
+		if (read_value[i] != disp_info->checksum.value.buf[i]) {
+			LCD_KIT_ERR("gram check error, read_value[%d]:0x%x, disp_info->checksum.value.buf[%d]:0x%x\n",
+						i, read_value[i], i, disp_info->checksum.value.buf[i]);
+			checksum_result++;
+		}
+	}
+	if (checksum_result) {
+		LCD_KIT_ERR("checksum_result:%d\n", checksum_result);
+		checksum_result = 1;
+	}
+	if (checksum_result && TEST_PIC_2 == disp_info->checksum.pic_index) {
+		disp_info->checksum.status = LCD_KIT_CHECKSUM_END;
+	}
+
+	if (LCD_KIT_CHECKSUM_END == disp_info->checksum.status) {
+		lcd_kit_dsi_cmds_tx(hisifd, &disp_info->checksum.disable_cmds);
+		lcd_kit_effect_switch_ctrl(hisifd, 0);
+		LCD_KIT_INFO("gram checksum end, disable checksum.\n");
+	}
+	return checksum_result;
+}
+
+void lcd_kit_effect_switch_ctrl(struct hisi_fb_data_type* hisifd, bool ctrl)
+{
+#if 0
+	struct hisi_panel_info* pinfo = NULL;
+	char __iomem* dpp_base = NULL;
+	char __iomem* lcp_base = NULL;
+	char __iomem* gamma_base = NULL;
+
+	if ( NULL == hisifd ) {
+		LCD_KIT_ERR("hisifd is null\n");
+		return;
+	}
+	dpp_base = hisifd->dss_base + DSS_DPP_OFFSET;
+	lcp_base = hisifd->dss_base + DSS_DPP_LCP_OFFSET;
+	gamma_base = hisifd->dss_base + DSS_DPP_GAMA_OFFSET;
+	pinfo = &(hisifd->panel_info);
+	if (ctrl) {
+		if (pinfo->gamma_support == 1) {
+			HISI_FB_INFO("disable gamma\n");
+			/* disable de-gamma */
+			set_reg(lcp_base + LCP_DEGAMA_EN, 0x0, 1, 0);
+			/* disable gamma */
+			set_reg(gamma_base + GAMA_EN, 0x0, 1, 0);
+		}
+		if (pinfo->gmp_support == 1) {
+			HISI_FB_INFO("disable gmp\n");
+			/* disable gmp */
+#if defined (CONFIG_HISI_FB_970)
+			set_reg(dpp_base + LCP_GMP_BYPASS_EN, 0x0, 1, 0);
+#else
+			set_reg(dpp_base + LCP_GMP_BYPASS_EN, 0x1, 1, 0);
+#endif
+		}
+		if (pinfo->xcc_support == 1) {
+			HISI_FB_INFO("disable xcc\n");
+			/* disable xcc */
+#if defined (CONFIG_HISI_FB_970)
+			set_reg(lcp_base + LCP_XCC_BYPASS_EN, 0x0, 2, 0);
+#else
+			set_reg(lcp_base + LCP_XCC_BYPASS_EN, 0x1, 1, 0);
+#endif
+		}
+#if !defined (CONFIG_HISI_FB_970) //kirin970 delete bittext function
+		/* disable bittext */
+		set_reg(hisifd->dss_base + DSS_DPP_BITEXT0_OFFSET + BIT_EXT0_CTL, 0x0, 1, 0);
+#endif
+	} else {
+		if (pinfo->gamma_support == 1) {
+			HISI_FB_INFO("enable gamma\n");
+			/* enable de-gamma */
+			set_reg(lcp_base + LCP_DEGAMA_EN, 0x1, 1, 0);
+			/* enable gamma */
+			set_reg(gamma_base + GAMA_EN, 0x1, 1, 0);
+		}
+		if (pinfo->gmp_support == 1) {
+			HISI_FB_INFO("enable gmp\n");
+			/* enable gmp */
+#if defined (CONFIG_HISI_FB_970)
+			set_reg(dpp_base + LCP_GMP_BYPASS_EN, 0x3, 2, 0);
+#else
+			set_reg(dpp_base + LCP_GMP_BYPASS_EN, 0x0, 1, 0);
+#endif
+		}
+		if (pinfo->xcc_support == 1) {
+			HISI_FB_INFO("enable xcc\n");
+			/* enable xcc */
+#if defined (CONFIG_HISI_FB_970)
+			set_reg(lcp_base + LCP_XCC_BYPASS_EN, 0x1, 1, 0);
+#else
+			set_reg(lcp_base + LCP_XCC_BYPASS_EN, 0x0, 1, 0);
+#endif
+		}
+		/* enable bittext */
+#if !defined (CONFIG_HISI_FB_970) //kirin970 delete bittext function
+		set_reg(hisifd->dss_base + DSS_DPP_BITEXT0_OFFSET + BIT_EXT0_CTL, 0x1, 1, 0);
+#endif
+	}
+#endif
+}
 
 int lcd_kit_is_enter_pt_mode(void)
 {
@@ -2448,14 +1789,6 @@ int lcd_kit_read_gamma(struct hisi_fb_data_type* hisifd, uint8_t *read_value)
 {
 	int ret = LCD_KIT_OK;
 
-	if (disp_info == NULL) {
-		LCD_KIT_ERR("disp_info null pointer\n");
-		return LCD_KIT_FAIL;
-	}
-	if (disp_info->gamma_cal.cmds.cmds == NULL) {
-		LCD_KIT_ERR("gamma_cal cmds null pointer\n");
-		return LCD_KIT_FAIL;
-	}
 	disp_info->gamma_cal.cmds.cmds->payload[1] = (disp_info->gamma_cal.addr >> 8) & 0xff;
 	disp_info->gamma_cal.cmds.cmds->payload[0] = disp_info->gamma_cal.addr & 0xff;
 	disp_info->gamma_cal.cmds.cmds->dlen = disp_info->gamma_cal.length;
@@ -2483,9 +1816,8 @@ void lcd_kit_read_power_status(struct hisi_fb_data_type* hisifd)
 		status = inp32(hisifd->mipi_dsi0_base + MIPIDSI_CMD_PKT_STATUS_OFFSET);
 	}
 	status = inp32(hisifd->mipi_dsi0_base + MIPIDSI_GEN_PLD_DATA_OFFSET);
-	LCD_KIT_INFO("LCD Power State = 0x%x,lcd_is_dual_mipi = 0x%x\n",
-		status, lcd_is_dual_mipi());
-	if (lcd_is_dual_mipi()) {
+	LCD_KIT_INFO("LCD Power State = 0x%x.dsi1_cmd_support = 0x%x\n", status, disp_info->dsi1_cmd_support);
+	if(disp_info->dsi1_cmd_support){
 		outp32(hisifd->mipi_dsi1_base + MIPIDSI_GEN_HDR_OFFSET, 0x0A06);
 		status1 = inp32(hisifd->mipi_dsi1_base + MIPIDSI_CMD_PKT_STATUS_OFFSET);
 		while (status1 & 0x10) {
@@ -2760,109 +2092,67 @@ void lcd_kit_set_actual_bl_max_nit(void)
 	common_info->actual_bl_max_nit = g_brightness_color_oeminfo.color_params.white_decay_luminace;
 }
 
-static void lcd_dsi_tx_lp_mode_cfg(char __iomem *dsi_base)
+void lcd_kit_set_mipi_tx_link(struct hisi_fb_data_type *hisifd, int link_state)
 {
-	/*
-	 * gen short cmd read switch low-power,
-	 * include 0-parameter,1-parameter,2-parameter
-	 */
-	set_reg(dsi_base + MIPIDSI_CMD_MODE_CFG_OFFSET, 0x7, 3, 8);
-	/* gen long cmd write switch low-power */
-	set_reg(dsi_base + MIPIDSI_CMD_MODE_CFG_OFFSET, 0x1, 1, 14);
-	/*
-	 * dcs short cmd write switch high-speed,
-	 * include 0-parameter,1-parameter
-	 */
-	set_reg(dsi_base + MIPIDSI_CMD_MODE_CFG_OFFSET, 0x3, 2, 16);
-}
-
-static void lcd_dsi_tx_hs_mode_cfg(char __iomem *dsi_base)
-{
-	/*
-	 * gen short cmd read switch low-power,
-	 * include 0-parameter,1-parameter,2-parameter
-	 */
-	set_reg(dsi_base + MIPIDSI_CMD_MODE_CFG_OFFSET, 0x0, 3, 8);
-	/* gen long cmd write switch high-speed */
-	set_reg(dsi_base + MIPIDSI_CMD_MODE_CFG_OFFSET, 0x0, 1, 14);
-	/*
-	 * dcs short cmd write switch high-speed,
-	 * include 0-parameter,1-parameter
-	 */
-	set_reg(dsi_base + MIPIDSI_CMD_MODE_CFG_OFFSET, 0x0, 2, 16);
-}
-
-static void lcd_dsi_rx_lp_mode_cfg(char __iomem *dsi_base)
-{
-	/*
-	 * gen short cmd read switch low-power,
-	 * include 0-parameter,1-parameter,2-parameter
-	 */
-	set_reg(dsi_base + MIPIDSI_CMD_MODE_CFG_OFFSET, 0x7, 3, 11);
-	/* dcs short cmd read switch low-power */
-	set_reg(dsi_base + MIPIDSI_CMD_MODE_CFG_OFFSET, 0x1, 1, 18);
-	/* read packet size cmd switch low-power */
-	set_reg(dsi_base + MIPIDSI_CMD_MODE_CFG_OFFSET, 0x1, 1, 24);
-}
-
-static void lcd_dsi_rx_hs_mode_cfg(char __iomem *dsi_base)
-{
-	/*
-	 * gen short cmd read switch high-speed,
-	 * include 0-parameter,1-parameter,2-parameter
-	 */
-	set_reg(dsi_base + MIPIDSI_CMD_MODE_CFG_OFFSET, 0x0, 3, 11);
-	/* dcs short cmd read switch high-speed */
-	set_reg(dsi_base + MIPIDSI_CMD_MODE_CFG_OFFSET, 0x0, 1, 18);
-	/* read packet size cmd switch high-speed */
-	set_reg(dsi_base + MIPIDSI_CMD_MODE_CFG_OFFSET, 0x0, 1, 24);
-}
-
-void lcd_kit_set_mipi_link(struct hisi_fb_data_type *hisifd,
-	int link_state)
-{
-	struct hisi_panel_info *pinfo = NULL;
-
-	if (!hisifd) {
-		LCD_KIT_ERR("hisifd is null\n");
-		return;
-	}
-	pinfo = &hisifd->panel_info;
-	if (!pinfo) {
-		LCD_KIT_ERR("panel_info is NULL!\n");
-		return;
-	}
-	if (pinfo->lcd_init_step == LCD_INIT_MIPI_LP_SEND_SEQUENCE) {
-		LCD_KIT_INFO("lowpower stage, can not set!\n");
-		return;
-	}
-	if (is_mipi_cmd_panel(hisifd)) {
-		/*wait fifo empty*/
-		(void)lcd_kit_dsi_fifo_is_empty(hisifd->mipi_dsi0_base);
-		if (is_dual_mipi_panel(hisifd))
-			lcd_kit_dsi_fifo_is_empty(hisifd->mipi_dsi1_base);
-		LCD_KIT_INFO("link_state:%d\n", link_state);
-		switch (link_state) {
+	/*wait fifo empty*/
+	(void)lcd_kit_dsi_fifo_is_empty(hisifd->mipi_dsi0_base);
+	LCD_KIT_INFO("link_state:%d\n", link_state);
+	switch (link_state) {
 		case LCD_KIT_DSI_LP_MODE:
-			lcd_dsi_tx_lp_mode_cfg(hisifd->mipi_dsi0_base);
-			lcd_dsi_rx_lp_mode_cfg(hisifd->mipi_dsi0_base);
-			if (is_dual_mipi_panel(hisifd)) {
-				lcd_dsi_tx_lp_mode_cfg(hisifd->mipi_dsi1_base);
-				lcd_dsi_rx_lp_mode_cfg(hisifd->mipi_dsi1_base);
+			if (is_mipi_cmd_panel(hisifd)) {
+				/*gen short cmd write switch low-power,include 0-parameter,1-parameter,2-parameter*/
+				set_reg(hisifd->mipi_dsi0_base + MIPIDSI_CMD_MODE_CFG_OFFSET, 0x7, 3, 8);
+				/*gen long cmd write switch low-power*/
+				set_reg(hisifd->mipi_dsi0_base + MIPIDSI_CMD_MODE_CFG_OFFSET, 0x1, 1, 14);
+				/*dcs short cmd write switch low-power,include 0-parameter,1-parameter*/
+				set_reg(hisifd->mipi_dsi0_base + MIPIDSI_CMD_MODE_CFG_OFFSET, 0x3, 2, 16);
 			}
 			break;
 		case LCD_KIT_DSI_HS_MODE:
-			lcd_dsi_tx_hs_mode_cfg(hisifd->mipi_dsi0_base);
-			lcd_dsi_rx_hs_mode_cfg(hisifd->mipi_dsi0_base);
-			if (is_dual_mipi_panel(hisifd)) {
-				lcd_dsi_tx_hs_mode_cfg(hisifd->mipi_dsi1_base);
-				lcd_dsi_rx_hs_mode_cfg(hisifd->mipi_dsi1_base);
+			if (is_mipi_cmd_panel(hisifd)) {
+				/*gen short cmd write switch high-speed,include 0-parameter,1-parameter,2-parameter*/
+				set_reg(hisifd->mipi_dsi0_base + MIPIDSI_CMD_MODE_CFG_OFFSET, 0x0, 3, 8);
+				/*gen long cmd write switch high-speed*/
+				set_reg(hisifd->mipi_dsi0_base + MIPIDSI_CMD_MODE_CFG_OFFSET, 0x0, 1, 14);
+				/*dcs short cmd write switch high-speed,include 0-parameter,1-parameter*/
+				set_reg(hisifd->mipi_dsi0_base + MIPIDSI_CMD_MODE_CFG_OFFSET, 0x0, 2, 16);
 			}
 			break;
 		default:
 			LCD_KIT_ERR("not support mode\n");
 			break;
-		}
+	}
+}
+
+void lcd_kit_set_mipi_rx_link(struct hisi_fb_data_type *hisifd, int link_state)
+{
+	/*wait fifo empty*/
+	(void)lcd_kit_dsi_fifo_is_empty(hisifd->mipi_dsi0_base);
+	LCD_KIT_INFO("link_state:%d\n", link_state);
+	switch (link_state) {
+		case LCD_KIT_DSI_LP_MODE:
+			if (is_mipi_cmd_panel(hisifd)) {
+				/*gen short cmd read switch low-power,include 0-parameter,1-parameter,2-parameter*/
+				set_reg(hisifd->mipi_dsi0_base + MIPIDSI_CMD_MODE_CFG_OFFSET, 0x7, 3, 11);
+				/*dcs short cmd read switch low-power*/
+				set_reg(hisifd->mipi_dsi0_base + MIPIDSI_CMD_MODE_CFG_OFFSET, 0x1, 1, 18);
+				/*read packet size cmd switch low-power*/
+				set_reg(hisifd->mipi_dsi0_base + MIPIDSI_CMD_MODE_CFG_OFFSET, 0x1, 1, 24);
+			}
+			break;
+		case LCD_KIT_DSI_HS_MODE:
+			if (is_mipi_cmd_panel(hisifd)) {
+				/*gen short cmd read switch high-speed,include 0-parameter,1-parameter,2-parameter*/
+				set_reg(hisifd->mipi_dsi0_base + MIPIDSI_CMD_MODE_CFG_OFFSET, 0x0, 3, 11);
+				/*dcs short cmd read switch high-speed*/
+				set_reg(hisifd->mipi_dsi0_base + MIPIDSI_CMD_MODE_CFG_OFFSET, 0x0, 1, 18);
+				/*read packet size cmd switch high-speed*/
+				set_reg(hisifd->mipi_dsi0_base + MIPIDSI_CMD_MODE_CFG_OFFSET, 0x0, 1, 24);
+			}
+			break;
+		default:
+			LCD_KIT_ERR("not support mode\n");
+			break;
 	}
 }
 
@@ -2891,119 +2181,6 @@ static int lcd_kit_power_monitor_on(void)
 static int lcd_kit_power_monitor_off(void)
 {
 	return ina231_power_monitor_off();
-}
-
-int lcd_kit_set_otp_gamma(struct hisi_fb_data_type *hisifd)
-{
-	int ret;
-	int i;
-	u8 temp;
-	static bool first_set;
-	struct lcd_kit_dsi_cmd_desc *cmds = NULL;
-
-	if (!hisifd) {
-		LCD_KIT_ERR("hisifd is null\n");
-		return LCD_KIT_FAIL;
-	}
-	if (!first_set) {
-		cmds = disp_info->otp_gamma.gamma_cmds.cmds;
-		for (i = 0; i < (GAMMA_MAX - GAMMA_HEAD_LEN); i++) {
-			temp = disp_info->otp_gamma.gamma[i + GAMMA_HEAD_LEN];
-			if (cmds && cmds->payload)
-				cmds->payload[i + 1] = temp;
-		}
-		first_set = true;
-	}
-	/* adjust elvss */
-	ret = lcd_kit_dsi_cmds_tx(hisifd, &disp_info->otp_gamma.elvss_cmds);
-	if (ret) {
-		LCD_KIT_ERR("send adjust elvss cmd error\n");
-		return ret;
-	}
-	/* send otp gamma */
-	ret = lcd_kit_dsi_cmds_tx(hisifd, &disp_info->otp_gamma.gamma_cmds);
-	if (ret) {
-		LCD_KIT_ERR("send otp gamma cmd error\n");
-		return ret;
-	}
-	return ret;
-}
-
-int lcd_kit_set_otp_gray(struct hisi_fb_data_type *hisifd)
-{
-	int ret;
-	int i;
-	u8 temp;
-	struct lcd_kit_dsi_cmd_desc *cmds = NULL;
-	static bool first_set;
-
-	if (!hisifd) {
-		LCD_KIT_ERR("hisifd is null\n");
-		return LCD_KIT_FAIL;
-	}
-	if (!first_set) {
-		/* get gray cmds:0xC7 */
-		cmds = disp_info->otp_gamma.gray_cmds.cmds;
-		cmds++;
-		/* set up gray cmds */
-		for (i = 0; i < (GAMMA_MAX - GAMMA_HEAD_LEN); i++) {
-			temp = disp_info->otp_gamma.gamma[i + GAMMA_HEAD_LEN];
-			if (cmds && cmds->payload)
-				cmds->payload[i + 1] = temp;
-		}
-		first_set = true;
-	}
-	/* send otp gray */
-	ret = lcd_kit_dsi_cmds_tx(hisifd, &disp_info->otp_gamma.gray_cmds);
-	if (ret) {
-		LCD_KIT_ERR("send otp gray cmd error\n");
-		return ret;
-	}
-	return ret;
-}
-
-int lcd_kit_write_otp_gamma(u8 *buf)
-{
-	int ret = LCD_KIT_OK;
-	struct hisi_fb_data_type *hisifd = NULL;
-
-	if (!disp_info->otp_gamma.support) {
-		LCD_KIT_INFO("not support otp gamma\n");
-		return ret;
-	}
-	hisifd = hisifd_list[PRIMARY_PANEL_IDX];
-	if (hisifd == NULL) {
-		LCD_KIT_ERR("hisifd is null\n");
-		return LCD_KIT_FAIL;
-	}
-	if (buf == NULL) {
-		LCD_KIT_ERR("buf is null\n");
-		return LCD_KIT_FAIL;
-	}
-	/* print gamma head and len */
-	LCD_KIT_INFO("HEAD:0x%x, LEN:0x%x\n", buf[0], buf[1]);
-	/* verify gamma */
-	if ((buf[0] != GAMMA_HEAD && buf[0] != GRAY_HEAD) ||
-		(buf[1] != GAMMA_LEN)) {
-		LCD_KIT_INFO("not otp gamma\n");
-		return ret;
-	}
-	/* copy to gamma buffer */
-	memcpy(disp_info->otp_gamma.gamma, buf, GAMMA_MAX);
-	down(&hisifd->blank_sem);
-	if (!hisifd->panel_power_on) {
-		LCD_KIT_ERR("panel is power off\n");
-		up(&hisifd->blank_sem);
-		return LCD_KIT_FAIL;
-	}
-	hisifb_activate_vsync(hisifd);
-	if (buf[0] == GAMMA_HEAD)
-		lcd_kit_set_otp_gamma(hisifd);
-	else if (buf[0] == GRAY_HEAD)
-		lcd_kit_set_otp_gray(hisifd);
-	hisifb_deactivate_vsync(hisifd);
-	up(&hisifd->blank_sem);
-	return ret;
 }
 
 static int lcd_kit_set_vss_by_thermal(void)
@@ -3037,46 +2214,64 @@ static int lcd_kit_set_vss_by_thermal(void)
 	return ret;
 }
 
-static int lcd_kit_proximity_power_off(void)
+int lcd_kit_write_otp_gamma(u8 *buf)
 {
-	struct hisi_fb_data_type *hisifd = NULL;
+	#define GAMMA_MAX	146
+	#define GAMMA_HEAD	0x47
+	#define GAMMA_LEN	0x0a
+	#define GAMMA_HEAD_LEN	2
+	int ret = 0;
 
-	LCD_KIT_INFO("[Proximity_feature] lcd_kit_proximity_power_off enter!\n");
-	hisifd = hisifd_list[PRIMARY_PANEL_IDX];
-	if (hisifd == NULL) {
-		LCD_KIT_ERR("NULL Pointer\n");
-		return LCD_KIT_FAIL;
+	if (disp_info->otp_gamma.support) {
+		struct hisi_fb_data_type* hisifd = NULL;
+		int i = 0;
+
+		hisifd = hisifd_list[PRIMARY_PANEL_IDX];
+		if (hisifd == NULL) {
+			LCD_KIT_ERR("hisifd is null\n");
+			return LCD_KIT_FAIL;
+		}
+		if (buf == NULL) {
+			LCD_KIT_ERR("buf is null\n");
+			return LCD_KIT_FAIL;
+		}
+		/*print gamma head and len*/
+		LCD_KIT_INFO("HEAD:0x%x, LEN:0x%x\n", buf[0], buf[1]);
+		/*verify gamma*/
+		if ((buf[0] != GAMMA_HEAD) || (buf[1] != GAMMA_LEN)) {
+			LCD_KIT_INFO("not otp gamma\n");
+			return 0;
+		}
+		/*set up gamma cmds*/
+		for (i = 0; i < (GAMMA_MAX - GAMMA_HEAD_LEN); i++) {
+			disp_info->otp_gamma.gamma_cmds.cmds->payload[i+1] = buf[i + GAMMA_HEAD_LEN];
+		}
+		down(&hisifd->blank_sem);
+		if (!hisifd->panel_power_on) {
+			LCD_KIT_ERR("panel is power off\n");
+			up(&hisifd->blank_sem);
+			return LCD_KIT_FAIL;
+		}
+		hisifb_activate_vsync(hisifd);
+		/*adjust elvss*/
+		ret = lcd_kit_dsi_cmds_tx(hisifd, &disp_info->otp_gamma.elvss_cmds);
+		if (ret) {
+			LCD_KIT_ERR("send adjust elvss cmd error\n");
+			goto error;
+		}
+		/*send otp gamma*/
+		ret = lcd_kit_dsi_cmds_tx(hisifd, &disp_info->otp_gamma.gamma_cmds);
+		if (ret) {
+			LCD_KIT_ERR("send otp gamma cmd error\n");
+			goto error;
+		}
+		/*copy to gamma buffer*/
+		memcpy(disp_info->otp_gamma.gamma, buf, GAMMA_MAX);
+error:
+		hisifb_deactivate_vsync(hisifd);
+		up(&hisifd->blank_sem);
 	}
-	if (!common_info->thp_proximity.support) {
-		LCD_KIT_INFO("[Proximity_feature] thp_proximity not support exit!\n");
-		return LCD_KIT_FAIL;
-	}
-	if (lcd_kit_get_pt_mode()) {
-		LCD_KIT_INFO("[Proximity_feature] pt test mode exit!\n");
-		return LCD_KIT_FAIL;
-	}
-	down(&disp_info->thp_second_poweroff_sem);
-	if (common_info->thp_proximity.panel_power_state == POWER_ON) {
-		LCD_KIT_INFO("[Proximity_feature] power state is on exit!\n");
-		up(&disp_info->thp_second_poweroff_sem);
-		return LCD_KIT_FAIL;
-	}
-	if (common_info->thp_proximity.panel_power_state == POWER_TS_SUSPEND) {
-		LCD_KIT_INFO("[Proximity_feature] power off suspend state exit!\n");
-		up(&disp_info->thp_second_poweroff_sem);
-		return LCD_KIT_OK;
-	}
-	if (common_info->thp_proximity.work_status == TP_PROXMITY_DISABLE) {
-		LCD_KIT_INFO("[Proximity_feature] thp_proximity has been disabled exit!\n");
-		up(&disp_info->thp_second_poweroff_sem);
-		return LCD_KIT_FAIL;
-	}
-	common_info->thp_proximity.work_status = TP_PROXMITY_DISABLE;
-	if (common_ops->panel_power_off)
-		common_ops->panel_power_off(hisifd);
-	up(&disp_info->thp_second_poweroff_sem);
-	LCD_KIT_INFO("[Proximity_feature] lcd_kit_proximity_power_off exit!\n");
-	return LCD_KIT_OK;
+	return ret;
 }
 
 struct lcd_kit_ops g_lcd_ops = {
@@ -3090,7 +2285,6 @@ struct lcd_kit_ops g_lcd_ops = {
 	.power_monitor_off = lcd_kit_power_monitor_off,
 	.set_vss_by_thermal = lcd_kit_set_vss_by_thermal,
 	.write_otp_gamma = lcd_kit_write_otp_gamma,
-	.proximity_power_off = lcd_kit_proximity_power_off,
 };
 
 void lcd_kit_set_mipi_clk(struct hisi_fb_data_type* hisifd, uint32_t clk)
@@ -3107,7 +2301,6 @@ int lcd_kit_utils_init(struct device_node* np, struct hisi_panel_info* pinfo)
 {
 	/*init sem*/
 	sema_init(&disp_info->lcd_kit_sem, 1);
-	sema_init(&disp_info->thp_second_poweroff_sem, 1);
 	/*init mipi lock*/
 	mutex_init(&disp_info->mipi_lock);
 	/*parse display dts*/
@@ -3206,41 +2399,4 @@ void lcd_kit_recovery_display(struct hisi_fb_data_type *hisifd)
 	down(&hisifd->brightness_esd_sem);
 	hisifb_set_backlight(hisifd, bl_level_cur ? bl_level_cur:hisifd->bl_level, false);
 	up(&hisifd->brightness_esd_sem);
-}
-
-void lcd_hardware_reset(void)
-{
-	/* reset pull low */
-	lcd_kit_reset_power_ctrl(0);
-	msleep(300);
-	/* reset pull high */
-	lcd_kit_reset_power_ctrl(1);
-}
-
-void lcd_esd_enable(struct hisi_fb_data_type *hisifd, int enable)
-{
-	struct hisi_panel_info *pinfo = NULL;
-
-	if (hisifd == NULL) {
-		LCD_KIT_ERR("hisifd is null\n");
-		return;
-	}
-	pinfo = &(hisifd->panel_info);
-	if (pinfo == NULL) {
-		LCD_KIT_ERR("pinfo is null!\n");
-		return;
-	}
-	if (common_info->esd.support) {
-		pinfo->esd_enable = enable;
-		msleep(500);
-	}
-	LCD_KIT_INFO("pinfo->esd_enable = %d\n", pinfo->esd_enable);
-}
-
-bool lcd_is_dual_mipi(void)
-{
-	if (disp_info->dsi1_cmd_support)
-		return true;
-
-	return false;
 }

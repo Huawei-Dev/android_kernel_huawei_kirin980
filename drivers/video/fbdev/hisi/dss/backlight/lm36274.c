@@ -21,6 +21,8 @@
 #include "lm36274.h"
 #include "hisi_fb.h"
 #include <linux/hisi/hw_cmdline_parse.h> //for runmode_is_factory
+#include <dsm/dsm_pub.h>
+extern struct dsm_client *lcd_dclient;
 
 struct class *lm36274_class = NULL;
 struct lm36274_chip_data *lm36274_g_chip = NULL;
@@ -43,7 +45,6 @@ static int g_resume_bl_duration = 0;  /* default not support auto resume*/
 static enum hrtimer_restart lm36274_bl_resume_hrtimer_fnc(struct hrtimer *timer);
 static void lm36274_bl_resume_workqueue_handler(struct work_struct *work);
 extern int bl_lvl_map(int level);
-static int lm36274_fault_check_support;
 
 struct backlight_information {
 	/* whether support lm36274 or not */
@@ -119,10 +120,6 @@ static int lm36274_parse_dts(struct device_node *np)
 			LM36274_INFO("get %s from dts value = 0x%x\n", lm36274_dts_string[i],bl_info.lm36274_reg[i]);
 		}
 	}
-
-	if (of_property_read_u32(np, "lm36274_check_fault_support",
-		&lm36274_fault_check_support) < 0)
-		LM36274_INFO("No need to detect fault flags!\n");
 
 
 	return ret;
@@ -481,38 +478,6 @@ err_out:
     return ret;
 }
 
-static void lm36274_check_fault(struct lm36274_chip_data *pchip,
-	int last_level, int level)
-{
-	unsigned int val = 0;
-	int ret;
-	int i;
-
-	LM36274_INFO("backlight check FAULT_FLAG!\n");
-
-	ret = regmap_read(pchip->regmap, REG_FLAGS, &val);
-	if (ret < 0) {
-		LM36274_ERR("read lm36274 FAULT_FLAG failed!\n");
-		return;
-	}
-
-	for (i = 0; i < FLAG_CHECK_NUM; i++) {
-		if (!(err_table[i].flag & val))
-			continue;
-		LM36274_ERR("last_bkl:%d, cur_bkl:%d\n FAULT_FLAG:0x%x!\n",
-			last_level, level, err_table[i].flag);
-		ret = dsm_client_ocuppy(lcd_dclient);
-		if (ret) {
-			LM36274_ERR("dsm_client_ocuppy fail: ret=%d!\n", ret);
-			continue;
-		}
-		dsm_client_record(lcd_dclient,
-			"lm36274 last_bkl:%d, cur_bkl:%d\n FAULT_FLAG:0x%x!\n",
-			last_level, level, err_table[i].flag);
-		dsm_client_notify(lcd_dclient, err_table[i].err_no);
-	}
-}
-
 /**
  * lm36274_set_backlight_reg(): Set Backlight working mode
  *
@@ -544,6 +509,8 @@ int lm36274_set_backlight_reg(unsigned int bl_level)
 	bl_level = bl_lvl_map(bl_level);
 
 	LM36274_INFO("lm36274_set_backlight_reg bl_level = %u \n", bl_level);
+
+	//blkit_force_resume_reg_proc();
 
 	level = bl_level;
 
@@ -593,12 +560,6 @@ int lm36274_set_backlight_reg(unsigned int bl_level)
 		goto i2c_error;
 	}
 
-	/* Judge power on or power off */
-	if (lm36274_fault_check_support &&
-		((last_level <= 0 && level != 0) ||
-		(last_level > 0 && level == 0)))
-		lm36274_check_fault(lm36274_g_chip, last_level, level);
-
 	last_level = level;
 	up(&(lm36274_g_chip->test_sem));
 	LM36274_INFO("lm36274_set_backlight_reg exit succ \n");
@@ -610,6 +571,7 @@ i2c_error:
 	LM36274_INFO("lm36274_set_backlight_reg exit fail \n");
 	return ret;
 }
+/* EXPORT_SYMBOL(lm36274_set_backlight_reg); */
 
 /**
  * lm36274_set_reg(): Set lm36274 reg
@@ -688,22 +650,18 @@ static ssize_t lm36274_reg_bl_store(struct device *dev,
 					struct device_attribute *devAttr,
 					const char *buf, size_t size)
 {
-	ssize_t ret;
+	ssize_t ret = -1;
 	struct lm36274_chip_data *pchip = NULL;
 	unsigned int bl_level = 0;
 	unsigned int bl_msb = 0;
 	unsigned int bl_lsb = 0;
 
-	if (!dev) {
-		LM36274_ERR("dev is null\n");
-		return -1;
-	}
+	if (!dev)
+		return snprintf((char *)buf, PAGE_SIZE, "dev is null\n");
 
 	pchip = dev_get_drvdata(dev);
-	if (!pchip) {
-		LM36274_ERR("data is null\n");
-		return -1;
-	}
+	if (!pchip)
+		return snprintf((char *)buf, PAGE_SIZE, "data is null\n");
 
 	ret = kstrtouint(buf, 10, &bl_level);
 	if (ret) {
@@ -733,11 +691,11 @@ static ssize_t lm36274_reg_bl_store(struct device *dev,
 
 i2c_error:
 	dev_err(pchip->dev, "%s:i2c access fail to register\n", __func__);
-	return -1;
+	return snprintf((char *)buf, PAGE_SIZE, "%s: i2c access fail to register\n", __func__);
 
 out_input:
 	dev_err(pchip->dev, "%s:input conversion fail\n", __func__);
-	return -1;
+	return snprintf((char *)buf, PAGE_SIZE, "%s: input conversion fail\n", __func__);
 }
 
 static DEVICE_ATTR(reg_bl, (S_IRUGO|S_IWUSR), lm36274_reg_bl_show, lm36274_reg_bl_store);
@@ -787,22 +745,18 @@ static ssize_t lm36274_reg_store(struct device *dev,
 					struct device_attribute *devAttr,
 					const char *buf, size_t size)
 {
-	ssize_t ret;
+	ssize_t ret = -1;
 	struct lm36274_chip_data *pchip = NULL;
 	unsigned int reg = 0;
 	unsigned int mask = 0;
 	unsigned int val = 0;
 
-	if (!dev) {
-		LM36274_ERR("dev is null\n");
-		return -1;
-	}
+	if (!dev)
+		return snprintf((char *)buf, PAGE_SIZE, "dev is null\n");
 
 	pchip = dev_get_drvdata(dev);
-	if (!pchip) {
-		LM36274_ERR("data is null\n");
-		return -1;
-	}
+	if (!pchip)
+		return snprintf((char *)buf, PAGE_SIZE, "data is null\n");
 
 	ret = sscanf(buf, "reg=0x%x, mask=0x%x, val=0x%x",&reg,&mask,&val);
 	if (ret < 0) {
@@ -825,11 +779,11 @@ static ssize_t lm36274_reg_store(struct device *dev,
 
 i2c_error:
 	dev_err(pchip->dev, "%s:i2c access fail to register\n", __func__);
-	return -1;
+	return snprintf((char *)buf, PAGE_SIZE, "%s: i2c access fail to register\n", __func__);
 
 out_input:
 	dev_err(pchip->dev, "%s:input conversion fail\n", __func__);
-	return -1;
+	return snprintf((char *)buf, PAGE_SIZE, "%s: input conversion fail\n", __func__);
 }
 
 static DEVICE_ATTR(reg, (S_IRUGO|S_IWUSR), lm36274_reg_show, lm36274_reg_store);
@@ -1104,60 +1058,10 @@ static const struct attribute_group lm36274_group = {
 };
 
 #include "lcd_kit_bl.h"
-#include "lcd_kit_bias.h"
-
-static int lm36274_set_bias_voltage(int vpos, int vneg);
-static int lm36274_set_ic_disable(void);
 
 static struct lcd_kit_bl_ops bl_ops = {
 	.set_backlight = lm36274_set_backlight_reg,
-	.name = "36274",
 };
-static struct lcd_kit_bias_ops bias_ops = {
-	.set_bias_voltage = lm36274_set_bias_voltage,
-	.set_ic_disable = lm36274_set_ic_disable,
-};
-
-static int lm36274_set_bias_voltage(int vpos, int vneg)
-{
-	int ret;
-
-	if (vpos < 0 || vneg < 0) {
-		LM36274_ERR("vpos or vneg is error\n");
-		return -1;
-	}
-	ret = lm36274_config_write(lm36274_g_chip, lm36274_reg_addr,
-		bl_info.lm36274_reg, LM36274_RW_REG_MAX);
-	if (ret < 0)
-		LM36274_ERR("i2c access fail to register\n");
-	return ret;
-}
-static int lm36274_set_ic_disable(void)
-{
-	int ret;
-
-	if (!lm36274_g_chip)
-		return -1;
-
-	/* reset backlight ic */
-	ret = regmap_write(lm36274_g_chip->regmap, REG_BL_ENABLE, BL_RESET);
-	if (ret < 0)
-		LM36274_ERR("i2c access fail to register\n");
-
-	/* clean up bl val register */
-	ret = regmap_update_bits(lm36274_g_chip->regmap, REG_BL_BRIGHTNESS_LSB,
-		MASK_BL_LSB,BL_DISABLE);
-	if (ret < 0)
-		LM36274_ERR("i2c access fail to register\n");
-
-	ret = regmap_write(lm36274_g_chip->regmap, REG_BL_BRIGHTNESS_MSB,
-		BL_DISABLE);
-	if (ret < 0)
-		LM36274_ERR("i2c access fail to register\n");
-	if (!ret)
-		LM36274_INFO("lm36274_set_ic_disable successful!\n");
-	return ret;
-}
 
 static int lm36274_probe(struct i2c_client *client,
 				const struct i2c_device_id *id)
@@ -1246,7 +1150,6 @@ static int lm36274_probe(struct i2c_client *client,
 
 	LM36274_INFO("name: %s, address: (0x%x) ok!\n", client->name, client->addr);
 	lcd_kit_bl_register(&bl_ops);
-	lcd_kit_bias_register(&bias_ops);
 	lm36274_init_status = true;
 
 	return ret;
@@ -1311,8 +1214,7 @@ static int lm36274_remove(struct i2c_client *client)
 {
     struct lm36274_chip_data *pchip = i2c_get_clientdata(client);
 
-	if (regmap_write(pchip->regmap, REG_BL_ENABLE, BL_DISABLE) < 0)
-		LM36274_ERR("regmap_write REG_BL_ENABLE err\n");
+    regmap_write(pchip->regmap, REG_BL_ENABLE, BL_DISABLE);
 
     sysfs_remove_group(&client->dev.kobj, &lm36274_group);
 
@@ -1339,6 +1241,7 @@ static struct i2c_driver lm36274_i2c_driver = {
 			.name = "lm36274",
 			.owner = THIS_MODULE,
 			.of_match_table = lm36274_of_id_table,
+			.pm = LM36274_PM_OPS,
 		},
 		.probe = lm36274_probe,
 		.remove = lm36274_remove,

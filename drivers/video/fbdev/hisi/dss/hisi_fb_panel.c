@@ -256,7 +256,7 @@ int resource_cmds_tx(struct platform_device *pdev,
 		}
 
 		res = platform_get_resource_byname(pdev, cm->flag, cm->name);
-		if (res == NULL) {
+		if (!res) {
 			HISI_FB_ERR("failed to get %s resource!\n", cm->name);
 			ret = -1;
 			goto error;
@@ -464,9 +464,9 @@ int panel_next_set_fastboot(struct platform_device *pdev)
 	}
 
 	pdata = (struct hisi_fb_panel_data *)pdev->dev.platform_data;
-	if (pdata != NULL) {
+	if (pdata) {
 		next_pdev = pdata->next;
-		if (next_pdev != NULL) {
+		if (next_pdev) {
 			next_pdata = (struct hisi_fb_panel_data *)next_pdev->dev.platform_data;
 			if ((next_pdata) && (next_pdata->set_fastboot))
 				ret = next_pdata->set_fastboot(next_pdev);
@@ -494,7 +494,7 @@ int panel_next_on(struct platform_device *pdev)
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->on))
 			ret = next_pdata->on(next_pdev);
@@ -521,7 +521,7 @@ int panel_next_off(struct platform_device *pdev)
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->off))
 			ret = next_pdata->off(next_pdev);
@@ -548,7 +548,7 @@ int panel_next_lp_ctrl(struct platform_device *pdev, bool lp_enter)
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->lp_ctrl))
 			ret = next_pdata->lp_ctrl(next_pdev, lp_enter);
@@ -575,7 +575,7 @@ int panel_next_remove(struct platform_device *pdev)
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->remove))
 			ret = next_pdata->remove(next_pdev);
@@ -602,7 +602,7 @@ int panel_next_set_backlight(struct platform_device *pdev, uint32_t bl_level)
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->set_backlight))
 			ret = next_pdata->set_backlight(next_pdev, bl_level);
@@ -629,7 +629,7 @@ int panel_next_sbl_ctrl(struct platform_device *pdev, int enable)
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->sbl_ctrl))
 			ret = next_pdata->sbl_ctrl(next_pdev, enable);
@@ -656,7 +656,7 @@ int panel_next_vsync_ctrl(struct platform_device *pdev, int enable)
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->vsync_ctrl))
 			ret = next_pdata->vsync_ctrl(next_pdev, enable);
@@ -683,7 +683,7 @@ int panel_next_lcd_fps_scence_handle(struct platform_device *pdev, uint32_t scen
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->lcd_fps_scence_handle))
 			ret = next_pdata->lcd_fps_scence_handle(next_pdev, scence);
@@ -710,7 +710,7 @@ int panel_next_lcd_fps_updt_handle(struct platform_device *pdev)
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->lcd_fps_updt_handle))
 			ret = next_pdata->lcd_fps_updt_handle(next_pdev);
@@ -737,7 +737,7 @@ int panel_next_esd_handle(struct platform_device *pdev)
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->esd_handle))
 			ret = next_pdata->esd_handle(next_pdev);
@@ -764,7 +764,7 @@ int panel_next_set_display_region(struct platform_device *pdev, struct dss_rect 
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->set_display_region))
 			ret = next_pdata->set_display_region(next_pdev, dirty);
@@ -791,7 +791,7 @@ int panel_next_get_lcd_id(struct platform_device *pdev)
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->get_lcd_id))
 			ret = next_pdata->get_lcd_id(next_pdev);
@@ -817,7 +817,7 @@ int panel_next_bypass_powerdown_ulps_support(struct platform_device *pdev)
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->panel_bypass_powerdown_ulps_support))
 			ret = next_pdata->panel_bypass_powerdown_ulps_support(next_pdev);
@@ -843,7 +843,7 @@ ssize_t panel_next_snd_mipi_clk_cmd_store(struct platform_device *pdev, uint32_t
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->snd_mipi_clk_cmd_store))
 			ret = next_pdata->snd_mipi_clk_cmd_store(next_pdev, clk_val);
@@ -871,7 +871,7 @@ ssize_t panel_next_lcd_model_show(struct platform_device *pdev, char *buf)
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->lcd_model_show))
 			ret = next_pdata->lcd_model_show(next_pdev, buf);
@@ -898,7 +898,7 @@ ssize_t panel_next_lcd_cabc_mode_show(struct platform_device *pdev, char *buf)
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->lcd_cabc_mode_show))
 			ret = next_pdata->lcd_cabc_mode_show(next_pdev, buf);
@@ -926,7 +926,7 @@ ssize_t panel_next_lcd_cabc_mode_store(struct platform_device *pdev,
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->lcd_cabc_mode_store))
 			ret = next_pdata->lcd_cabc_mode_store(next_pdev, buf, count);
@@ -953,7 +953,7 @@ ssize_t panel_next_lcd_check_reg(struct platform_device *pdev, char *buf)
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->lcd_check_reg))
 			ret = next_pdata->lcd_check_reg(next_pdev, buf);
@@ -980,7 +980,7 @@ ssize_t panel_next_lcd_mipi_detect(struct platform_device *pdev, char *buf)
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->lcd_mipi_detect))
 			ret = next_pdata->lcd_mipi_detect(next_pdev, buf);
@@ -1008,7 +1008,7 @@ ssize_t panel_next_mipi_dsi_bit_clk_upt_store(struct platform_device *pdev,
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->mipi_dsi_bit_clk_upt_store))
 			ret = next_pdata->mipi_dsi_bit_clk_upt_store(next_pdev, buf, count);
@@ -1035,7 +1035,7 @@ ssize_t panel_next_lcd_support_checkmode_show(struct platform_device *pdev, char
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->lcd_support_checkmode_show))
 			ret = next_pdata->lcd_support_checkmode_show(next_pdev, buf);
@@ -1062,7 +1062,7 @@ ssize_t panel_next_mipi_dsi_bit_clk_upt_show(struct platform_device *pdev, char 
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->mipi_dsi_bit_clk_upt_show))
 			ret = next_pdata->mipi_dsi_bit_clk_upt_show(next_pdev, buf);
@@ -1089,7 +1089,7 @@ ssize_t panel_next_lcd_hkadc_debug_show(struct platform_device *pdev, char *buf)
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->lcd_hkadc_debug_show))
 			ret = next_pdata->lcd_hkadc_debug_show(next_pdev, buf);
@@ -1117,7 +1117,7 @@ ssize_t panel_next_lcd_hkadc_debug_store(struct platform_device *pdev,
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->lcd_hkadc_debug_store))
 			ret = next_pdata->lcd_hkadc_debug_store(next_pdev, buf, count);
@@ -1144,7 +1144,7 @@ ssize_t panel_next_lcd_gram_check_show(struct platform_device *pdev, char *buf)
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->lcd_gram_check_show))
 			ret = next_pdata->lcd_gram_check_show(next_pdev, buf);
@@ -1172,7 +1172,7 @@ ssize_t panel_next_lcd_gram_check_store(struct platform_device *pdev,
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->lcd_gram_check_store))
 			ret = next_pdata->lcd_gram_check_store(next_pdev, buf, count);
@@ -1199,7 +1199,7 @@ ssize_t panel_next_lcd_dynamic_sram_checksum_show(struct platform_device *pdev, 
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->lcd_dynamic_sram_checksum_show))
 			ret = next_pdata->lcd_dynamic_sram_checksum_show(next_pdev, buf);
@@ -1227,7 +1227,7 @@ ssize_t panel_next_lcd_dynamic_sram_checksum_store(struct platform_device *pdev,
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->lcd_dynamic_sram_checksum_store))
 			ret = next_pdata->lcd_dynamic_sram_checksum_store(next_pdev, buf, count);
@@ -1254,7 +1254,7 @@ ssize_t panel_next_lcd_ic_color_enhancement_mode_show(struct platform_device *pd
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->lcd_ic_color_enhancement_mode_show))
 			ret = next_pdata->lcd_ic_color_enhancement_mode_show(next_pdev, buf);
@@ -1282,7 +1282,7 @@ ssize_t panel_next_lcd_ic_color_enhancement_mode_store(struct platform_device *p
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->lcd_ic_color_enhancement_mode_store))
 			ret = next_pdata->lcd_ic_color_enhancement_mode_store(next_pdev, buf, count);
@@ -1309,7 +1309,7 @@ ssize_t panel_next_lcd_voltage_enable_store(struct platform_device *pdev, const 
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->lcd_voltage_enable_store))
 			ret = next_pdata->lcd_voltage_enable_store(next_pdev, buf, count);
@@ -1336,7 +1336,7 @@ ssize_t panel_next_lcd_bist_check(struct platform_device *pdev, char *buf)
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->lcd_bist_check))
 			ret = next_pdata->lcd_bist_check(next_pdev, buf);
@@ -1363,7 +1363,7 @@ ssize_t panel_next_lcd_sleep_ctrl_show(struct platform_device *pdev, char *buf)
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->lcd_sleep_ctrl_show))
 			ret = next_pdata->lcd_sleep_ctrl_show(next_pdev, buf);
@@ -1391,7 +1391,7 @@ ssize_t panel_next_lcd_sleep_ctrl_store(struct platform_device *pdev,
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->lcd_sleep_ctrl_store))
 			ret = next_pdata->lcd_sleep_ctrl_store(next_pdev, buf, count);
@@ -1418,7 +1418,7 @@ ssize_t panel_next_lcd_test_config_show(struct platform_device *pdev, char *buf)
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->lcd_test_config_show))
 			ret = next_pdata->lcd_test_config_show(next_pdev, buf);
@@ -1446,7 +1446,7 @@ ssize_t panel_next_lcd_test_config_store(struct platform_device *pdev,
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->lcd_test_config_store))
 			ret = next_pdata->lcd_test_config_store(next_pdev, buf, count);
@@ -1473,7 +1473,7 @@ ssize_t panel_next_lcd_reg_read_show(struct platform_device *pdev, char *buf)
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->lcd_reg_read_show))
 			ret = next_pdata->lcd_reg_read_show(next_pdev, buf);
@@ -1501,7 +1501,7 @@ ssize_t panel_next_lcd_reg_read_store(struct platform_device *pdev,
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->lcd_reg_read_store))
 			ret = next_pdata->lcd_reg_read_store(next_pdev, buf, count);
@@ -1528,7 +1528,7 @@ ssize_t panel_next_lcd_support_mode_show(struct platform_device *pdev, char *buf
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->lcd_support_mode_show))
 			ret = next_pdata->lcd_support_mode_show(next_pdev, buf);
@@ -1556,7 +1556,7 @@ ssize_t panel_next_lcd_support_mode_store(struct platform_device *pdev,
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->lcd_support_mode_store))
 			ret = next_pdata->lcd_support_mode_store(next_pdev, buf, count);
@@ -1583,7 +1583,7 @@ ssize_t panel_next_lcd_lp2hs_mipi_check_show(struct platform_device *pdev, char 
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->lcd_lp2hs_mipi_check_show))
 			ret = next_pdata->lcd_lp2hs_mipi_check_show(next_pdev, buf);
@@ -1611,7 +1611,7 @@ ssize_t panel_next_lcd_lp2hs_mipi_check_store(struct platform_device *pdev,
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->lcd_lp2hs_mipi_check_store))
 			ret = next_pdata->lcd_lp2hs_mipi_check_store(next_pdev, buf, count);
@@ -1638,7 +1638,7 @@ ssize_t panel_next_amoled_pcd_errflag_check(struct platform_device *pdev, char *
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 	next_pdata = dev_get_platdata(&next_pdev->dev);
 	 if ((next_pdata) && (next_pdata->amoled_pcd_errflag_check))
 		 ret = next_pdata->amoled_pcd_errflag_check(next_pdev, buf);
@@ -1665,7 +1665,7 @@ ssize_t panel_next_lcd_hbm_ctrl_store(struct platform_device *pdev,
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->lcd_hbm_ctrl_store))
 			ret = next_pdata->lcd_hbm_ctrl_store(next_pdev, buf, count);
@@ -1692,7 +1692,7 @@ ssize_t panel_next_lcd_hbm_ctrl_show(struct platform_device *pdev, char *buf)
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->lcd_hbm_ctrl_show))
 			ret = next_pdata->lcd_hbm_ctrl_show(next_pdev, buf);
@@ -1726,7 +1726,7 @@ ssize_t panel_next_lcd_amoled_vr_mode_store(struct platform_device *pdev,
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->lcd_amoled_vr_mode_store))
 			ret = next_pdata->lcd_amoled_vr_mode_store(next_pdev, buf, count);
@@ -1759,7 +1759,7 @@ ssize_t panel_next_lcd_amoled_vr_mode_show(struct platform_device *pdev, char *b
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->lcd_amoled_vr_mode_show))
 			ret = next_pdata->lcd_amoled_vr_mode_show(next_pdev, buf);
@@ -1793,7 +1793,7 @@ ssize_t panel_next_lcd_acl_ctrl_store(struct platform_device *pdev,
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->lcd_acl_ctrl_store))
 			ret = next_pdata->lcd_acl_ctrl_store(next_pdev, buf, count);
@@ -1827,7 +1827,7 @@ ssize_t panel_next_alpm_setting_store(struct platform_device *pdev,
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->amoled_alpm_setting_store))
 			ret = next_pdata->amoled_alpm_setting_store(next_pdev, buf, count);
@@ -1860,7 +1860,7 @@ ssize_t panel_next_lcd_acl_ctrl_show(struct platform_device *pdev, char *buf)
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->lcd_acl_ctrl_show))
 			ret = next_pdata->lcd_acl_ctrl_show(next_pdev, buf);
@@ -1889,7 +1889,7 @@ ssize_t panel_next_sharpness2d_table_store(struct platform_device *pdev,
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->sharpness2d_table_store))
 			ret = next_pdata->sharpness2d_table_store(next_pdev, buf, count);
@@ -1916,7 +1916,7 @@ ssize_t panel_next_sharpness2d_table_show(struct platform_device *pdev, char *bu
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->sharpness2d_table_show))
 			ret = next_pdata->sharpness2d_table_show(next_pdev, buf);
@@ -1943,7 +1943,7 @@ ssize_t panel_next_panel_info_show(struct platform_device *pdev, char *buf)
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->panel_info_show))
 			ret = next_pdata->panel_info_show(next_pdev, buf);
@@ -2262,7 +2262,7 @@ bool mipi_panel_check_reg (struct hisi_fb_data_type *hisifd,
 			sizeof(lcd_reg_0f), lcd_reg_0f},
 	};
 
-	ret = mipi_dsi_cmds_rx_with_check_fifo(read_value, lcd_check_reg, \
+	ret = mipi_dsi_cmds_rx(read_value, lcd_check_reg, \
 		ARRAY_SIZE(lcd_check_reg), hisifd->mipi_dsi0_base);
 	if (ret) {
 		HISI_FB_ERR("Read error number: %d\n", ret);
@@ -2290,7 +2290,7 @@ int mipi_ifbc_get_rect(struct hisi_fb_data_type *hisifd, struct dss_rect *rect)
 	}
 
 	ifbc_type = hisifd->panel_info.ifbc_type;
-	if (ifbc_type >= IFBC_TYPE_MAX) {
+	if ((ifbc_type < IFBC_TYPE_NONE) || (ifbc_type >= IFBC_TYPE_MAX)) {
 		HISI_FB_ERR("ifbc_type is invalid");
 		return -EINVAL;
 	}
@@ -2344,7 +2344,7 @@ void hisifb_snd_cmd_before_frame(struct hisi_fb_data_type *hisifd)
 		return ;
 	}
 
-	if (pdata->snd_cmd_before_frame != NULL) {
+	if (pdata->snd_cmd_before_frame) {
 		pdata->snd_cmd_before_frame(hisifd->pdev);
 	}
 	return;
@@ -2513,11 +2513,10 @@ struct platform_device *hisi_fb_device_alloc(struct hisi_fb_panel_data *pdata,
 	}
 
 	this_dev = platform_device_alloc(dev_name, (((uint32_t)type << 16) | (uint32_t)id));
-	if (this_dev != NULL) {
+	if (this_dev) {
 		if (platform_device_add_data(this_dev, pdata, sizeof(struct hisi_fb_panel_data))) {
 			HISI_FB_ERR("failed to platform_device_add_data!\n");
 			platform_device_put(this_dev);
-			this_dev = NULL;
 			return NULL;
 		}
 	}
@@ -2722,14 +2721,14 @@ void panel_status_report_by_dsm(struct lcd_reg_read_t *lcd_status_reg, int cnt, 
 }
 /*lint +e574 +e647 +e568 +e685 +e578*/
 
-int panel_next_tcon_mode(struct platform_device *pdev, struct hisi_fb_data_type *hisifd, struct hisi_panel_info *pinfo)
+int panel_next_tcon_mode(struct platform_device *pdev, struct hisi_panel_info *pinfo)
 {
 	int ret = 0;
 	struct hisi_fb_panel_data *pdata = NULL;
 	struct hisi_fb_panel_data *next_pdata = NULL;
 	struct platform_device *next_pdev = NULL;
 
-	if (pdev == NULL) {
+	if (NULL == pdev) {
 		HISI_FB_ERR("platform_device is NULL");
 		return -EINVAL;
 	}
@@ -2740,12 +2739,7 @@ int panel_next_tcon_mode(struct platform_device *pdev, struct hisi_fb_data_type 
 		return -EINVAL;
 	}
 
-	if (hisifd == NULL) {
-		HISI_FB_ERR("hisifd is NULL");
-		return -EINVAL;
-	}
-
-	if (pinfo == NULL) {
+	if (NULL == pinfo) {
 		HISI_FB_ERR("panel_info is NULL");
 		return -EINVAL;
 	}
@@ -2770,15 +2764,13 @@ int panel_next_tcon_mode(struct platform_device *pdev, struct hisi_fb_data_type 
 	}
 
 	next_pdev = pdata->next;
-	if (next_pdev != NULL) {
+	if (next_pdev) {
 		next_pdata = dev_get_platdata(&next_pdev->dev);
 		if ((next_pdata) && (next_pdata->set_tcon_mode)) {
 			HISI_FB_INFO("send DCS cmd to DDIC.");
 			ret = next_pdata->set_tcon_mode(next_pdev, pinfo->current_display_region);
 		}
 	}
-
-	hisifb_panel_set_display_region_timestamp(hisifd);
 
 	return ret;
 }
@@ -2788,7 +2780,6 @@ int panel_next_tcon_mode(struct platform_device *pdev, struct hisi_fb_data_type 
 static inline int _set_display_region(struct hisi_fb_data_type *hisifd, struct hisi_panel_info *pinfo, struct _panel_region_notify* region_notify)
 {
 	int ret = 0;
-	uint8_t curr_mode, pre_mode;
 
 	down(&hisifd->blank_sem);
 	if (!hisifd->panel_power_on ) {
@@ -2806,22 +2797,15 @@ static inline int _set_display_region(struct hisi_fb_data_type *hisifd, struct h
 
 	if (region_notify->notify_mode == EN_MODE_POWER_OFF_SWITCH_NOTIFY) {
 		HISI_FB_WARNING("panel already power on, set DDIC display region(%d) right now, check the timing sequene.\n", pinfo->current_display_region);
-	    curr_mode = region_notify->panel_display_region;
-	    pre_mode = pinfo->current_display_region;
-	    lcd_switch_region(hisifd, curr_mode, pre_mode);
-
-		ret = panel_next_tcon_mode(hisifd->pdev, hisifd, pinfo);
+		ret = panel_next_tcon_mode(hisifd->pdev, pinfo);
 	} else if (region_notify->notify_mode == EN_MODE_PRE_NOTIFY) {
 		//set DDIC right now
 		if ( (region_notify->panel_display_region == EN_DISPLAY_REGION_AB) ||
 		   (region_notify->panel_display_region == EN_DISPLAY_REGION_AB_FOLDED) ) {
 			if (pinfo->current_display_region != region_notify->panel_display_region) {
-			    curr_mode = region_notify->panel_display_region;
-			    pre_mode = pinfo->current_display_region;
-			    lcd_switch_region(hisifd, curr_mode, pre_mode);
 				pinfo->current_display_region = region_notify->panel_display_region;
 				HISI_FB_INFO("notify_mode:%d, change CurrentDisplayRegion to %d.", region_notify->notify_mode, pinfo->current_display_region);
-				ret = panel_next_tcon_mode(hisifd->pdev, hisifd, pinfo);
+				ret = panel_next_tcon_mode(hisifd->pdev, pinfo);
 			} else {
 				HISI_FB_INFO("same DDIC display region (%d), no need pre change.", pinfo->current_display_region);
 			}
@@ -2833,14 +2817,9 @@ static inline int _set_display_region(struct hisi_fb_data_type *hisifd, struct h
 		//need check with TUI & AOD, select the biggest one
 		//TBD...
 		if (pinfo->current_display_region != region_notify->panel_display_region) {
-		    curr_mode = region_notify->panel_display_region;
-		    pre_mode = pinfo->current_display_region;
-		    lcd_switch_region(hisifd, curr_mode, pre_mode);
 			pinfo->current_display_region = region_notify->panel_display_region;
 			HISI_FB_INFO("notify_mode:%d, change CurrentDisplayRegion to %d.", region_notify->notify_mode, pinfo->current_display_region);
-			ret = panel_next_tcon_mode(hisifd->pdev, hisifd, pinfo);
-
-			hisifb_panel_add_fold_count(hisifd, pinfo->current_display_region);
+			ret = panel_next_tcon_mode(hisifd->pdev, pinfo);
 		} else {
 			HISI_FB_INFO("same DDIC display region (%d), no need real change.", pinfo->current_display_region);
 		}
@@ -2852,7 +2831,7 @@ static inline int _set_display_region(struct hisi_fb_data_type *hisifd, struct h
 	return ret;
 }
 
-int panel_set_display_region(struct hisi_fb_data_type *hisifd, const void __user *argp)
+int panel_set_display_region(struct hisi_fb_data_type *hisifd, void __user *argp)
 {
 	int ret = 0;
 	struct _panel_region_notify region_notify;
@@ -2886,315 +2865,5 @@ int panel_set_display_region(struct hisi_fb_data_type *hisifd, const void __user
 	//TODO...
 
 	return ret;
-}
-
-/* for display time */
-static void panel_hiace_start_timestamp(struct hisi_fb_data_type *hisifd, s64 msecs)
-{
-	struct hisi_panel_info *pinfo = NULL;
-	s64 *start_time = NULL;
-	s64 *duration_time = NULL;
-	uint32_t *time_state = NULL;
-	uint8_t i;
-
-	pinfo = &(hisifd->panel_info);
-	start_time = &(hisifd->aging_time_info.start_time[0]);
-	duration_time = &(hisifd->aging_time_info.duration_time[0]);
-	time_state = &(hisifd->aging_time_info.time_state[0]);
-
-	HISI_FB_INFO("+\n");
-
-	if (pinfo->current_display_region == EN_DISPLAY_REGION_AB) {
-		for (i = 0; i < EN_AGING_PANEL_NUM; i++) {
-			start_time[i] = msecs;
-			time_state[i] = EN_TIME_STATE_WORK;
-			HISI_FB_INFO("set start_time[%d]=%lld\n", i, msecs);
-		}
-	} else if (pinfo->current_display_region == EN_DISPLAY_REGION_AB_FOLDED) {
-		for (i = 0; i <= EN_AGING_PANEL_SUB; i++) {
-			start_time[i] = msecs;
-			time_state[i] = EN_TIME_STATE_WORK;
-			HISI_FB_INFO("set start_time[%d]=%lld\n", i, msecs);
-		}
-	} else if (pinfo->current_display_region == EN_DISPLAY_REGION_A) {
-		start_time[EN_AGING_PANEL_MAIN] = msecs;
-		time_state[EN_AGING_PANEL_MAIN] = EN_TIME_STATE_WORK;
-		HISI_FB_INFO("set start_time[0]=%lld\n", msecs);
-	} else if (pinfo->current_display_region == EN_DISPLAY_REGION_B) {
-		start_time[EN_AGING_PANEL_SUB] = msecs;
-		time_state[EN_AGING_PANEL_SUB] = EN_TIME_STATE_WORK;
-		HISI_FB_INFO("set start_time[1]=%lld\n", msecs);
-	}
-}
-
-static void panel_hiace_stop_timestamp(struct hisi_fb_data_type *hisifd, s64 msecs)
-{
-	struct hisi_panel_info *pinfo = NULL;
-	uint8_t i;
-	s64 *start_time = NULL;
-	s64 *duration_time = NULL;
-	uint32_t *time_state = NULL;
-
-	pinfo = &(hisifd->panel_info);
-	start_time = &(hisifd->aging_time_info.start_time[0]);
-	duration_time = &(hisifd->aging_time_info.duration_time[0]);
-	time_state = &(hisifd->aging_time_info.time_state[0]);
-
-	HISI_FB_INFO("+\n");
-
-	for (i = 0; i < EN_AGING_PANEL_NUM; i++) {
-		if (time_state[i] == EN_TIME_STATE_WORK) {
-			duration_time[i] += msecs - start_time[i];
-			time_state[i] = EN_TIME_STATE_IDLE;
-			HISI_FB_INFO("set duration_time[%d]=%lld\n", i, duration_time[i]);
-		}
-	}
-}
-
-static void panel_display_region_start_timestamp(struct hisi_fb_data_type *hisifd, uint8_t index, s64 msecs)
-{
-	s64 *start_time = NULL;
-	uint32_t *time_state = NULL;
-
-	start_time = &(hisifd->aging_time_info.start_time[0]);
-	time_state = &(hisifd->aging_time_info.time_state[0]);
-
-	HISI_FB_INFO("+\n");
-
-	if (!hisifd->aging_time_info.hiace_enable) {
-		// hiace off, no need start timer
-		HISI_FB_INFO("hiace off, no need start timer\n");
-		return;
-	}
-
-	if (time_state[index] == EN_TIME_STATE_IDLE) {
-		start_time[index] = msecs;
-		time_state[index] = EN_TIME_STATE_WORK;
-		HISI_FB_INFO("set start_time[%d]=%lld\n", index, msecs);
-	}
-}
-
-static void panel_display_region_stop_timestamp(struct hisi_fb_data_type *hisifd, uint8_t index, s64 msecs)
-{
-	s64 *start_time = NULL;
-	s64 *duration_time = NULL;
-	uint32_t *time_state = NULL;
-
-	start_time = &(hisifd->aging_time_info.start_time[0]);
-	duration_time = &(hisifd->aging_time_info.duration_time[0]);
-	time_state = &(hisifd->aging_time_info.time_state[0]);
-
-	HISI_FB_INFO("+\n");
-
-	if (time_state[index] == EN_TIME_STATE_WORK) {
-		duration_time[index] += msecs - start_time[index];
-		time_state[index] = EN_TIME_STATE_IDLE;
-		HISI_FB_INFO("set duration_time[%d]=%lld\n", index, duration_time[index]);
-	}
-}
-
-void hisifb_panel_display_time_init(struct hisi_fb_data_type *hisifd)
-{
-	if (hisifd == NULL) {
-		HISI_FB_ERR("hisifd is NULL\n");
-		return;
-	}
-
-	HISI_FB_INFO("+\n");
-
-	memset(&hisifd->aging_time_info, 0, sizeof(hisifd->aging_time_info));
-	spin_lock_init(&hisifd->aging_time_info.time_lock);
-	spin_lock_init(&hisifd->aging_time_info.count_lock);
-}
-
-void hisifb_panel_set_hiace_timestamp(struct hisi_fb_data_type *hisifd, bool enable, int mode)
-{
-	struct hisi_panel_info *pinfo = NULL;
-	ktime_t timestamp;
-	s64 msecs;
-
-	if (hisifd == NULL) {
-		HISI_FB_ERR("hisifd is NULL\n");
-		return;
-	}
-
-	//normal panel, no need do anything
-	pinfo = &(hisifd->panel_info);
-	if (!pinfo->cascadeic_support)
-		return;
-
-	if (mode == CE_MODE_SINGLE) {
-		// not consider single mode
-		HISI_FB_DEBUG("not consider single mode\n");
-		return;
-	}
-
-	if (enable && mode == CE_MODE_DISABLE) {
-		HISI_FB_ERR("unexpected conditon, pls check\n");
-		return;
-	}
-
-	HISI_FB_DEBUG("[%d/%d]+\n",enable, mode);
-
-	spin_lock(&hisifd->aging_time_info.time_lock);
-
-	if (hisifd->aging_time_info.hiace_enable == enable) {
-		// no change, do nothing
-		spin_unlock(&hisifd->aging_time_info.time_lock);
-		HISI_FB_DEBUG("no change, do nothing\n");
-		return;
-	}
-
-	timestamp = ktime_get();
-	msecs = ktime_to_ms(timestamp);
-
-	hisifd->aging_time_info.hiace_enable = enable;
-
-	if (enable)
-		panel_hiace_start_timestamp(hisifd, msecs);
-	else
-		panel_hiace_stop_timestamp(hisifd, msecs);
-
-	spin_unlock(&hisifd->aging_time_info.time_lock);
-}
-
-void hisifb_panel_set_display_region_timestamp(struct hisi_fb_data_type *hisifd)
-{
-	struct hisi_panel_info *pinfo = NULL;
-	ktime_t timestamp;
-	s64 msecs;
-
-	pinfo = &(hisifd->panel_info);
-
-	if (hisifd == NULL) {
-		HISI_FB_ERR("hisifd is NULL\n");
-		return;
-	}
-
-	HISI_FB_INFO("+\n");
-
-	spin_lock(&hisifd->aging_time_info.time_lock);
-
-	timestamp = ktime_get();
-	msecs = ktime_to_ms(timestamp);
-
-	// start idle region, nothing to work region
-	if (pinfo->current_display_region == EN_DISPLAY_REGION_AB) {
-		panel_display_region_start_timestamp(hisifd, EN_AGING_PANEL_MAIN, msecs);
-		panel_display_region_start_timestamp(hisifd, EN_AGING_PANEL_SUB, msecs);
-		panel_display_region_start_timestamp(hisifd, EN_AGING_PANEL_SIDE, msecs);
-	} else if (pinfo->current_display_region == EN_DISPLAY_REGION_AB_FOLDED) {
-		panel_display_region_start_timestamp(hisifd, EN_AGING_PANEL_MAIN, msecs);
-		panel_display_region_start_timestamp(hisifd, EN_AGING_PANEL_SUB, msecs);
-		panel_display_region_stop_timestamp(hisifd, EN_AGING_PANEL_SIDE, msecs);
-	} else if (pinfo->current_display_region == EN_DISPLAY_REGION_A) {
-		panel_display_region_start_timestamp(hisifd, EN_AGING_PANEL_MAIN, msecs);
-		panel_display_region_stop_timestamp(hisifd, EN_AGING_PANEL_SUB, msecs);
-		panel_display_region_stop_timestamp(hisifd, EN_AGING_PANEL_SIDE, msecs);
-	} else if (pinfo->current_display_region == EN_DISPLAY_REGION_B) {
-		panel_display_region_stop_timestamp(hisifd, EN_AGING_PANEL_MAIN, msecs);
-		panel_display_region_start_timestamp(hisifd, EN_AGING_PANEL_SUB, msecs);
-		panel_display_region_stop_timestamp(hisifd, EN_AGING_PANEL_SIDE, msecs);
-	}
-
-	spin_unlock(&hisifd->aging_time_info.time_lock);
-}
-
-void hisifb_panel_get_hiace_display_time(struct hisi_fb_data_type *hisifd, uint32_t *time)
-{
-	ktime_t timestamp;
-	s64 msecs;
-	uint8_t i;
-	s64 *start_time = NULL;
-	s64 *duration_time = NULL;
-	uint32_t *time_state = NULL;
-
-	if (hisifd == NULL) {
-		HISI_FB_ERR("hisifd is NULL\n");
-		return;
-	}
-
-	if (time == NULL) {
-		HISI_FB_ERR("time ptr is NULL\n");
-		return;
-	}
-
-	HISI_FB_INFO("+\n");
-
-	start_time = &(hisifd->aging_time_info.start_time[0]);
-	duration_time = &(hisifd->aging_time_info.duration_time[0]);
-	time_state = &(hisifd->aging_time_info.time_state[0]);
-
-	spin_lock(&hisifd->aging_time_info.time_lock);
-
-	timestamp = ktime_get();
-	msecs = ktime_to_ms(timestamp);
-
-	for (i = 0; i < EN_AGING_PANEL_NUM; i++) {
-		// 1. restart all timer if needed
-		if (time_state[i] == EN_TIME_STATE_WORK) {
-			duration_time[i] += msecs - start_time[i];
-			start_time[i] = msecs;
-		}
-
-		// 2. return the duration time
-		*(time + i) = (uint32_t) duration_time[i];
-
-		HISI_FB_INFO("return time=%d from duration_time[%d]=%lld\n",*(time + i), i, duration_time[i]);
-
-		// 3. reset the duration time
-		duration_time[i] = 0;
-	}
-
-	spin_unlock(&hisifd->aging_time_info.time_lock);
-}
-
-void hisifb_panel_add_fold_count(struct hisi_fb_data_type *hisifd, uint8_t region)
-{
-	if (hisifd == NULL) {
-		HISI_FB_ERR("hisifd is NULL\n");
-		return;
-	}
-
-	spin_lock(&hisifd->aging_time_info.count_lock);
-
-	if (hisifd->aging_time_info.record_region == region) {
-		spin_unlock(&hisifd->aging_time_info.count_lock);
-		return;
-	}
-
-	if (hisifd->aging_time_info.record_region == EN_DISPLAY_REGION_NONE) {  // init status
-		hisifd->aging_time_info.record_region = region;
-	} else if (hisifd->aging_time_info.record_region == EN_DISPLAY_REGION_AB) {  // full -> half
-		hisifd->aging_time_info.record_region = region;
-		hisifd->aging_time_info.fold_count++;
-	} else {  // EN_DISPLAY_REGION_A, EN_DISPLAY_REGION_B, or EN_DISPLAY_REGION_AB_FOLDED
-		if (region == EN_DISPLAY_REGION_AB) {  // half -> full
-			hisifd->aging_time_info.record_region = region;
-			hisifd->aging_time_info.fold_count++;
-		} else {  // no fold status change, record only
-			hisifd->aging_time_info.record_region = region;
-		}
-	}
-
-	spin_unlock(&hisifd->aging_time_info.count_lock);
-}
-
-uint32_t hisifb_panel_get_fold_count(struct hisi_fb_data_type *hisifd)
-{
-	uint32_t count;
-
-	if (hisifd == NULL) {
-		HISI_FB_ERR("hisifd is NULL\n");
-		return 0;
-	}
-
-	spin_lock(&hisifd->aging_time_info.count_lock);
-
-	count = hisifd->aging_time_info.fold_count;
-	hisifd->aging_time_info.fold_count = 0;
-
-	spin_unlock(&hisifd->aging_time_info.count_lock);
-	return count;
 }
 

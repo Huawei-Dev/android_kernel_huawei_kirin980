@@ -26,4 +26,9 @@ enum oem_type{
 	BRIGHTNESS_TYPE,
 };
 
+///*struct*/
+//struct oem_info_cmd{
+//	unsigned char type;
+//	int (*func)(char *oem_data, struct hisi_fb_data_type *hisifd);
+//};
 #endif

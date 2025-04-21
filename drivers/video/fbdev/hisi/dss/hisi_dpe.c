@@ -48,7 +48,7 @@ static int dpe_init(struct hisi_fb_data_type *hisifd, bool fastboot_enable)
 		init_ldi(hisifd, fastboot_enable);
 	} else if (hisifd->index == EXTERNAL_PANEL_IDX) {
 		hisifb_activate_vsync(hisifd_list[PRIMARY_PANEL_IDX]);
-		if (hisifd->dss_pxl1_clk != NULL) {
+		if (hisifd->dss_pxl1_clk) {
 			clk_disable(hisifd->dss_pxl1_clk);
 		}
 
@@ -56,8 +56,8 @@ static int dpe_init(struct hisi_fb_data_type *hisifd, bool fastboot_enable)
 			set_reg(hisifd->dss_base + DSS_LDI0_OFFSET + LDI_DSI1_CLK_SEL, 0x1, 1, 0);
 		}
 
-		if (hisifd->dss_pxl1_clk != NULL) {
-			(void)clk_enable(hisifd->dss_pxl1_clk);
+		if (hisifd->dss_pxl1_clk) {
+			clk_enable(hisifd->dss_pxl1_clk);
 		}
 
 		if (!is_dp_panel(hisifd)) {
@@ -124,6 +124,7 @@ static void dpe_check_itf_status(struct hisi_fb_data_type *hisifd)
 			tmp = inp32(mctl_sys_base + MCTL_MOD17_STATUS + itf_idx * 0x4);
 			if (((tmp & 0x10) == 0x10) || delay_count > 100) {
 				is_timeout = (delay_count > 100) ? true : false;
+				delay_count = 0;
 				break;
 			} else {
 				mdelay(1);
@@ -477,7 +478,7 @@ int dpe_common_clk_enable(struct hisi_fb_data_type *hisifd)
 
 	//mmbuf_clk
 	clk_tmp = hisifd->dss_mmbuf_clk;
-	if (clk_tmp != NULL) {
+	if (clk_tmp) {
 		ret = clk_prepare(clk_tmp);
 		if (ret) {
 			HISI_FB_ERR("fb%d dss_mmbuf_clk clk_prepare failed, error=%d!\n",
@@ -495,7 +496,7 @@ int dpe_common_clk_enable(struct hisi_fb_data_type *hisifd)
 
 	//aclk
 	clk_tmp = hisifd->dss_axi_clk;
-	if (clk_tmp != NULL) {
+	if (clk_tmp) {
 		ret = clk_prepare(clk_tmp);
 		if (ret) {
 			HISI_FB_ERR("fb%d dss_axi_clk clk_prepare failed, error=%d!\n",
@@ -513,7 +514,7 @@ int dpe_common_clk_enable(struct hisi_fb_data_type *hisifd)
 
 	//pclk
 	clk_tmp = hisifd->dss_pclk_dss_clk;
-	if (clk_tmp != NULL) {
+	if (clk_tmp) {
 		ret = clk_prepare(clk_tmp);
 		if (ret) {
 			HISI_FB_ERR("fb%d dss_pclk_dss_clk clk_prepare failed, error=%d!\n",
@@ -590,7 +591,7 @@ int dpe_inner_clk_enable(struct hisi_fb_data_type *hisifd)
 
 	//edc0_clk
 	clk_tmp = hisifd->dss_pri_clk;
-	if (clk_tmp != NULL) {
+	if (clk_tmp) {
 		ret = clk_prepare(clk_tmp);
 		if (ret) {
 			HISI_FB_ERR("fb%d dss_pri_clk clk_prepare failed, error=%d!\n",
@@ -615,7 +616,7 @@ int dpe_inner_clk_enable(struct hisi_fb_data_type *hisifd)
 
 	if (hisifd->index == MEDIACOMMON_PANEL_IDX) {
 		clk_tmp = hisifd->dss_clk_media_common_clk;
-		if (clk_tmp != NULL) {
+		if (clk_tmp) {
 			ret = clk_prepare(clk_tmp);
 			if (ret) {
 				HISI_FB_ERR("fb%d dss_clk_media_common_clk clk_prepare failed, error=%d!\n",
@@ -649,19 +650,19 @@ int dpe_common_clk_disable(struct hisi_fb_data_type *hisifd)
 	hisifb_dss_bus_idle_req_handle(hisifd, false);
 
 	clk_tmp = hisifd->dss_pclk_dss_clk;
-	if (clk_tmp != NULL) {
+	if (clk_tmp) {
 		clk_disable(clk_tmp);
 		clk_unprepare(clk_tmp);
 	}
 
 	clk_tmp = hisifd->dss_axi_clk;
-	if (clk_tmp != NULL) {
+	if (clk_tmp) {
 		clk_disable(clk_tmp);
 		clk_unprepare(clk_tmp);
 	}
 
 	clk_tmp = hisifd->dss_mmbuf_clk;
-	if (clk_tmp != NULL) {
+	if (clk_tmp) {
 		clk_disable(clk_tmp);
 		clk_unprepare(clk_tmp);
 	}
@@ -705,7 +706,7 @@ int dpe_inner_clk_disable(struct hisi_fb_data_type *hisifd)
 
 	if (hisifd->index == MEDIACOMMON_PANEL_IDX) {
 		clk_tmp = hisifd->dss_clk_media_common_clk;
-		if (clk_tmp != NULL) {
+		if (clk_tmp) {
 			clk_disable(clk_tmp);
 			clk_unprepare(clk_tmp);
 		}
@@ -714,7 +715,7 @@ int dpe_inner_clk_disable(struct hisi_fb_data_type *hisifd)
 	}
 
 	clk_tmp = hisifd->dss_pri_clk;
-	if (clk_tmp != NULL) {
+	if (clk_tmp) {
 		clk_disable(clk_tmp);
 		clk_unprepare(clk_tmp);
 	}
@@ -766,8 +767,7 @@ static int dpe_set_fastboot(struct platform_device *pdev)
 	ret = panel_next_set_fastboot(pdev);
 
 	//set inital display region
-	hisifb_panel_display_time_init(hisifd);
-	panel_next_tcon_mode(pdev, hisifd, &hisifd->panel_info);
+	panel_next_tcon_mode(pdev, &hisifd->panel_info);
 
 	if (hisifd->panel_info.vsync_ctrl_type == VSYNC_CTRL_NONE) {
 		dpe_interrupt_mask(hisifd);
@@ -961,7 +961,7 @@ static int dpe_on(struct platform_device *pdev)
 	ret = panel_next_on(pdev);
 
 	//set inital display region
-	panel_next_tcon_mode(pdev, hisifd, &hisifd->panel_info);
+	panel_next_tcon_mode(pdev, &hisifd->panel_info);
 
 	if (hisifd->panel_info.vsync_ctrl_type == VSYNC_CTRL_NONE) {
 		dpe_interrupt_mask(hisifd);
@@ -1700,8 +1700,8 @@ static ssize_t dpe_lcd_color_temperature_store(struct platform_device *pdev,
 	struct hisi_fb_data_type *hisifd = NULL;
 	struct hisi_panel_info *pinfo = NULL;
 	unsigned int csc_value[100];
-	char *cur = NULL;
-	char *token = NULL;
+	char *cur;
+	char *token;
 	int i = 0;
 
 	if (NULL == pdev) {
@@ -1720,7 +1720,7 @@ static ssize_t dpe_lcd_color_temperature_store(struct platform_device *pdev,
 
 	cur = (char*)buf;
 	token = strsep(&cur, ",");
-	while (token != NULL) {
+	while (token) {
 		csc_value[i++] = simple_strtol(token, NULL, 0);
 		token = strsep(&cur, ",");
 		if (i >= 100) {
@@ -1825,8 +1825,7 @@ static ssize_t dpe_led_rg_lcd_color_temperature_store(struct platform_device *pd
 	struct hisi_fb_data_type *hisifd = NULL;
 	struct hisi_panel_info *pinfo = NULL;
 	unsigned int csc_value[100];
-	char *token = NULL;
-	char *cur = NULL;
+	char *token, *cur;
 	int i = 0;
 
 	if (NULL == pdev) {
@@ -1845,7 +1844,7 @@ static ssize_t dpe_led_rg_lcd_color_temperature_store(struct platform_device *pd
 
 	cur = (char*)buf;
 	token = strsep(&cur, ",");
-	while (token != NULL) {
+	while (token) {
 		csc_value[i++] = simple_strtol(token, NULL, 0);
 		token = strsep(&cur, ",");
 		if (i >= 100) {
@@ -2683,7 +2682,7 @@ static ssize_t dpe_lcd_xcc_store(struct platform_device *pdev, const char *buf, 
 
 	cur = (char*)buf;
 	token = strsep(&cur, ",");
-	while (token != NULL) {
+	while (token) {
 		csc_value[i++] = simple_strtol(token, NULL, 0);
 		token = strsep(&cur, ",");
 		if (i >= 100) {
@@ -2735,7 +2734,7 @@ irqreturn_t dss_mmbuf_asc0_isr(int irq, void *ptr)
 static int dpe_isr_fnc_setup(struct hisi_fb_data_type *hisifd)
 {
 	const char *irq_name = NULL;
-	irqreturn_t (*isr_fnc)(int irq, void *ptr) = NULL;
+	irqreturn_t (*isr_fnc)(int irq, void *ptr);
 	int ret = 0;
 
 
@@ -2882,7 +2881,7 @@ static int dpe_probe(struct platform_device *pdev)
 
 	/* alloc device */
 	hisi_fb_dev = platform_device_alloc(DEV_NAME_FB, pdev->id);
-	if (hisi_fb_dev == NULL) {
+	if (!hisi_fb_dev) {
 		dev_err(&pdev->dev, "fb%d platform_device_alloc failed, error=%d!\n", hisifd->index, ret);
 		ret = -ENOMEM;
 		goto err_device_alloc;

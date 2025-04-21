@@ -59,51 +59,14 @@
 #define VERSION_NUM_MAX 10
 /*gamma max len, store tpic*/
 #define GAMMA_MAX	146
-#define GAMMA_HEAD_LEN	2
-#define GAMMA_HEAD	0x47
-#define GRAY_HEAD	0x46
-#define GAMMA_LEN	0x0a
-
 #define LCD_KIT_PCD_SIZE   3
 #define LCD_KIT_ERRFLAG_SIZE   8
 #define DMD_ERR_INFO_LEN       50
-/* checksum value array size */
-#define CHECKSUM_VALUE_SIZE    8
-
-/* vertical line test picture index */
-#define PIC1_INDEX      1
-#define PIC2_INDEX      2
-#define PIC3_INDEX      3
-#define PIC4_INDEX      4
-#define PIC5_INDEX      5
-/* checksum start index */
-#define INDEX_START    2
-/* checksum invalid index */
-#define INVALID_INDEX    0xFF
-/* max bl level */
-#define MAX_BL_LEVEL	255
-
-#define READ_MAX_LEN	64
-#define READ_BUF_MAX	(64 << 2)
-#define WRITE_MAX_LEN	254
-#define LCD_DSI0	0
-#define LCD_DSI1	1
-#define LCD_DEMURA_READ_FIRST	1
-#define LCD_DEMURA_READ_CONTINUE	2
-#define LCD_DEMURA_READ_CHECKSUM	3
-#define LCD_DEMURA_READ_WRITED_CHKSUM	4
-#define LCD_DEMURA_WRITE_PREPARE	5
-#define LCD_DEMURA_WRITE_FIRST	6
-#define LCD_DEMURA_WRITE_CONTINUE	7
-#define LCD_DEMURA_WRITE_END	8
-#define LCD_DEMURA_WRITE_IRDROP_PREPARE	9
-#define LCD_DEMURA_WRITE_IRDROP	10
-#define LCD_DEMURA_WRITE_IRDROP_END	11
 
 /*enum*/
 enum {
-	LCD_KIT_CHECKSUM_END = 0,
-	LCD_KIT_CHECKSUM_START = 1,
+	LCD_KIT_CHECKSUM_START = 0,
+	LCD_KIT_CHECKSUM_END = 1,
 };
 
 enum {
@@ -129,9 +92,6 @@ enum
 	SHARP_TD4336_HMA_PANEL_ID = 11,
 	LG_NT36772A_HMA_PANEL_ID = 12,
 	BOE_HX83112E_HMA_PANEL_ID = 13,
-	JDI_TD4336_RT8555_HMA_PANEL_ID = 14,
-	SHARP_TD4336_RT8555_HMA_PANEL_ID = 15,
-	LG_NT36772A_RT8555_HMA_PANEL_ID = 16,
 	RGBW_PANEL_ID_MAX,
 };
 
@@ -141,29 +101,16 @@ enum {
 	LCD_ONLINE = 1,
 };
 
-enum {
-	PRIMARY_REGION = 0,
-	SLAVE_REGION = 1,
-	FOLD_REGION = 2,
-	REGION_MAX = 3,
-};
-
 /*struct define*/
 struct lcd_kit_checksum {
 	u32 support;
 	u32 pic_index;
 	u32 status;
 	u32 check_count;
-	u32 stress_test_support;
-	u32 vdd;
-	u32 rec_vdd;
-	u32 mipi_clk;
-	u32 rec_mipi_clk;
 	struct lcd_kit_dsi_panel_cmds checksum_cmds;
 	struct lcd_kit_dsi_panel_cmds enable_cmds;
 	struct lcd_kit_dsi_panel_cmds disable_cmds;
-	struct lcd_kit_arrays_data value;
-	struct lcd_kit_arrays_data dsi1_value;
+	struct lcd_kit_array_data value;
 };
 
 struct lcd_kit_cascade_ic {
@@ -287,29 +234,6 @@ struct lcd_kit_rgbw {
 	struct lcd_kit_dsi_panel_cmds pwm_gain_cmds;
 };
 
-struct lcd_kit_demura {
-	unsigned int support;
-	struct lcd_kit_dsi_panel_cmds r_fir_cmds;
-	struct lcd_kit_dsi_panel_cmds r_con_cmds;
-	struct lcd_kit_dsi_panel_cmds rr_chksum_cmds;
-	struct lcd_kit_dsi_panel_cmds r_end_cmds;
-	struct lcd_kit_dsi_panel_cmds d0_w_pre_cmds;
-	struct lcd_kit_dsi_panel_cmds d1_w_pre_cmds;
-	struct lcd_kit_dsi_panel_cmds d0_w_fir_cmds;
-	struct lcd_kit_dsi_panel_cmds d1_w_fir_cmds;
-	struct lcd_kit_dsi_panel_cmds d0_w_con_cmds;
-	struct lcd_kit_dsi_panel_cmds d1_w_con_cmds;
-	struct lcd_kit_dsi_panel_cmds rw_chksum_cmds;
-	struct lcd_kit_dsi_panel_cmds d0_w_end_cmds;
-	struct lcd_kit_dsi_panel_cmds d1_w_end_cmds;
-	struct lcd_kit_dsi_panel_cmds d0_w_ird_pre_cmds;
-	struct lcd_kit_dsi_panel_cmds d1_w_ird_pre_cmds;
-	struct lcd_kit_dsi_panel_cmds d0_w_ird_cmds;
-	struct lcd_kit_dsi_panel_cmds d1_w_ird_cmds;
-	struct lcd_kit_dsi_panel_cmds d0_w_ird_end_cmds;
-	struct lcd_kit_dsi_panel_cmds d1_w_ird_end_cmds;
-};
-
 struct lcd_kit_current_detect {
 	u32 support;
 	struct lcd_kit_dsi_panel_cmds detect_cmds;
@@ -349,18 +273,13 @@ struct lcd_kit_otp_gamma {
 	u8 gamma[GAMMA_MAX + 1];
 	struct lcd_kit_dsi_panel_cmds elvss_cmds;
 	struct lcd_kit_dsi_panel_cmds gamma_cmds;
-	struct lcd_kit_dsi_panel_cmds gray_cmds;
 };
 
-struct lcd_hor_line_desc {
+struct lcd_kit_vertical_line {
 	u32 support;
-	u32 duration;
-	struct lcd_kit_dsi_panel_cmds hl_cmds;
-};
-
-struct vertical_line_desc {
-	u32 support;
-	struct lcd_kit_dsi_panel_cmds vtc_cmds;
+	u32 test_period;
+	struct lcd_kit_dsi_panel_cmds avdd_cmds;
+	struct lcd_kit_dsi_panel_cmds gnd_cmds;
 };
 
 struct lcd_kit_pcd_errflag {
@@ -372,25 +291,12 @@ struct lcd_kit_pcd_errflag {
 	struct lcd_kit_dsi_panel_cmds read_errflag_cmds;
 };
 
-struct dbv_stat_desc {
-	u32 support;
-	u32 dbv[REGION_MAX];
-	u32 pwon[REGION_MAX];
-	struct timeval last_time[REGION_MAX];
-	struct timeval pwon_last_time[REGION_MAX];
-};
-
 /*function declare*/
 extern int mipi_dsi_ulps_cfg(struct hisi_fb_data_type *hisifd, int enable);
 struct hisi_fb_data_type* dev_get_hisifd(struct device* dev);
 int lcd_kit_lread_reg(void* pdata, uint32_t* out, struct lcd_kit_dsi_cmd_desc* cmds, uint32_t len);
 int lcd_kit_rgbw_set_mode(struct hisi_fb_data_type* hisifd, int mode);
 int lcd_kit_rgbw_set_backlight(struct hisi_fb_data_type* hisifd, int bl_level);
-int lcd_set_demura_handle(struct hisi_fb_data_type *hisifd,
-	unsigned char type, const demura_set_info_t *info);
-int lcd_get_demura_handle(struct hisi_fb_data_type *hisifd,
-	unsigned char dsi, unsigned char *out,
-	unsigned char read_type, unsigned char len);
 int lcd_kit_rgbw_set_handle(struct hisi_fb_data_type* hisifd);
 int lcd_kit_updt_fps(struct platform_device* pdev);
 int lcd_kit_updt_fps_scence(struct platform_device* pdev, uint32_t scence);
@@ -422,17 +328,11 @@ void lcd_kit_disp_on_record_time(void);
 void lcd_kit_factory_init(struct hisi_panel_info* pinfo);
 void lcd_kit_read_power_status(struct hisi_fb_data_type* hisifd);
 struct lcd_kit_brightness_color_oeminfo *lcd_kit_get_brightness_color_oeminfo(void);
-void lcd_kit_set_mipi_link(struct hisi_fb_data_type *hisifd, int link_state);
-void lcd_kit_set_mipi_link(struct hisi_fb_data_type *hisifd, int link_state);
+void lcd_kit_set_mipi_tx_link(struct hisi_fb_data_type *hisifd, int link_state);
+void lcd_kit_set_mipi_rx_link(struct hisi_fb_data_type *hisifd, int link_state);
 void lcd_kit_set_mipi_clk(struct hisi_fb_data_type* hisifd, uint32_t clk);
 int lcd_kit_get_value_from_dts(char *compatible, char *dts_name, u32 *value);
 int lcd_kit_write_otp_gamma(u8 *buf);
-int lcd_kit_set_otp_gamma(struct hisi_fb_data_type *hisifd);
-int lcd_kit_set_otp_gray(struct hisi_fb_data_type *hisifd);
 void lcd_frame_refresh(struct hisi_fb_data_type *hisifd);
 void lcd_kit_recovery_display(struct hisi_fb_data_type *hisifd);
-void lcd_hardware_reset(void);
-void lcd_esd_enable(struct hisi_fb_data_type *hisifd, int enable);
-bool lcd_is_power_on(uint32_t level);
-bool lcd_is_dual_mipi(void);
 #endif

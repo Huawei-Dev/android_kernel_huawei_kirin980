@@ -14,14 +14,8 @@
 #ifndef __LCD_KIT_ADAPT_H_
 #define __LCD_KIT_ADAPT_H_
 int lcd_kit_dsi_cmds_tx(void* hld, struct lcd_kit_dsi_panel_cmds* cmds);
-int lcd_kit_dsi_diff_cmds_tx(void *hld,
-	struct lcd_kit_dsi_panel_cmds *dsi0_cmds,
-	struct lcd_kit_dsi_panel_cmds *dsi1_cmds);
-int lcd_kit_dsi_cmds_rx(void *hld, uint8_t *out,
-	struct lcd_kit_dsi_panel_cmds *cmds);
-int lcd_kit_dsi1_cmds_rx(void *hld, uint8_t *out,
-	struct lcd_kit_dsi_panel_cmds *cmds);
-int lcd_kit_dsi_cmds_tx_no_lock(void *hld,
-	struct lcd_kit_dsi_panel_cmds *cmds);
+int lcd_kit_dsi_cmds_rx(void* hld, uint8_t* out, struct lcd_kit_dsi_panel_cmds* cmds);
+int lcd_kit_dsi_cmds_tx_no_lock(void* hld, struct lcd_kit_dsi_panel_cmds* cmds);
+int lcd_kit_dsi_cmds_rx_no_lock(void* hld, uint8_t* out, struct lcd_kit_dsi_panel_cmds* cmds);
 int lcd_kit_adapt_init(void);
 #endif

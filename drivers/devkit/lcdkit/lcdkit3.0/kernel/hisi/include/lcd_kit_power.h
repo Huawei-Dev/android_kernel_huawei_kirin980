@@ -33,8 +33,6 @@
 /*gpio*/
 #define GPIO_NAME "gpio"
 
-#define POWER_NUMBER 1
-
 enum gpio_operator {
 	GPIO_REQ,
 	GPIO_FREE,
@@ -66,5 +64,4 @@ void lcd_kit_gpio_tx(uint32_t type, uint32_t op);
 int lcd_kit_power_finit(struct platform_device* pdev);
 int lcd_kit_power_init(struct platform_device* pdev);
 int lcd_kit_dbg_set_voltage(void);
-int lcd_power_set_vol(uint32_t type);
 #endif

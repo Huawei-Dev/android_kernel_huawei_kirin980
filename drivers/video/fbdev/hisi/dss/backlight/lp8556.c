@@ -248,6 +248,7 @@ out:
 	up(&(lp8556_g_chip->test_sem));
 	return ret;
 }
+/* EXPORT_SYMBOL(lp8556_set_backlight_init); */
 
 static ssize_t lp8556_reg_show(struct device *dev,
 				struct device_attribute *attr, char *buf)
@@ -304,7 +305,7 @@ static ssize_t lp8556_reg_store(struct device *dev,
 					struct device_attribute *devAttr,
 					const char *buf, size_t size)
 {
-	ssize_t ret;
+	ssize_t ret = -1;
 	struct lp8556_chip_data *pchip = NULL;
 	unsigned int reg = 0;
 	unsigned int mask = 0;
@@ -312,18 +313,18 @@ static ssize_t lp8556_reg_store(struct device *dev,
 
 	if (!buf) {
 		LP8556_ERR("buf is null\n");
-		return -1;
+		return ret;
 	}
 
 	if (!dev) {
 		LP8556_ERR("dev is null\n");
-		return -1;
+		return ret;
 	}
 
 	pchip = dev_get_drvdata(dev);
 	if(!pchip){
 		LP8556_ERR("pchip is null\n");
-		return -1;
+		return ret;
 	}
 
 	ret = sscanf(buf, "reg=0x%x, mask=0x%x, val=0x%x", &reg, &mask, &val);
@@ -342,11 +343,13 @@ static ssize_t lp8556_reg_store(struct device *dev,
 
 i2c_error:
 	dev_err(pchip->dev, "%s:i2c access fail to register\n", __func__);
-	return -1;
+	ret = snprintf((char *)buf, PAGE_SIZE, "%s: i2c access fail to register\n", __func__);
+	return ret;
 
 out_input:
 	dev_err(pchip->dev, "%s:input conversion fail\n", __func__);
-	return -1;
+	ret = snprintf((char *)buf, PAGE_SIZE, "%s: input conversion fail\n", __func__);
+	return ret;
 }
 
 static DEVICE_ATTR(reg, (S_IRUGO|S_IWUSR), lp8556_reg_show, lp8556_reg_store);
@@ -724,7 +727,6 @@ static struct lcd_kit_bl_ops bl_ops = {
 	.set_backlight = lp8556_set_backlight,
 	.bl_self_test = lp8556_self_test,
 	.check_backlight = lp8556_check_backlight,
-	.name = "8556",
 };
 
 static int lp8556_probe(struct i2c_client *client,
@@ -795,13 +797,6 @@ static int lp8556_probe(struct i2c_client *client,
 	np = of_find_compatible_node(NULL, NULL, DTS_COMP_LP8556);
 	if (!np) {
 		LP8556_ERR("NOT FOUND device node %s!\n", DTS_COMP_LP8556);
-		goto err_sysfs;
-	}
-	/* Only testing lp8556 used */
-	ret = regmap_read(pchip->regmap,
-		lp8556_reg_addr[0], &lp8556_bl_info.lp8556_reg[0]);
-	if (ret < 0) {
-		LP8556_ERR("lp8556 not used\n");
 		goto err_sysfs;
 	}
 	ret = of_property_read_u32(np, "lp8556_level_lsb", &lp8556_bl_info.lp8556_level_lsb);

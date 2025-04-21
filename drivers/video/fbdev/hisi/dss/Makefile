@@ -106,8 +106,7 @@ hisifb-objs += \
 	panel/mipi_jdi_R63452_6p0.o \
 	backlight/lm36274.o \
 	backlight/lm36923.o \
-	backlight/lp8556.o \
-	backlight/rt8555.o
+	backlight/lp8556.o
 
 hisifb-objs += voltage/tps65132.o
 hisifb-objs += voltage/rt4801h.o
@@ -126,7 +125,6 @@ hisifb-objs += \
 	backlight/lm36274.o\
 	backlight/lm36923.o\
 	backlight/lp8556.o\
-	backlight/rt8555.o\
 	panel/mipi_auo_OTM1901A.o
 
 hisifb-objs += voltage/tps65132.o
@@ -143,7 +141,6 @@ hisifb-objs += \
 	hisi_overlay_copybit.o \
 	backlight/lm36274.o \
 	backlight/lp8556.o\
-	backlight/rt8555.o\
 	backlight/lm36923.o\
 	panel/mipi_cmi_NT35521.o\
 	panel/mipi_sharp_TD4322_6p0.o\
@@ -180,7 +177,6 @@ hisifb-objs += \
 	backlight/lm36274.o \
 	backlight/lm36923.o \
 	backlight/lp8556.o \
-	backlight/rt8555.o \
 	panel/kirin970/mipi_cmi_NT35521.o\
 	panel/kirin970/mipi_jdi_NT35695_cut3_1.o\
 	panel/kirin970/mipi_lg_TD4322.o \
@@ -296,11 +292,9 @@ hisifb-objs += \
 	hisi_dpe_utils_dssv320.o \
 	hisi_overlay_utils_dssv320.o \
 	hisi_mipi_dsi_v3xx.o \
-	hisi_sensorhub_aod.o \
 	backlight/lm36274.o \
 	backlight/lm36923.o \
 	backlight/lp8556.o \
-	backlight/rt8555.o \
 	panel/dssv320/mipi_tm_OTM1911A.o \
 	panel/dssv320/mipi_cmi_NT35521.o
 
@@ -318,11 +312,9 @@ hisifb-objs += \
 	hisi_dpe_utils_dssv330.o \
 	hisi_overlay_utils_dssv330.o \
 	hisi_mipi_dsi_v330.o \
-	hisi_sensorhub_aod.o \
 	backlight/lm36274.o \
 	backlight/lm36923.o \
 	backlight/lp8556.o \
-	backlight/rt8555.o \
 	panel/dssv330/mipi_lg_TD4322.o \
 	panel/dssv330/mipi_boe_TD4320.o
 
@@ -360,17 +352,9 @@ EXTRA_CFLAGS += -Idrivers/devkit/lcdkit/lcdkit3.0/kernel/common/include \
                 -Idrivers/devkit/lcdkit/lcdkit3.0/kernel/hisi/include
 
 hisifb-objs += backlight/lp8556.o
-hisifb-objs += backlight/rt8555.o
 hisifb-objs += voltage/tps65132.o
 hisifb-objs += backlight/lm36274.o
 hisifb-objs += voltage/rt4801h.o
-hisifb-objs += backlight/ktz8864.o
-hisifb-objs += backlight/rt4831.o
-hisifb-objs += backlight/nt50356.o
-endif
-
-ifeq ($(CONFIG_HUAWEI_DEVKIT_HISI),y)
-EXTRA_CFLAGS += -DLV_GET_LCDBK_ON
 endif
 
 clean:

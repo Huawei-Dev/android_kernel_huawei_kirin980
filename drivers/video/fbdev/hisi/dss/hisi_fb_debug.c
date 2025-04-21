@@ -22,8 +22,6 @@ unsigned hisi_fb_msg_level = 7;
 
 int g_debug_mmu_error = 0;
 
-int g_debug_underflow_error = 1;
-
 int g_debug_ldi_underflow = 0;
 
 int g_debug_ldi_underflow_clear = 1;
@@ -42,7 +40,7 @@ int g_debug_ovl_online_composer_hold = 0;
 
 int g_debug_ovl_online_composer_return = 0;
 
-uint32_t g_debug_ovl_online_composer_timediff = 0x0;
+int g_debug_ovl_online_composer_timediff = 0x0;
 
 int g_debug_ovl_online_composer_time_threshold = 60000;  //us
 
@@ -52,7 +50,7 @@ int g_debug_ovl_block_composer = 0;
 
 int g_debug_ovl_offline_composer_hold = 0;
 
-uint32_t g_debug_ovl_offline_composer_timediff = 0;
+int g_debug_ovl_offline_composer_timediff = 0;
 
 int g_debug_ovl_offline_composer_time_threshold = 12000;  //us
 
@@ -121,8 +119,6 @@ int g_dss_effect_sharpness1D_en = 1;
 int g_dss_effect_sharpness2D_en = 0;
 
 int g_dss_effect_acm_ce_en = 1;
-
-int g_debug_online_play_bypass = 0;
 
 //lint +e305, +e514, +e84, +e21, +e846, +e778, +e866, +e708
 
@@ -210,28 +206,6 @@ void dss_underflow_debug_func(struct work_struct *work)
 			}
 			dsm_client_notify(lcd_dclient, DSM_LCD_LDI_UNDERFLOW_NO);
 		}
-	}
-}
-
-void hisi_dss_underflow_dump_cmdlist(struct hisi_fb_data_type *hisifd,
-	dss_overlay_t *pov_req_prev, dss_overlay_t *pov_req_prev_prev)
-{
-	uint32_t cmdlist_idxs_prev = 0;
-	uint32_t cmdlist_idxs_prev_prev = 0;
-
-	if ((g_debug_underflow_error) && (g_underflow_count < DSS_UNDERFLOW_COUNT)) {
-		if (pov_req_prev_prev != NULL) {
-			(void)hisi_cmdlist_get_cmdlist_idxs(pov_req_prev_prev, &cmdlist_idxs_prev_prev, NULL);
-			dumpDssOverlay(hisifd, pov_req_prev_prev);
-			hisi_cmdlist_dump_all_node(hisifd, NULL, cmdlist_idxs_prev_prev);
-		}
-
-		if (pov_req_prev != NULL) {
-			(void)hisi_cmdlist_get_cmdlist_idxs(pov_req_prev, &cmdlist_idxs_prev, NULL);
-			dumpDssOverlay(hisifd, pov_req_prev);
-			hisi_cmdlist_dump_all_node(hisifd, NULL, cmdlist_idxs_prev);
-		}
-		g_underflow_count++;
 	}
 }
 

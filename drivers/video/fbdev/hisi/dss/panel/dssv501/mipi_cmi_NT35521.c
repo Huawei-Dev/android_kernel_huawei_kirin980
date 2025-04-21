@@ -1585,6 +1585,8 @@ static struct gpio_desc fpga_lcd_gpio_lowpower_cmds[] = {
 		GPIO_LCD_RESET_NAME, &gpio_lcd_reset, 0},
 };
 
+static struct hisi_fb_panel_data g_panel_data;
+
 /*******************************************************************************
 **
 */
@@ -1648,6 +1650,7 @@ static int mipi_cmi_panel_on(struct platform_device *pdev)
 		while (status & 0x10) {
 			udelay(50);
 			if (++try_times > 100) {
+				try_times = 0;
 				HISI_FB_ERR("Read lcd power status timeout!\n");
 				break;
 			}
@@ -1660,8 +1663,8 @@ static int mipi_cmi_panel_on(struct platform_device *pdev)
 
 		pinfo->lcd_init_step = LCD_INIT_MIPI_HS_SEND_SEQUENCE;
 	} else if (pinfo->lcd_init_step == LCD_INIT_MIPI_HS_SEND_SEQUENCE) {
-		// backlight on
-		hisi_lcd_backlight_on(pdev);
+        	// backlight on
+        	hisi_lcd_backlight_on(pdev);
 	} else {
 		HISI_FB_ERR("failed to init lcd!\n");
 	}

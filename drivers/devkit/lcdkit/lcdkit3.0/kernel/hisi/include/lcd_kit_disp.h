@@ -31,7 +31,6 @@
 #define SCBAKDATA11 (0x438)
 //pt test state
 #define IN_POWER_TEST 2
-#define LCD_POWER_LEN 3
 
 //UD PrintFinger HBM
 #define LCD_KIT_FP_HBM_ENTER 1
@@ -40,10 +39,6 @@
 #define LCD_KIT_ENABLE_ELVSSDIM  0
 #define LCD_KIT_DISABLE_ELVSSDIM 1
 #define LCD_KIT_ELVSSDIM_NO_WAIT 0
-
-// UD PrintFinger unlock when screen on
-#define MASK_LAYER_SCREENON 0x02
-#define CIRCLE_LAYER 0x04
 
 struct lcd_kit_disp_info *lcd_kit_get_disp_info(void);
 #define disp_info	lcd_kit_get_disp_info()
@@ -75,12 +70,10 @@ struct lcd_kit_disp_info {
 	struct lcd_kit_lv_detect lv_det;
 	/*ldo check*/
 	struct lcd_kit_ldo_check ldo_check;
-	/* horizontal line test */
-	struct lcd_hor_line_desc hor_line;
+	/*vertical line test*/
+	struct lcd_kit_vertical_line vertical_line;
 	/*pcd errflag*/
 	struct lcd_kit_pcd_errflag pcd_errflag;
-	/* vertical line test witch picture */
-	struct vertical_line_desc vtc_line;
 	/********************end****************/
 	/********************effect****************/
 	/*gamma calibration*/
@@ -89,8 +82,6 @@ struct lcd_kit_disp_info {
 	struct lcd_kit_oem_info oeminfo;
 	/*rgbw function*/
 	struct lcd_kit_rgbw rgbw;
-	/* demura */
-	struct lcd_kit_demura demura;
 	/********************end****************/
 	/********************normal****************/
 	u8 bl_is_shield_backlight;
@@ -109,8 +100,6 @@ struct lcd_kit_disp_info {
 	u32 vr_support;
 	/*lcd kit semaphore*/
 	struct semaphore lcd_kit_sem;
-	/* thp proximity semaphore */
-	struct semaphore thp_second_poweroff_sem;
 	/*lcd kit mipi mutex lock*/
 	struct mutex mipi_lock;
 	/*alpm -aod*/
@@ -125,8 +114,6 @@ struct lcd_kit_disp_info {
 	struct lcd_kit_panel_version panel_version;
 	/*otp gamma*/
 	struct lcd_kit_otp_gamma otp_gamma;
-	/* dbv statistics */
-	struct dbv_stat_desc dbv_stat;
 	/********************end****************/
 };
 

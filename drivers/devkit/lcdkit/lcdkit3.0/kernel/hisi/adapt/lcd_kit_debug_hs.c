@@ -320,7 +320,7 @@ static int dbg_pxl_clk(int val)
 		return LCD_KIT_FAIL;
 	}
 	pinfo->pxl_clk_rate = val * 1000000UL;
-	LCD_KIT_INFO("pinfo->pxl_clk_rate = %llu\n", pinfo->pxl_clk_rate);
+	LCD_KIT_INFO("pinfo->pxl_clk_rate = %ul\n", pinfo->pxl_clk_rate);
 	return LCD_KIT_OK;
 }
 

@@ -133,7 +133,7 @@ static ssize_t ina231_store_debug(struct device *dev, struct device_attribute *a
 		return -EINVAL;
 	}
 
-	ret = sscanf(buf, "config=0x%x, calibration=0x%x, mask_en=0x%x, alert_limit=0x%x",
+	ret = sscanf(buf, "config=0x%x, calibration=0x%x, mask_en=0x%x, alert_limit=0x%x", 
 				(unsigned int *)&config, (unsigned int *)&calibration, (unsigned int *)&mask_en, (unsigned int *)&alert_limit);
 	if (ret < 0) {
 		INA231_ERR("check your input!\n");

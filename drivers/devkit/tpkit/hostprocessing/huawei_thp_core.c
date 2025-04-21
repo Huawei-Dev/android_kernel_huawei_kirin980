@@ -129,7 +129,7 @@ int thp_power_control_notify(enum lcd_kit_ts_pm_type pm_type, int timeout);
 int ts_kit_ops_register(struct ts_kit_ops *ops);
 struct ts_kit_ops thp_ops = {
 	.ts_power_notify = thp_power_control_notify,
-	.get_tp_proxmity = thp_get_prox_switch_status,
+	//.get_tp_proxmity = thp_get_prox_switch_status,
 };
 #endif
 
@@ -3097,15 +3097,6 @@ static void thp_prox_add_poweroff(struct thp_core_data *cd, bool enable)
 #ifdef CONFIG_LCDKIT_DRIVER
 		if (!lcdkit_proximity_poweroff())
 			thp_prox_add_suspend(cd, enable);
-#endif
-
-#ifdef CONFIG_LCD_KIT_DRIVER
-		if (tp_ops && tp_ops->proximity_power_off) {
-			if (!tp_ops->proximity_power_off())
-				thp_prox_add_suspend(cd, enable);
-		} else {
-			THP_LOG_ERR("[Proximity_feature] point is null\n");
-		}
 #endif
 	}
 }

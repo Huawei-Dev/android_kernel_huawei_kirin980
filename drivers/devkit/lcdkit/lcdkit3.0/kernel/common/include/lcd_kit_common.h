@@ -71,12 +71,12 @@ extern u32 mipi_level;
 	do { if (lcd_kit_msg_level >= MSG_LEVEL_DEBUG)  \
 		printk(KERN_INFO "[LCD_KIT/D]%s: "msg, __func__, ## __VA_ARGS__); } while (0)
 
+#define SENCE_ARRAY_SIZE 100
 #define LCD_KIT_CMD_NAME_MAX 100
 #define MAX_REG_READ_COUNT	4
 
 #define LCD_KIT_FAIL -1
 #define LCD_KIT_OK 0
-#define NOT_SUPPORT 0
 /*check thead period*/
 #define CHECK_THREAD_TIME_PERIOD	(5000)
 #define BITS(x)     (1<<x)
@@ -87,20 +87,6 @@ extern u32 mipi_level;
 #define LCD_KIT_DISABLE_ELVSSDIM_MASK 0x7F
 #define LCD_KIT_SHIFT_FOUR_BIT 4
 #define LCD_KIT_HIGH_12BIT_CTL_HBM_SUPPORT 1
-#define HBM_SET_MAX_LEVEL 5000
-
-#define TP_PROXMITY_DISABLE 0
-#define TP_PROXMITY_ENABLE  1
-#define LCD_RESET_HIGH      1
-
-/* voltage index */
-#define POWER_TYPE	0
-#define POWER_NUM	1
-#define POWER_VOL	2
-
-#define POWER_ON 0
-#define POWER_TS_SUSPEND 1
-#define POWER_OFF 2
 
 struct lcd_kit_common_ops *lcd_kit_get_common_ops(void);
 #define common_ops	lcd_kit_get_common_ops()
@@ -226,7 +212,6 @@ enum lcd_kit_event {
 	EVENT_LATER_TS,
 	EVENT_VDD,
 	EVENT_AOD,
-	EVENT_BIAS,
 };
 
 enum bl_order {
@@ -339,11 +324,7 @@ struct lcd_kit_blmaxnit {
 	u32 lcd_kit_brightness_ddic_info;
 	struct lcd_kit_dsi_panel_cmds bl_maxnit_cmds;
 };
-struct lcd_kit_thp_proximity {
-	unsigned int support;
-	int work_status;
-	int panel_power_state;
-};
+
 struct lcd_kit_array_data {
 	uint32_t* buf;
 	int cnt;
@@ -428,7 +409,6 @@ struct lcd_kit_scan {
 
 struct lcd_kit_esd {
 	u32 support;
-	u32 fac_esd_support;
 	u32 status;
 	struct lcd_kit_dsi_panel_cmds cmds;
 	struct lcd_kit_array_data value;
@@ -508,16 +488,16 @@ struct lcd_kit_set_vss{
 	struct lcd_kit_dsi_panel_cmds cmds_thi;
 };
 
-struct lcd_kit_elvdd_detect {
-	u32 support;
-	struct lcd_kit_dsi_panel_cmds cmds;
-};
-
 struct lcd_kit_effect_on {
 	u32 support;
 	struct lcd_kit_dsi_panel_cmds cmds;
 };
-
+struct lcd_kit_dsi1{
+	u32 support;
+	u32 state;
+	struct lcd_kit_dsi_panel_cmds on_cmds;
+	struct lcd_kit_dsi_panel_cmds off_cmds;
+};
 struct lcd_kit_pt_test {
 	u32 support;
 	u32 panel_ulps_support;
@@ -614,9 +594,6 @@ struct lcd_kit_common_info {
 	struct lcd_kit_pt_test pt;
 	/*vss*/
 	struct lcd_kit_set_vss set_vss;
-	/* elvdd detect */
-	struct lcd_kit_elvdd_detect elvdd_detect;
-	u32 panel_on_always_need_reset;
 	/**********************end******************/
 	/**********************effect******************/
 	int bl_level_max;
@@ -626,7 +603,6 @@ struct lcd_kit_common_info {
 	u32 bl_max_nit;
 	/*actual max nit*/
 	u32 actual_bl_max_nit;
-	u32 bl_max_nit_min_value;
 	struct lcd_kit_effect_color effect_color;
 	/*cabc function*/
 	struct lcd_kit_cabc cabc;
@@ -640,6 +616,8 @@ struct lcd_kit_common_info {
 	struct lcd_kit_ce ce;
 	/*effect on after panel on*/
 	struct lcd_kit_effect_on effect_on;
+	/*dsi1 cmd*/
+	struct lcd_kit_dsi1 dsi1_cmd;
 	/**********************end******************/
 	/**********************normal******************/
 	/*panel name*/
@@ -662,7 +640,6 @@ struct lcd_kit_common_info {
 	struct lcd_kit_check_thread check_thread;
 	/*get_blmaxnit*/
 	struct lcd_kit_blmaxnit blmaxnit;
-	struct lcd_kit_thp_proximity thp_proximity;
 	/**********************end******************/
 };
 
@@ -677,8 +654,6 @@ struct lcd_kit_power_desc {
 	struct lcd_kit_array_data tp_rst;
 	struct lcd_kit_array_data lcd_vdd;
 	struct lcd_kit_array_data lcd_aod;
-	struct lcd_kit_array_data lcd_power_down_vsp;
-	struct lcd_kit_array_data lcd_power_down_vsn;
 };
 
 struct lcd_kit_power_seq {
@@ -695,7 +670,5 @@ int lcd_kit_adapt_register(struct lcd_kit_adapt_ops* ops);
 struct lcd_kit_adapt_ops* lcd_kit_get_adapt_ops(void);
 void lcd_kit_delay(int wait, int waittype, bool allow_sleep);
 int lcd_dsm_client_record(struct dsm_client *lcd_dclient, char *record_buf,
-int lcd_dsm_error_no, int rec_num_limit, int *cur_rec_time);
-int lcd_kit_reset_power_ctrl(int enable);
-int lcd_kit_get_pt_mode(void);
+	int lcd_dsm_error_no, int rec_num_limit, int *cur_rec_time);
 #endif

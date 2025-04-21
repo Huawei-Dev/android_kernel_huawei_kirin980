@@ -243,9 +243,12 @@ void lcd_kit_dump_buf(const char* buf, int cnt)
 		LCD_KIT_ERR("buf is null\n");
 		return;
 	}
+	//LCD_KIT_DEBUG("================= dump buf start ===============\n");
 	for (i = 0; i < cnt; i++) {
 		LCD_KIT_DEBUG("buf[%d]         = 0x%02x\n", i, buf[i]);
 	}
+
+	//LCD_KIT_DEBUG("================= dump buf end   ===============\n");
 }
 
 void lcd_kit_dump_buf_32(const u32* buf, int cnt)
@@ -283,6 +286,7 @@ void lcd_kit_dump_cmds(struct lcd_kit_dsi_panel_cmds* cmds)
 {
 	int i;
 
+	//LCD_KIT_DEBUG("============= lcd_kit cmds dump start ============\n");
 	if ( NULL == cmds) {
 		LCD_KIT_INFO("NULL point!\n");
 		return ;
@@ -296,6 +300,8 @@ void lcd_kit_dump_cmds(struct lcd_kit_dsi_panel_cmds* cmds)
 	for (i = 0; i < cmds->cmd_cnt; i++) {
 		lcd_kit_dump_cmds_desc(&cmds->cmds[i]);
 	}
+
+	//LCD_KIT_DEBUG("============= lcd_kit cmds dump end   ============\n");
 }
 
 /* convert string to lower case */
@@ -2422,9 +2428,9 @@ int *lcd_kit_dbg_find_item(unsigned char *item)
 
 int lcd_kit_dbg_parse_config(void)
 {
-	unsigned char *item_name = NULL;
-	unsigned char *tmp_name = NULL;
-	unsigned char *data = NULL;
+	unsigned char item_name[LCD_KIT_ITEM_NAME_MAX];
+	unsigned char tmp_name[LCD_KIT_ITEM_NAME_MAX];
+	unsigned char data[LCD_KIT_CONFIG_TABLE_MAX_NUM];
 	int fd = 0 ;
 	int cur_seek = 0;
 	unsigned char ch = '\0';
@@ -2444,28 +2450,11 @@ int lcd_kit_dbg_parse_config(void)
 	}
 	LCD_KIT_INFO( "Config file %s opened. \n", LCD_KIT_PARAM_FILE_PATH);
 
-	ret = sys_lseek(fd, (off_t)0, 0);
-	if (ret < 0)
-		LCD_KIT_ERR("sys_lseek error!\n");
+	sys_lseek(fd, (off_t)0, 0);
 
-	data = kzalloc(LCD_KIT_CONFIG_TABLE_MAX_NUM, 0);
-	if (!data) {
-		LCD_KIT_ERR("data kzalloc fail\n");
-		return LCD_KIT_FAIL;
-	}
-	item_name = kzalloc(LCD_KIT_ITEM_NAME_MAX, 0);
-	if (!item_name) {
-		kfree(data);
-		LCD_KIT_ERR("item_name kzalloc fail\n");
-		return LCD_KIT_FAIL;
-	}
-	tmp_name = kzalloc(LCD_KIT_ITEM_NAME_MAX, 0);
-	if (!tmp_name) {
-		kfree(data);
-		kfree(item_name);
-		LCD_KIT_ERR("tmp_name kzalloc fail\n");
-		return LCD_KIT_FAIL;
-	}
+	memset(data, 0, LCD_KIT_CONFIG_TABLE_MAX_NUM);
+	memset(item_name, 0, LCD_KIT_ITEM_NAME_MAX);
+	memset(tmp_name, 0, LCD_KIT_ITEM_NAME_MAX);
 
 	while (1) {
 		if ((unsigned)sys_read(fd, &ch, 1) != 1) {
@@ -2473,10 +2462,7 @@ int lcd_kit_dbg_parse_config(void)
 			break;
 		} else {
 			cur_seek++;
-			ret = sys_lseek(fd, (off_t)cur_seek, 0);
-			if (ret < 0)
-				LCD_KIT_ERR("sys_lseek error!\n");
-
+			sys_lseek(fd, (off_t)cur_seek, 0);
 			switch (ch) {
 				case '<':
 				if (parse_status == PARSE_HEAD) {
@@ -2512,7 +2498,7 @@ int lcd_kit_dbg_parse_config(void)
 				}
 				continue;
 
-				case '/':
+				case '\/':
 				if (parse_status == RECIEVE_DATA) {
 					parse_status = PARSE_FINAL;
 				}
@@ -2549,17 +2535,11 @@ int lcd_kit_dbg_parse_config(void)
 	LCD_KIT_INFO("parse success\n");
 	sys_close(fd);
 	set_fs(fs);
-	kfree(data);
-	kfree(item_name);
-	kfree(tmp_name);
 	return 0;
 err:
 	LCD_KIT_INFO("parse fail\n");
 	sys_close(fd);
 	set_fs(fs);
-	kfree(data);
-	kfree(item_name);
-	kfree(tmp_name);
 	return -1;
 }
 
@@ -2629,6 +2609,7 @@ static ssize_t lcd_kit_dbg_write(
 	int cmd_type = -1;
 	int cnt = 0, i = 0;
 	int val;
+	unsigned long temp = 0;
 
 	char lcd_debug_buf[256];
 	int length = sizeof(lcd_kit_cmd_list) / sizeof(lcd_kit_cmd_list[0]);

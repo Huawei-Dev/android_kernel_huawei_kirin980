@@ -66,30 +66,24 @@ static void dss_pdp_isr_vactive0_end_handle(struct hisi_fb_data_type *hisifd, ui
 
 	hisifb_display_effect_flags_config(hisifd);
 
-	if (hisifd->underflow_flag) {
-		hisifd->underflow_flag = 0;
-		HISI_FB_INFO("mipi_dsi_reset_underflow_clear + .\n");
-		mipi_dsi_reset_underflow_clear(hisifd);
-	} else {
-		if (PARA_UPDT_DOING == hisifd->pipe_clk_ctrl.pipe_clk_updt_state) {
-			;
-		} else if (need_panel_mode_swtich(hisifd, isr_s2)) {
-			if (((uint32_t)inp32(hisifd->dss_base + DSS_LDI0_OFFSET + LDI_CTRL) & 0x1) == 0) {
-				hisifd->panel_mode_switch_isr_handler(hisifd, hisifd->panel_info.mode_switch_to);
-			}
-			hisifd->panel_info.mode_switch_state = PARA_UPDT_END;
-		} else if (need_dsi_bit_clk_upt(hisifd)) {
-			if (!(isr_s2 & BIT_VACTIVE0_START)) {
-				hisifd->mipi_dsi_bit_clk_upt_isr_handler(hisifd);
-			}
-		} else if (hisifd->panel_info.fps_updt_support
-			&& hisifd->fps_upt_isr_handler
-			&& (hisifd->panel_info.fps_updt != hisifd->panel_info.fps || hisifd->panel_info.fps_updt_force_update)) {
-			hisifd->fps_upt_isr_handler(hisifd);
+	if (PARA_UPDT_DOING == hisifd->pipe_clk_ctrl.pipe_clk_updt_state) {
+		;
+	} else if (need_panel_mode_swtich(hisifd, isr_s2)) {
+		if ((inp32(hisifd->dss_base + DSS_LDI0_OFFSET + LDI_CTRL) & 0x1) == 0) {
+			hisifd->panel_mode_switch_isr_handler(hisifd, hisifd->panel_info.mode_switch_to);
 		}
+		hisifd->panel_info.mode_switch_state = PARA_UPDT_END;
+	} else if (need_dsi_bit_clk_upt(hisifd)) {
+		if (!(isr_s2 & BIT_VACTIVE0_START)) {
+			hisifd->mipi_dsi_bit_clk_upt_isr_handler(hisifd);
+		}
+	} else if (hisifd->panel_info.fps_updt_support
+		&& hisifd->fps_upt_isr_handler
+		&& (hisifd->panel_info.fps_updt != hisifd->panel_info.fps || hisifd->panel_info.fps_updt_force_update)) {
+		hisifd->fps_upt_isr_handler(hisifd);
 	}
 
-	if (secure_ctrl->notify_secure_switch != NULL) {
+	if (secure_ctrl->notify_secure_switch) {
 		secure_ctrl->notify_secure_switch(hisifd);
 	}
 
@@ -102,11 +96,7 @@ static void dss_pdp_isr_vactive0_end_handle(struct hisi_fb_data_type *hisifd, ui
 
 static void dss_pdp_isr_vactive0_start_handle(struct hisi_fb_data_type *hisifd, uint32_t isr_s2)
 {
-	if (hisifd->underflow_flag) {
-		HISI_FB_ERR("vactive end int of the underflow frame didnot come.\n");
-	}
-
-	if (hisifd->ov_vactive0_start_isr_handler != NULL) {
+	if (hisifd->ov_vactive0_start_isr_handler) {
 		hisifd->ov_vactive0_start_isr_handler(hisifd);
 	}
 
@@ -115,7 +105,7 @@ static void dss_pdp_isr_vactive0_start_handle(struct hisi_fb_data_type *hisifd, 
 		disable_ldi(hisifd);
 		hisifd->pipe_clk_ctrl.pipe_clk_updt_state = PARA_UPDT_DOING;
 
-		if (hisifd->pipe_clk_updt_isr_handler != NULL) {
+		if (hisifd->pipe_clk_updt_isr_handler) {
 			hisifd->pipe_clk_updt_isr_handler(hisifd);
 		}
 	}
@@ -161,9 +151,9 @@ irqreturn_t dss_pdp_isr(int irq, void *ptr)
 	outp32(hisifd->dss_base + DSS_LDI0_OFFSET + LDI_CPU_ITF_INTS, isr_s2);
 	outp32(hisifd->dss_base + GLB_CPU_PDP_INTS, isr_s1);
 
-	isr_s1 &= ~((uint32_t)inp32(hisifd->dss_base + GLB_CPU_PDP_INT_MSK));
-	isr_s2 &= ~((uint32_t)inp32(hisifd->dss_base + DSS_LDI0_OFFSET + LDI_CPU_ITF_INT_MSK));
-	isr_s2_dpp &= ~((uint32_t)inp32(hisifd->dss_base + DSS_DPP_OFFSET + DPP_INT_MSK));
+	isr_s1 &= ~(inp32(hisifd->dss_base + GLB_CPU_PDP_INT_MSK));
+	isr_s2 &= ~(inp32(hisifd->dss_base + DSS_LDI0_OFFSET + LDI_CPU_ITF_INT_MSK));
+	isr_s2_dpp &= ~(inp32(hisifd->dss_base + DSS_DPP_OFFSET + DPP_INT_MSK));
 
 	if (is_mipi_cmd_panel(hisifd)) {
 		isr_te_vsync = BIT_LCD_TE0_PIN;
@@ -188,11 +178,11 @@ irqreturn_t dss_pdp_isr(int irq, void *ptr)
 			queue_work(hisifd->delayed_cmd_queue_wq, &hisifd->delayed_cmd_queue_work);
 		}
 
-		if (hisifd->vsync_isr_handler != NULL) {
+		if (hisifd->vsync_isr_handler) {
 			hisifd->vsync_isr_handler(hisifd);
 		}
 
-		if (hisifd->buf_sync_signal != NULL) {
+		if (hisifd->buf_sync_signal) {
 			hisifd->buf_sync_signal(hisifd);
 		}
 
@@ -213,19 +203,17 @@ irqreturn_t dss_pdp_isr(int irq, void *ptr)
 		mask |= BIT_LDI_UNFLOW;
 		outp32(hisifd->dss_base + DSS_LDI0_OFFSET + LDI_CPU_ITF_INT_MSK, mask);
 
-		hisi_dump_current_info(hisifd);
-
 		if (g_debug_ldi_underflow_clear) {
 			if (is_mipi_cmd_panel(hisifd)) {
 				if (g_ldi_data_gate_en == 0) {
-					if (hisifd->ldi_underflow_wq != NULL) {
+					if (hisifd->ldi_underflow_wq) {
 						hisifb_pipe_clk_set_underflow_flag(hisifd, true);
 						disable_ldi(hisifd);
 						queue_work(hisifd->ldi_underflow_wq, &hisifd->ldi_underflow_work);
 					}
 				}
 			} else {
-				if (hisifd->ldi_underflow_wq != NULL) {
+				if (hisifd->ldi_underflow_wq) {
 					hisifb_pipe_clk_set_underflow_flag(hisifd, true);
 					disable_ldi(hisifd);
 					queue_work(hisifd->ldi_underflow_wq, &hisifd->ldi_underflow_work);
@@ -235,7 +223,7 @@ irqreturn_t dss_pdp_isr(int irq, void *ptr)
 
 		if (g_debug_ldi_underflow) {
 			if (g_debug_ovl_online_composer) {
-				if (hisifd->dss_debug_wq != NULL)
+				if (hisifd->dss_debug_wq)
 					queue_work(hisifd->dss_debug_wq, &hisifd->dss_debug_work);
 			}
 		}
@@ -255,9 +243,7 @@ irqreturn_t dss_pdp_isr(int irq, void *ptr)
 
 		if (isr_s2_dpp & BIT_HIACE_IND) {
 			if (hisifd->panel_info.hiace_support && hisifd->hiace_end_wq) {
-				// check if reading fna in isr first, if yes, no need queue work
-				if (!hisi_hiace_single_mode_handle_isr(hisifd))
-					queue_work(hisifd->hiace_end_wq, &hisifd->hiace_end_work);
+				queue_work(hisifd->hiace_end_wq, &hisifd->hiace_end_work);
 			}
 		}
 
@@ -297,8 +283,8 @@ irqreturn_t dss_sdp_isr(int irq, void *ptr)
 		outp32(ldi_base + LDI_CPU_ITF_INTS, isr_s2);
 		outp32(hisifd->dss_base + GLB_CPU_DP_INTS, isr_s1);
 
-		isr_s1 &= ~((uint32_t)inp32(hisifd->dss_base + GLB_CPU_DP_INT_MSK));
-		isr_s2 &= ~((uint32_t)inp32(ldi_base + LDI_CPU_ITF_INT_MSK));
+		isr_s1 &= ~(inp32(hisifd->dss_base + GLB_CPU_DP_INT_MSK));
+		isr_s2 &= ~(inp32(ldi_base + LDI_CPU_ITF_INT_MSK));
 
 	} else {
 		isr_s1 = inp32(hisifd->dss_base + GLB_CPU_SDP_INTS);
@@ -309,8 +295,8 @@ irqreturn_t dss_sdp_isr(int irq, void *ptr)
 		outp32(ldi_base + LDI_CPU_ITF_INTS, isr_s2);
 		outp32(hisifd->dss_base + GLB_CPU_SDP_INTS, isr_s1);
 
-		isr_s1 &= ~((uint32_t)inp32(hisifd->dss_base + GLB_CPU_SDP_INT_MSK));
-		isr_s2 &= ~((uint32_t)inp32(ldi_base + LDI_CPU_ITF_INT_MSK));
+		isr_s1 &= ~(inp32(hisifd->dss_base + GLB_CPU_SDP_INT_MSK));
+		isr_s2 &= ~(inp32(ldi_base + LDI_CPU_ITF_INT_MSK));
 	}
 
 	if (isr_s2 & BIT_VACTIVE0_END) {
@@ -318,16 +304,16 @@ irqreturn_t dss_sdp_isr(int irq, void *ptr)
 	}
 
 	if (isr_s2 & BIT_VACTIVE0_START) {
-		if (hisifd->ov_vactive0_start_isr_handler != NULL)
+		if (hisifd->ov_vactive0_start_isr_handler)
 			hisifd->ov_vactive0_start_isr_handler(hisifd);
 	}
 
 	if (isr_s2 & BIT_VSYNC) {
-		if (hisifd->vsync_isr_handler != NULL) {
+		if (hisifd->vsync_isr_handler) {
 			hisifd->vsync_isr_handler(hisifd);
 		}
 
-		if (hisifd->buf_sync_signal != NULL) {
+		if (hisifd->buf_sync_signal) {
 			hisifd->buf_sync_signal(hisifd);
 		}
 	}
@@ -339,13 +325,13 @@ irqreturn_t dss_sdp_isr(int irq, void *ptr)
 		if (g_debug_ldi_underflow_clear) {
 			if (is_mipi_cmd_panel(hisifd)) {
 				if (g_ldi_data_gate_en == 0) {
-					if (hisifd->ldi_underflow_wq != NULL) {
+					if (hisifd->ldi_underflow_wq) {
 						disable_ldi(hisifd);
 						queue_work(hisifd->ldi_underflow_wq, &hisifd->ldi_underflow_work);
 					}
 				}
 			} else {
-				if (hisifd->ldi_underflow_wq != NULL) {
+				if (hisifd->ldi_underflow_wq) {
 					disable_ldi(hisifd);
 					queue_work(hisifd->ldi_underflow_wq, &hisifd->ldi_underflow_work);
 
@@ -357,7 +343,7 @@ irqreturn_t dss_sdp_isr(int irq, void *ptr)
 
 		if (g_debug_ldi_underflow) {
 			if (g_debug_ovl_online_composer) {
-				if (hisifd->dss_debug_wq != NULL)
+				if (hisifd->dss_debug_wq)
 					queue_work(hisifd->dss_debug_wq, &hisifd->dss_debug_work);
 			}
 		}
@@ -389,10 +375,10 @@ irqreturn_t dss_adp_isr(int irq, void *ptr)
 	outp32(hisifd->dss_base + DSS_SMMU_OFFSET + SMMU_INTCLR_NS, isr_s2_smmu);
 	outp32(hisifd->dss_base + GLB_CPU_OFF_INTS, isr_s1);
 
-	isr_s1 &= ~((uint32_t)inp32(hisifd->dss_base + GLB_CPU_OFF_INT_MSK));
+	isr_s1 &= ~(inp32(hisifd->dss_base + GLB_CPU_OFF_INT_MSK));
 	isr_s3_copybit = inp32(hisifd->dss_base + GLB_CPU_OFF_CAM_INTS);
 	outp32(hisifd->dss_base + GLB_CPU_OFF_CAM_INTS, isr_s3_copybit);
-	isr_s3_copybit &= ~((uint32_t)inp32(hisifd->dss_base + GLB_CPU_OFF_CAM_INT_MSK));
+	isr_s3_copybit &= ~(inp32(hisifd->dss_base + GLB_CPU_OFF_CAM_INT_MSK));
 
 	if (isr_s1 & BIT_OFF_WCH0_INTS) {
 		if (hisifd->cmdlist_info->cmdlist_wb_flag[WB_TYPE_WCH0] == 1) {
@@ -445,7 +431,7 @@ irqreturn_t dss_mdc_isr(int irq, void *ptr)
 	isr_s1 = inp32(hisifd->media_common_base + GLB_CPU_OFF_INTS);
 	outp32(hisifd->media_common_base + GLB_CPU_OFF_INTS, isr_s1);
 
-	isr_s1 &= ~((uint32_t)inp32(hisifd->media_common_base + GLB_CPU_OFF_INT_MSK));
+	isr_s1 &= ~(inp32(hisifd->media_common_base + GLB_CPU_OFF_INT_MSK));
 	if (isr_s1 & BIT_OFF_WCH1_INTS) {
 		if (hisifd->media_common_info->mdc_flag == 1) {
 				hisifd->media_common_info->mdc_done = 1;

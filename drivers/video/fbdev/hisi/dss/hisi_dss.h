@@ -51,9 +51,7 @@
 #define HISIFB_DSS_MMBUF_FREE _IOW(HISIFB_IOCTL_MAGIC, 0x09, struct dss_mmbuf)
 #define HISIFB_DSS_VOLTAGE_GET _IOW(HISIFB_IOCTL_MAGIC, 0x10, struct dss_vote_cmd)
 #define HISIFB_DSS_VOLTAGE_SET _IOW(HISIFB_IOCTL_MAGIC, 0x11, struct dss_vote_cmd)
-#define HISIFB_PLATFORM_LIMIT_GET _IOW(HISIFB_IOCTL_MAGIC, 0x12, struct platform_limit)
 
-#define HISIFB_ONLINE_PLAY_BYPASS _IOW(HISIFB_IOCTL_MAGIC, 0x20, int)
 #define HISIFB_OV_ONLINE_PLAY _IOW(HISIFB_IOCTL_MAGIC, 0x21, struct dss_overlay)
 #define HISIFB_OV_OFFLINE_PLAY _IOW(HISIFB_IOCTL_MAGIC, 0x22, struct dss_overlay)
 #define HISIFB_OV_COPYBIT_PLAY _IOW(HISIFB_IOCTL_MAGIC, 0x23, struct dss_overlay)
@@ -72,12 +70,6 @@
 #define HISIFB_HIACE_PARAM_GET _IOW(HISIFB_IOCTL_MAGIC, 0x57, struct dss_effect_info)
 #define HISIFB_HIACE_HDR10_LUT_SET _IOW(HISIFB_IOCTL_MAGIC, 0x58, struct int)
 
-// for hiace single mode
-#define HISIFB_HIACE_SINGLE_MODE_TRIGGER _IOW(HISIFB_IOCTL_MAGIC, 0x59, struct dss_hiace_single_mode_ctrl_info)
-#define HISIFB_HIACE_BLOCK_ONCE_SET _IOW(HISIFB_IOCTL_MAGIC, 0x5A, unsigned int)
-#define HISIFB_HIACE_HIST_GET _IOW(HISIFB_IOCTL_MAGIC, 0x5B, int)
-#define HISIFB_HIACE_FNA_DATA_GET _IOW(HISIFB_IOCTL_MAGIC, 0x5C, int)
-
 #define HISIFB_EFFECT_MODULE_INIT _IOW(HISIFB_IOCTL_MAGIC, 0x60, struct dss_effect)
 #define HISIFB_EFFECT_MODULE_DEINIT _IOW(HISIFB_IOCTL_MAGIC, 0x61, struct dss_effect)
 #define HISIFB_EFFECT_INFO_GET _IOW(HISIFB_IOCTL_MAGIC, 0x62, struct dss_effect_info)
@@ -92,9 +84,6 @@
 #define HISIFB_DPTX_GET_SOURCE_MODE _IOW(HISIFB_IOCTL_MAGIC, 0x81, int)
 
 #define HISIFB_PANEL_REGION_NOTIFY _IOW(HISIFB_IOCTL_MAGIC, 0x90, struct _panel_region_notify)
-#define HISIFB_GET_HIACE_ENABLE _IOW(HISIFB_IOCTL_MAGIC, 0x91, int)
-#define HISIFB_HIACE_ROI_GET _IOW(HISIFB_IOCTL_MAGIC, 0x92, struct hiace_roi_info)
-
 
 #ifndef BIT
 #define BIT(x)	(1<<(x))
@@ -570,14 +559,6 @@ typedef struct dss_overlay {
 	uint8_t reserved_1;
 
 	uint32_t online_wait_timediff;
-
-	bool hiace_roi_support;
-	bool hiace_roi_enable;
-	dss_rect_t hiace_roi_rect;
-
-	// rog scale size, for scale ratio calculating
-	uint32_t rog_width;
-	uint32_t rog_height;
 } dss_overlay_t;
 
 typedef struct dss_vote_cmd {
@@ -710,9 +691,6 @@ enum display_engine_module_id {
 	DISPLAY_ENGINE_FLICKER_DETECTOR = BIT(8),
 	DISPLAY_ENGINE_SHAREMEM = BIT(9),
 	DISPLAY_ENGINE_MANUFACTURE_BRIGHTNESS = BIT(10),
-	DISPLAY_ENGINE_FOLDABLE_INFO = BIT(11),
-	DISPLAY_ENGINE_DEMURA = BIT(12),
-	DISPLAY_ENGINE_IRDROP = BIT(13),
 };
 
 typedef struct display_engine_hbm_param {
@@ -738,11 +716,6 @@ typedef struct display_engine_amoled_param {
 	int Lowac_DBV_XCCThres;
 	int Lowac_DBV_XCC_MinThres;
 	int Lowac_Fixed_DBVThres;
-	int DC_Brightness_Dimming_Enable;
-	int DC_Brightness_Dimming_Enable_Real;
-	int Lowac_DBV_Thre_DC;
-	int Lowac_Fixed_DBV_Thres_DC;
-	int DC_Backlight_Delayus;
 } display_engine_amoled_param_t;
 
 typedef struct display_engine_blc_param {
@@ -793,31 +766,6 @@ typedef struct display_engine_panel_info_param {
 	int reserve8;
 	int reserve9;
 } display_engine_panel_info_param_t;
-
-enum display_engine_foldable_panel_id {
-	DISPLAY_ENGINE_FOLDABLE_PANEL_PRIMARY = 0,
-	DISPLAY_ENGINE_FOLDABLE_PANEL_SLAVE,
-	DISPLAY_ENGINE_FOLDABLE_PANEL_FOLDING,
-	DISPLAY_ENGINE_FOLDABLE_PANEL_NUM,
-};
-
-typedef struct display_engine_foldable_info {
-	uint32_t dbv_acc[DISPLAY_ENGINE_FOLDABLE_PANEL_NUM];
-	uint32_t screen_on_duration[DISPLAY_ENGINE_FOLDABLE_PANEL_NUM];
-	uint32_t screen_on_duration_with_hiace_enable[DISPLAY_ENGINE_FOLDABLE_PANEL_NUM];
-	uint32_t fold_num_acc;
-} display_engine_foldable_info_t;
-
-typedef struct display_engine_demura {
-	uint8_t *lut;
-	uint32_t size;
-	bool flash;
-} display_engine_demura_t;
-
-typedef struct display_engine_irdrop {
-	uint32_t *params;
-	uint32_t count;
-} display_engine_irdrop_t;
 
 struct disp_panelid
 {
@@ -896,9 +844,6 @@ typedef struct display_engine_param {
 	display_engine_flicker_detector_config_t flicker_detector_config;
 	display_engine_share_memory_t share_mem;
 	display_engine_manufacture_brightness_t manufacture_brightness;
-	display_engine_foldable_info_t foldable_info;
-	display_engine_demura_t demura;
-	display_engine_irdrop_t irdrop;
 } display_engine_param_t;
 
 typedef enum dss_module_id {
@@ -935,33 +880,5 @@ typedef struct _panel_region_notify {
 	ENUM_EN_NOTIFY_MODE notify_mode;
 	ENUM_EN_DISPLAY_REGION panel_display_region;
 } panel_region_notify_t;
-
-/* for hiace single mode */
-enum {
-	EN_HIACE_INFO_TYPE_GLOBAL_HIST = 0x1,    // bit0
-	EN_HIACE_INFO_TYPE_LOCAL_HIST = 0x2,     // bit1
-	EN_HIACE_INFO_TYPE_HIST = 0x3,           // bit0 + bit1
-	EN_HIACE_INFO_TYPE_FNA = 0x4,            // bit2
-};
-
-struct dss_hiace_single_mode_ctrl_info {
-	uint32_t info_type;      // global hist, local hist, or fna
-	uint32_t blocking_mode;  // 0:asynchronous, 1:synchronize;
-	uint32_t isr_handle;     // if get by isr routine directly
-};
-
-struct platform_limit {
-	uint32_t max_hwc_mmbuf_size;
-	uint32_t max_mdc_mmbuf_size;
-	uint32_t fold_display_support;
-};
-
-struct hiace_roi_info {
-	uint32_t roi_top;
-	uint32_t roi_left;
-	uint32_t roi_bot;
-	uint32_t roi_right;
-	uint32_t roi_enable;
-};
 
 #endif /*_HISI_DSS_H_*/

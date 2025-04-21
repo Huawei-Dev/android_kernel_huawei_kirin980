@@ -27,7 +27,6 @@ struct lcd_kit_ops {
 	int (*power_monitor_off)(void);
 	int (*set_vss_by_thermal)(void);
 	int (*write_otp_gamma)(u8 *buf);
-	int (*proximity_power_off)(void);
 };
 
 /*TS sync*/
@@ -65,7 +64,6 @@ struct ts_kit_ops {
 	int (*ts_power_notify)(enum lcd_kit_ts_pm_type type, int sync);
 	int (*get_tp_status_by_type)(int type, int *status);
 	int (*read_otp_gamma)(u8 *buf, int len);
-	bool (*get_tp_proxmity)(void);
 };
 
 /*Function declare*/

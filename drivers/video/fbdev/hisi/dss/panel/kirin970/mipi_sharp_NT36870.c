@@ -1633,6 +1633,7 @@ static int mipi_sharp_NT36870_panel_on(struct platform_device *pdev)
 		while (status & 0x10) {
 			udelay(50);
 			if (++try_times > 100) {
+				try_times = 0;
 				HISI_FB_ERR("fb%d, Read lcd power status timeout!\n", hisifd->index);
 				break;
 			}
@@ -1837,14 +1838,14 @@ static int mipi_sharp_NT36870_panel_set_display_region(struct platform_device *p
 	hisifd = platform_get_drvdata(pdev);
 	BUG_ON(hisifd == NULL);
 
-	lcd_disp_x[1] = ((uint32_t)dirty->x >> 8) & 0xff;
-	lcd_disp_x[2] = (uint32_t)dirty->x & 0xff;
-	lcd_disp_x[3] = (((uint32_t)dirty->x + (uint32_t)dirty->w - 1) >> 8) & 0xff;
-	lcd_disp_x[4] = ((uint32_t)dirty->x + (uint32_t)dirty->w - 1) & 0xff;
-	lcd_disp_y[1] = ((uint32_t)dirty->y >> 8) & 0xff;
-	lcd_disp_y[2] = (uint32_t)dirty->y & 0xff;
-	lcd_disp_y[3] = (((uint32_t)dirty->y + (uint32_t)dirty->h - 1) >> 8) & 0xff;
-	lcd_disp_y[4] = ((uint32_t)dirty->y + (uint32_t)dirty->h - 1) & 0xff;
+	lcd_disp_x[1] = (dirty->x >> 8) & 0xff;
+	lcd_disp_x[2] = dirty->x & 0xff;
+	lcd_disp_x[3] = ((dirty->x + dirty->w - 1) >> 8) & 0xff;
+	lcd_disp_x[4] = (dirty->x + dirty->w - 1) & 0xff;
+	lcd_disp_y[1] = (dirty->y >> 8) & 0xff;
+	lcd_disp_y[2] = dirty->y & 0xff;
+	lcd_disp_y[3] = ((dirty->y + dirty->h - 1) >> 8) & 0xff;
+	lcd_disp_y[4] = (dirty->y + dirty->h - 1) & 0xff;
 
 	HISI_FB_DEBUG("x[1] = 0x%2x, x[2] = 0x%2x, x[3] = 0x%2x, x[4] = 0x%2x.\n",
 		lcd_disp_x[1], lcd_disp_x[2], lcd_disp_x[3], lcd_disp_x[4]);
@@ -2118,6 +2119,9 @@ static int mipi_sharp_NT36870_probe(struct platform_device *pdev)
 		pinfo->bl_default = 102;
 	}
 
+	HISI_FB_INFO("lcd_bl_ic_name[%s], pinfo->bl_ic_ctrl_mode[%d].\n",
+		lcd_bl_ic_name_buf, pinfo->bl_ic_ctrl_mode);
+
 	pinfo->frc_enable = 0;
 	pinfo->esd_enable = 0;
 	pinfo->esd_skip_mipi_check = 0;
@@ -2126,9 +2130,7 @@ static int mipi_sharp_NT36870_probe(struct platform_device *pdev)
 	/*for 10bit_video - 8bit_cmd mode switch*/
 	pinfo->panel_mode_swtich_support = 1;
 
-	/*to enable video idle*/
 	pinfo->current_mode = MODE_10BIT_VIDEO_3X;
-
 	pinfo->mode_switch_to = pinfo->current_mode;
 
 	if (pinfo->current_mode == MODE_10BIT_VIDEO_3X) {
@@ -2204,7 +2206,6 @@ static int mipi_sharp_NT36870_probe(struct platform_device *pdev)
 			pinfo->mipi.dsi_bit_clk_upt = pinfo->mipi.dsi_bit_clk;
 
 			// for new feature
-			/*to enable video idle*/
 			pinfo->hisync_mode = 0;
 			pinfo->vsync_delay_time = 0;
 			pinfo->video_idle_mode = 1;

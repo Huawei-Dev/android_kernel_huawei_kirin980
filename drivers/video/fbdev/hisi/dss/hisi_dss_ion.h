@@ -41,7 +41,7 @@ struct iommu_page_info {
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4,14,0)
 void *hisifb_iommu_map_kernel(struct sg_table *sg_table, size_t size);
-void hisifb_iommu_unmap_kernel(const void *vaddr);
+void hisifb_iommu_unmap_kernel(void *vaddr);
 #else
 int hisifb_get_ion_phys(struct fb_info *info, void __user *arg);
 int hisifb_ion_phys(struct ion_client *client, struct ion_handle *handle,
