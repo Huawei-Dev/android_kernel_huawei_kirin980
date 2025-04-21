@@ -151,11 +151,10 @@ zinstall install:
 	$(Q)$(MAKE) $(build)=$(boot) $@
 
 %.dtb: scripts
-	$(Q)$(MAKE) $(build)=$(boot)/dts/auto-generate/config $(boot)/dts/auto-generate/$@
+	$(Q)$(MAKE) $(build)=$(boot)/dts
 
 dtbs: scripts
-	$(Q)$(MAKE) $(build)=$(boot)/dts/auto-generate/config dtbs
-	$(Q)$(MAKE) $(build)=$(boot)/dts/auto-generate/overlay dtbs
+	$(Q)$(MAKE) $(build)=$(boot)/dts
 
 Image-dtb Image.gz-dtb: vmlinux scripts dtbs
 	$(Q)$(MAKE) $(build)=$(boot) $(boot)/$@
