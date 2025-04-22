@@ -140,12 +140,8 @@ static inline void start_thread(struct pt_regs *regs, unsigned long pc,
 	start_thread_common(regs, pc);
 	regs->pstate = PSR_MODE_EL0t;
 
-#ifdef CONFIG_HISI_BYPASS_SSBS
-	regs->pstate |= PSR_SSBS_BIT;
-#else
 	if (arm64_get_ssbd_state() != ARM64_SSBD_FORCE_ENABLE)
 		regs->pstate |= PSR_SSBS_BIT;
-#endif
 
 	regs->sp = sp;
 }
@@ -163,12 +159,8 @@ static inline void compat_start_thread(struct pt_regs *regs, unsigned long pc,
 	regs->pstate |= COMPAT_PSR_E_BIT;
 #endif
 
-#ifdef CONFIG_HISI_BYPASS_SSBS
-	regs->pstate |= PSR_AA32_SSBS_BIT;
-#else
 	if (arm64_get_ssbd_state() != ARM64_SSBD_FORCE_ENABLE)
 		regs->pstate |= PSR_AA32_SSBS_BIT;
-#endif
 
 	regs->compat_sp = sp;
 }
