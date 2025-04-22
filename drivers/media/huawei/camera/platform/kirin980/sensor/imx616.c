@@ -518,7 +518,6 @@ static int imx616_match_id(
     sensor_t* sensor = I2S(si);
     struct sensor_cfg_data *cdata = (struct sensor_cfg_data *)data;
     char * sensor_name[] = {"IMX616_SUNNY"};
-	int ret;
 
     cam_info("%s enter.", __func__);
 
@@ -526,22 +525,12 @@ static int imx616_match_id(
 
     if(!strncmp(sensor->board_info->name,"IMX616_SUNNY",strlen("IMX616_SUNNY")))
     {
-		ret = strncpy_s(cdata->cfg.name,
-			DEVICE_NAME_SIZE - 1,
-			sensor_name[0],
-			DEVICE_NAME_SIZE - 1);
-		if (ret != 0)
-			cam_err("%s.strncpy failed %d", __func__, __LINE__);
+        strncpy_s(cdata->cfg.name, DEVICE_NAME_SIZE-1, sensor_name[0], DEVICE_NAME_SIZE-1);
         cdata->data = sensor->board_info->sensor_index;
     }
     else
     {
-		ret = strncpy_s(cdata->cfg.name,
-			DEVICE_NAME_SIZE - 1,
-			sensor->board_info->name,
-			DEVICE_NAME_SIZE - 1);
-		if (ret != 0)
-			cam_err("%s.strncpy failed %d", __func__, __LINE__);
+        strncpy_s(cdata->cfg.name, DEVICE_NAME_SIZE-1, sensor->board_info->name, DEVICE_NAME_SIZE-1);
         cdata->data = sensor->board_info->sensor_index;
     }
 

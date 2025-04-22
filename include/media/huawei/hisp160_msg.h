@@ -1,13 +1,4 @@
-/**
-* @copyright    Copyright (c) 2014- Hisilicon Technologies CO., Ltd.
-* @file         hisp160_msg.h
-* @brief        Header file
-*
-* @version      1.0
-* @date         2016-12-05 15:24:09
-* @author
-* @change       initial draft
-*/
+
 
 
 #ifndef HISP160_MSG_H_INCLUDED
@@ -547,7 +538,6 @@ typedef struct _msg_req_request_t
     unsigned int buf[MAX_STREAM_NUM];
     unsigned int input_setting_buffer;
     unsigned int output_metadata_buffer;
-    unsigned int output_cap_info_buffer;
 } msg_req_request_t;
 
 typedef struct _msg_ack_request_t
@@ -562,7 +552,6 @@ typedef struct _msg_ack_request_t
     unsigned int timestampL;
     unsigned int timestampH;
     unsigned int status;
-    unsigned int output_cap_info_buffer;
 } msg_ack_request_t;
 
 typedef struct _msg_req_jpeg_encode_t

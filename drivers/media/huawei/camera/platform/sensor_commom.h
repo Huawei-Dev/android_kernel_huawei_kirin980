@@ -201,7 +201,6 @@ enum sensor_power_seq_type_t {
     SENSOR_RXDPHY_CLK,
     SENSOR_LASER_XSHUT,/*xshut used for laser*/
     SENSOR_MIPI_SW2,
-    SENSOR_PMIC2,
 };
 
 enum sensor_power_pmic_type_t {
@@ -426,7 +425,6 @@ typedef struct _tag_hwsensor_board_info
     unsigned int mipisw_enable_value0;
     unsigned int mipisw_enable_value1;
     int lpm3_gpu_buck; // for the camera is disturbed by lpm3
-    const char *sensor_spec; // sensor resolution
 } hwsensor_board_info_t;
 
 struct hisi_sensor_awb_otp {

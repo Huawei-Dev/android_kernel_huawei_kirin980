@@ -436,8 +436,8 @@ static int hw_mp3331_ir_on(struct hw_flash_ctrl_t *flash_ctrl, void *data)
                //repo dsm
                if (!dsm_client_ocuppy(client_flash)) {
                     dsm_client_record(client_flash, "ito %d out of [%d,%d]\n", ret, pdata->ito_threshold[ITO_THR_MIN], pdata->ito_threshold[ITO_THR_MAX]);
-                    dsm_client_notify(client_flash, DSM_ITO_OUT_OF_RANGE_ERROR_NO);
-                    cam_warn("[I/DSM] %s report[%d]", __func__, DSM_ITO_OUT_OF_RANGE_ERROR_NO);
+                    dsm_client_notify(client_flash, DSM_FLASH_UNDER_VOLTAGE_LOCKOUT_ERROR_NO);
+                    cam_warn("[I/DSM] %s report[%d]", __func__, DSM_FLASH_UNDER_VOLTAGE_LOCKOUT_ERROR_NO);
                }
               return -EINVAL;
         }

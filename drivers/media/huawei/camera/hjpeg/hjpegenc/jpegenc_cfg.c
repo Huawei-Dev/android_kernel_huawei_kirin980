@@ -31,7 +31,7 @@
 
 static void hjpeg_hufftable_init(void __iomem* base_addr)
 {
-    unsigned int tmp;
+    int tmp;
     uint32_t i;
     uint32_t length_bit,length_value,length;
 

@@ -449,19 +449,12 @@ static int
 imx600imx351hybrid_match_id(
         hwsensor_intf_t* si, void * data)
 {
-	int ret;
-
     sensor_t* sensor = I2S(si);
     struct sensor_cfg_data *cdata = (struct sensor_cfg_data *)data;
 
     cam_info("%s name:%s", __func__, sensor->board_info->name);
 
-	ret = strncpy_s(cdata->cfg.name,
-		DEVICE_NAME_SIZE - 1,
-		sensor->board_info->name,
-		DEVICE_NAME_SIZE - 1);
-	if (ret != 0)
-		cam_err("%s. strncpy failed", __func__);
+    strncpy_s(cdata->cfg.name, DEVICE_NAME_SIZE - 1, sensor->board_info->name, DEVICE_NAME_SIZE - 1);
     cdata->data = sensor->board_info->sensor_index;
 
     return 0;

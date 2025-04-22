@@ -38,6 +38,7 @@
 #include <media/v4l2-event.h>
 #include <media/v4l2-image-sizes.h>
 #include <media/v4l2-mediabus.h>
+#include <media/v4l2-of.h>
 #include <media/v4l2-subdev.h>
 #include <media/huawei/camera.h>
 
@@ -945,12 +946,7 @@ static int gp2ap01vt00f_get_id(struct gp2ap01vt00f_data* data, hwlaser_status_t 
         return rc;
     laser_info("laser get chip id ioctl\n");
     if(data->init_flag == 1){
-		rc = strncpy_s(laser_status->name,
-			HWLASER_NAME_SIZE - 1,
-			laser_name,
-			strlen(laser_name) + 1);
-		if (rc != 0)
-			laser_err("%s %d - Failed to strncpy", __FUNCTION__, __LINE__);
+        strncpy_s(laser_status->name, HWLASER_NAME_SIZE-1,laser_name, strlen(laser_name)+1);
         laser_status->status = 0;
     }else {
         laser_status->status = -1;

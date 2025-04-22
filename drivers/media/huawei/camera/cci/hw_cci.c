@@ -294,10 +294,8 @@ int hw_isp_write_sensor_seq(i2c_t *i2c_info, const struct sensor_i2c_reg *buf, u
     int rc = 0;
     i2c_t t_i2c_info;
 
-	rc = memcpy_s(&t_i2c_info,sizeof(i2c_t) ,i2c_info, sizeof(i2c_t));
-	if (rc != 0) {
-		cam_err("%s memcpy_s return fail\n", __func__);
-	}
+    memcpy_s(&t_i2c_info,sizeof(i2c_t) ,i2c_info, sizeof(i2c_t));
+
     /* use AP write mode */
     for (i = 0; i < size; i++) {
         if (0xFF == buf[i].subaddr || 0xFFFF == buf[i].subaddr)

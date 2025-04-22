@@ -19,23 +19,18 @@
 #include "hw_pmic.h"
 //#include "isp_ops.h"
 #include "../../clt/hisi_clt_flag.h"
-#include <huawei_platform/sensor/hw_comm_pmic.h>
-
 //lint -save -e529 -e542
 static int is_fpga = 0; //default is no fpga
 static atomic_t volatile s_powered = ATOMIC_INIT(0);
 extern int strncpy_s(char *strDest, size_t destMax, const char *strSrc, size_t count);
 extern unsigned int *lpm3;
-static unsigned int flag;
-#define HIGH_TEMP    70000  /* 70 C  */
-#define LOW_TEMP    -100000 /* -100 C */
 typedef struct __power_seq_type_tab {
 	const char* seq_name;
 	enum sensor_power_seq_type_t seq_type;
 } power_seq_type_tab;
 
-#define LPM3_REGISTER_ENABLE 1
-#define LPM3_REGISTER_DISABLE 0
+#define LPM3_REGISTER_ENABLE (1)
+#define LPM3_REGISTER_DISABLE (0)
 
 static power_seq_type_tab seq_type_tab[] = {
 	{"sensor_suspend", SENSOR_SUSPEND},
@@ -68,7 +63,6 @@ static power_seq_type_tab seq_type_tab[] = {
 	{"sensor_ois", SENSOR_OIS},
 	{"sensor_ois2", SENSOR_OIS2},
 	{"sensor_pmic", SENSOR_PMIC},
-	{"sensor_pmic2", SENSOR_PMIC2},
 	{"sensor_rxdphy_clk", SENSOR_RXDPHY_CLK},
 	{"sensor_cs", SENSOR_CS},
 	{"sensor_mipi_sw", SENSOR_MIPI_SW},
@@ -98,13 +92,6 @@ int hw_sensor_get_thermal(const char *name,int *temp)
 		}
 	}
 
-	if (((temperature < LOW_TEMP) || (temperature > HIGH_TEMP)) &&
-		(flag == 0)) {
-		flag = 1;
-		cam_err("Abnormal temperature = %d\n", temperature);
-	} else {
-		flag = 0;
-	}
     *temp = temperature;
     return rc;
 }
@@ -461,7 +448,6 @@ int hw_sensor_power_up(sensor_t *s_ctrl)
 	struct sensor_power_setting *power_setting = NULL;
 	int index = 0, rc = 0;
 	struct hisi_pmic_ctrl_t *pmic_ctrl = NULL;
-	struct hw_comm_pmic_cfg_t fp_pmic_ldo_set = {0};
 
 	if (hisi_is_clt_flag()) {
 		cam_debug("%s just return for CLT camera.", __func__);
@@ -505,7 +491,8 @@ int hw_sensor_power_up(sensor_t *s_ctrl)
 	if (s_ctrl->board_info->lpm3_gpu_buck == 1) {
 		if (!lpm3) {
 			cam_info("%s lpm3 is null", __func__);
-		} else {
+		}
+		else {
 			cam_info("%s need to set LPM3_GPU_BUCK", __func__);
 			/* do enable */
 			writel(LPM3_REGISTER_ENABLE, lpm3);
@@ -674,14 +661,6 @@ int hw_sensor_power_up(sensor_t *s_ctrl)
 			rc = hw_sensor_pmic_config(s_ctrl->board_info,
 				power_setting, POWER_ON);
 			break;
-		case SENSOR_PMIC2:
-			fp_pmic_ldo_set.pmic_num = 1;
-			fp_pmic_ldo_set.pmic_power_type = power_setting->seq_val;
-			fp_pmic_ldo_set.pmic_power_voltage = power_setting->config_val;
-			fp_pmic_ldo_set.pmic_power_state = 1; // on
-			cam_debug("%s, seq_type:%u SENSOR_PMIC2", __func__, power_setting->seq_type);
-			hw_pmic_power_cfg(MAIN_CAM_PMIC_REQ, &fp_pmic_ldo_set);
-			break;
 		case SENSOR_CS:
 			break;
 		case SENSOR_AVDD2_EN:
@@ -735,7 +714,6 @@ int hw_sensor_power_down(sensor_t *s_ctrl)
 	struct sensor_power_setting *power_setting = NULL;
 	int index = 0, rc = 0;
 	struct hisi_pmic_ctrl_t *pmic_ctrl = NULL;
-	struct hw_comm_pmic_cfg_t fp_pmic_ldo_set = {0};
 
 	if (hisi_is_clt_flag()) {
 		cam_debug("%s just return for CLT camera.", __func__);
@@ -872,14 +850,6 @@ int hw_sensor_power_down(sensor_t *s_ctrl)
 			rc = hw_sensor_pmic_config(s_ctrl->board_info,
 				power_setting, POWER_OFF);
 			break;
-		case SENSOR_PMIC2:
-			fp_pmic_ldo_set.pmic_num = 1;
-			fp_pmic_ldo_set.pmic_power_type = power_setting->seq_val;
-			fp_pmic_ldo_set.pmic_power_voltage = power_setting->config_val;
-			fp_pmic_ldo_set.pmic_power_state = 0; // off
-			cam_debug("%s, seq_type:%u SENSOR_PMIC2", __func__, power_setting->seq_type);
-			hw_pmic_power_cfg(MAIN_CAM_PMIC_REQ, &fp_pmic_ldo_set);
-			break;
 		case SENSOR_CS:
 			break;
 		case SENSOR_LDO_EN:
@@ -962,7 +932,8 @@ int hw_sensor_power_down(sensor_t *s_ctrl)
 	if (s_ctrl->board_info->lpm3_gpu_buck == 1) {
 		if (!lpm3) {
 			cam_info("%s lpm3 is null.", __func__);
-		} else {
+		}
+		else {
 			cam_info("%s need to clear LPM3_GPU_BUCK.", __func__);
 			/* do disable */
 			writel(LPM3_REGISTER_DISABLE, lpm3);
@@ -1143,8 +1114,8 @@ int hw_sensor_get_phyinfo_data(struct device_node *of_node,
 		cam_err("%s %d, count = %d.", __func__, __LINE__, count);
 		return -1;
 	}
-	ret = (int)((unsigned int)ret | (unsigned int)of_property_read_u32_array(of_node, "huawei,phy_id",
-	    (unsigned int*)sensor_info->phyinfo.phy_id, count));
+	ret |= of_property_read_u32_array(of_node, "huawei,phy_id",
+	    (unsigned int*)sensor_info->phyinfo.phy_id, count);
 
 	count = of_property_count_elems_of_size(of_node, "huawei,phy_mode",
 		sizeof(u32));
@@ -1152,8 +1123,8 @@ int hw_sensor_get_phyinfo_data(struct device_node *of_node,
 		cam_err("%s %d, count = %d.", __func__, __LINE__, count);
 		return -1;
 	}
-	ret = (int)((unsigned int)ret | (unsigned int)of_property_read_u32_array(of_node, "huawei,phy_mode",
-			(unsigned int*)sensor_info->phyinfo.phy_mode, count));
+	ret |= of_property_read_u32_array(of_node, "huawei,phy_mode",
+			(unsigned int*)sensor_info->phyinfo.phy_mode, count);
 
 	count = of_property_count_elems_of_size(of_node, "huawei,phy_freq_mode",
 	     sizeof(u32));
@@ -1161,8 +1132,8 @@ int hw_sensor_get_phyinfo_data(struct device_node *of_node,
 		cam_err("%s %d, count = %d.", __func__, __LINE__, count);
 		return -1;
 	}
-	ret = (int)((unsigned int)ret | (unsigned int)of_property_read_u32_array(of_node, "huawei,phy_freq_mode",
-			(unsigned int*)sensor_info->phyinfo.phy_freq_mode, count));
+	ret |=  of_property_read_u32_array(of_node, "huawei,phy_freq_mode",
+			(unsigned int*)sensor_info->phyinfo.phy_freq_mode, count);
 
 	count = of_property_count_elems_of_size(of_node, "huawei,phy_freq",
 	     sizeof(u32));
@@ -1170,8 +1141,8 @@ int hw_sensor_get_phyinfo_data(struct device_node *of_node,
 		cam_err("%s %d, count = %d.", __func__, __LINE__, count);
 		return -1;
 	}
-	ret = (int)((unsigned int)ret | (unsigned int)of_property_read_u32_array(of_node, "huawei,phy_freq",
-			(unsigned int*)sensor_info->phyinfo.phy_freq, count));
+	ret |= of_property_read_u32_array(of_node, "huawei,phy_freq",
+			(unsigned int*)sensor_info->phyinfo.phy_freq, count);
 
 	count = of_property_count_elems_of_size(of_node, "huawei,phy_work_mode",
 		sizeof(u32));
@@ -1179,8 +1150,8 @@ int hw_sensor_get_phyinfo_data(struct device_node *of_node,
 		cam_err("%s %d, count = %d.", __func__, __LINE__, count);
 		return -1;
 	}
-	ret = (int)((unsigned int)ret | (unsigned int)of_property_read_u32_array(of_node, "huawei,phy_work_mode",
-			(unsigned int*)sensor_info->phyinfo.phy_work_mode, count));
+	ret |= of_property_read_u32_array(of_node, "huawei,phy_work_mode",
+			(unsigned int*)sensor_info->phyinfo.phy_work_mode, count);
 
 	cam_info("%s, info_count = %d\n"
 			"is_master_sensor[0] = %d, is_master_sensor[1] = %d\n"

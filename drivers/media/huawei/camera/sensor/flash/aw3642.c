@@ -29,8 +29,6 @@
 #define MODE_STANDBY                    (0x00)
 #define MODE_TORCH                      (0x08)
 #define MODE_FLASH                      (0x0c)
-#define STROBE_PIN                       0x20 // bit5 1:enable, 0 disable
-#define STROBE_TYPE                      0x00 // bit6 1:edge trigger, 0 level trigger
 #define IVFM_EN                         (0x01)
 #define UVLO_EN                         (0x40) //bit6 1:enable, 0 disable
 #define IVFM_VOLTAGE                    (0x18) //3.2v
@@ -264,7 +262,7 @@ static int hw_aw3642_exit(struct hw_flash_ctrl_t *flash_ctrl)
 }
 
 static int hw_aw3642_flash_mode(struct hw_flash_ctrl_t *flash_ctrl,
-    struct hw_flash_cfg_data *cdata)
+    int data)
 {
     struct hw_flash_i2c_client *i2c_client;
     struct hw_flash_i2c_fn_t *i2c_func;
@@ -272,15 +270,15 @@ static int hw_aw3642_flash_mode(struct hw_flash_ctrl_t *flash_ctrl,
     unsigned char val;
     int current_level = 0;
     int rc = 0;
-    unsigned char regval = 0;
-    if ((!flash_ctrl) || (!flash_ctrl->pdata) || (!flash_ctrl->flash_i2c_client) ||
-        (!flash_ctrl->flash_i2c_client->i2c_func_tbl) ||
-        (!flash_ctrl->flash_i2c_client->i2c_func_tbl->i2c_read) ||
-        (!flash_ctrl->flash_i2c_client->i2c_func_tbl->i2c_write) || (!cdata)) {
+
+    cam_info("%s data=%d.\n", __func__, data);
+    if ((NULL == flash_ctrl) || (NULL == flash_ctrl->pdata) || (NULL == flash_ctrl->flash_i2c_client)
+         || (NULL == flash_ctrl->flash_i2c_client->i2c_func_tbl)
+         || (NULL == flash_ctrl->flash_i2c_client->i2c_func_tbl->i2c_read)
+         || (NULL == flash_ctrl->flash_i2c_client->i2c_func_tbl->i2c_write)) {
         cam_err("%s flash_ctrl is NULL.", __func__);
         return -EINVAL;
     }
-    cam_info("%s data = %d.\n", __func__, cdata->data);
 
     i2c_client = flash_ctrl->flash_i2c_client;
     i2c_func = flash_ctrl->flash_i2c_client->i2c_func_tbl;
@@ -291,7 +289,7 @@ static int hw_aw3642_flash_mode(struct hw_flash_ctrl_t *flash_ctrl,
     }
     else
     {
-        current_level = hw_aw3642_find_match_flash_current(cdata->data);
+        current_level = hw_aw3642_find_match_flash_current(data);
         if(current_level < 0){
              current_level = AW3642_FLASH_DEFAULT_CUR_LEV;
         }
@@ -309,20 +307,12 @@ static int hw_aw3642_flash_mode(struct hw_flash_ctrl_t *flash_ctrl,
 
     loge_if_ret(i2c_func->i2c_write(i2c_client, REG_FLASH_CURRENT_CONTROL, val) < 0);
 
-    /* flash time-out time is 600ms(default), flash ramp-time is 1ms(fixed) */
+    /*flash time-out time is 600ms(default), flash ramp-time is 1ms(fixed)*/
     if (flash_ctrl->flash_mask_enable) {
-        regval = MODE_FLASH | TX_PIN_EN | LED_EN;
-        if (cdata->mode == FLASH_STROBE_MODE) {
-            regval = TX_PIN_EN | LED_EN | STROBE_TYPE | STROBE_PIN;
-        }
+        loge_if_ret(i2c_func->i2c_write(i2c_client, REG_ENABLE, MODE_FLASH|TX_PIN_EN|LED_EN) < 0);
     } else {
-        regval = MODE_FLASH | TX_PIN_DISABLE | LED_EN;
-        if (cdata->mode == FLASH_STROBE_MODE) {
-            regval = TX_PIN_DISABLE | LED_EN | STROBE_TYPE | STROBE_PIN;
-        }
+        loge_if_ret(i2c_func->i2c_write(i2c_client, REG_ENABLE, MODE_FLASH|TX_PIN_DISABLE|LED_EN) < 0);
     }
-
-    loge_if_ret(i2c_func->i2c_write(i2c_client, REG_ENABLE, regval) < 0);
 
     return 0;
 }
@@ -391,7 +381,7 @@ static int hw_aw3642_on(struct hw_flash_ctrl_t *flash_ctrl, void *data)
     cam_info("%s mode=%d, level=%d.\n", __func__, cdata->mode, cdata->data);
     mutex_lock(flash_ctrl->hw_flash_mutex);
     if ((FLASH_MODE == cdata->mode) || (FLASH_STROBE_MODE == cdata->mode)) {
-        rc = hw_aw3642_flash_mode(flash_ctrl, cdata);
+        rc = hw_aw3642_flash_mode(flash_ctrl, cdata->data);
     } else {
         rc = hw_aw3642_torch_mode(flash_ctrl, cdata->data);
     }

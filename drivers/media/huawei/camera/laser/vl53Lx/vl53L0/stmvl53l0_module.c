@@ -745,17 +745,10 @@ static void stmvl53l0_work_handler(struct work_struct *work)
 {
     struct stmvl53l0_data *data = NULL;
     VL53L0_DEV vl53l0_dev;
-	int ret;
 
     VL53L0_Error Status = VL53L0_ERROR_NONE;
     VL53L0_RangingMeasurementData_t tmp_rangeData;
-	ret = memset_s(&tmp_rangeData,
-		sizeof(VL53L0_RangingMeasurementData_t),
-		0,
-		sizeof(VL53L0_RangingMeasurementData_t));
-	if (ret != 0) {
-		vl53l0_errmsg("memset failed %d",__LINE__);
-	}
+    memset_s(&tmp_rangeData, sizeof(VL53L0_RangingMeasurementData_t), 0, sizeof(VL53L0_RangingMeasurementData_t));
 
     if(NULL == work) {
         vl53l0_errmsg("work queue is null\n");
@@ -815,12 +808,7 @@ static int stmvl53l0_status(struct stmvl53l0_data* data, hwlaser_status_t *laser
         return rc;
 
     if(data->init_flag == 1){
-		rc = strncpy_s(laser_status->name,
-			strlen(stmvl53l0_name),
-			stmvl53l0_name,
-			strlen(stmvl53l0_name));
-		if (rc != 0)
-			vl53l0_errmsg("strncpy failed %d", __LINE__);
+        strncpy_s(laser_status->name, strlen(stmvl53l0_name), stmvl53l0_name, strlen(stmvl53l0_name));
         laser_status->status = 0;
     }else {
         laser_status->status = -1;
@@ -1399,19 +1387,12 @@ static int stmvl53l0_laser_get_data(struct stmvl53l0_data *data, void* p)
 {
     hwlaser_RangingData_t* udata;
     VL53L0_RangingMeasurementData_t* rdata;
-	int ret;
-
     if(NULL == data || NULL == p)
         return -EINVAL;
     mutex_lock(&data->data_mutex);
     rdata = &(data->rangeData);
     udata = (hwlaser_RangingData_t*) p;
-	ret = memcpy_s(&(udata->u.dataL0),
-		sizeof(VL53L0_RangingMeasurementData_t),
-		rdata,
-		sizeof(VL53L0_RangingMeasurementData_t));
-	if (ret != 0)
-		vl53l0_errmsg("memcpy failed %d", __LINE__);
+    memcpy_s(&(udata->u.dataL0),sizeof(VL53L0_RangingMeasurementData_t) ,rdata, sizeof(VL53L0_RangingMeasurementData_t));
     if(data->print_count%LASER_PRINTCYLE == 0)
     {
         vl53l0_dbgmsg("laser distance = %d, status =%d\n", data->rangeData.RangeMilliMeter, data->rangeData.RangeStatus);

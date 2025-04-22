@@ -349,12 +349,7 @@ int hw_flash_config(struct hw_flash_ctrl_t *flash_ctrl, void *arg)
         break;
     case CFG_FLASH_GET_FLASH_NAME:
         mutex_lock(flash_ctrl->hw_flash_mutex);
-		rc = memset_s(cdata->cfg.name,
-			sizeof(cdata->cfg.name),
-			0,
-			sizeof(cdata->cfg.name));
-		if (rc != 0)
-			cam_err("memset failed %d", __LINE__);
+        memset_s(cdata->cfg.name, sizeof(cdata->cfg.name), 0, sizeof(cdata->cfg.name));
         rc = strncpy_s(cdata->cfg.name, sizeof(cdata->cfg.name) - 1, flash_ctrl->flash_info.name,
             sizeof(cdata->cfg.name) - 1);
         if (rc != 0) {
@@ -389,6 +384,7 @@ static long hw_flash_subdev_ioctl(struct v4l2_subdev *sd,
             unsigned int cmd, void *arg)
 {
     struct hw_flash_ctrl_t *flash_ctrl = get_sctrl(sd);
+    //long rc = 0;
 
     if (!flash_ctrl) {
         cam_err("%s flash_ctrl is NULL\n", __func__);
@@ -667,7 +663,7 @@ int32_t hw_flash_i2c_probe(struct i2c_client *client,
         return rc;
     }
 
-    /*for mix flash, mix:flash_type = 1, alone:flash_type = 0, */
+    /*for mix flash, mix:flash_type = 1; alone:flash_type = 0; */
     if (FLASH_MIX == flash_ctrl->flash_type) {
         rc = hw_flash_mix_register_attribute(flash_ctrl,
             &flash_ctrl->hw_sd.sd.devnode->dev);

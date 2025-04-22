@@ -137,27 +137,20 @@ static int norflash_spi_read_stack(u8 *send, u16 send_len,
     struct m25p_spi_priv_data *drv_data = spi_drv_data;
     struct spi_transfer xfer[2];
     int status;
-	int ret;
 
     if (NULL == send || NULL == recieve || NULL == drv_data) {
         cam_err("%s send or recieve is NULL", __func__);
         return -1;
     }
 
-	ret = memcpy_s(drv_data->tx_buf, send_len, send, send_len);
-	if (ret != 0)
-		cam_err("%s memcpy failed %d", __func__, __LINE__);
-	ret = memset_s(drv_data->rx_buf, recieve_len, 0, recieve_len);
-	if (ret != 0)
-		cam_err("%s memset failed %d", __func__, __LINE__);
+    memcpy_s(drv_data->tx_buf, send_len, send, send_len);
+    memset_s(drv_data->rx_buf, recieve_len, 0, recieve_len);
     if (0xFF != drv_data->tx_buf[send_len-1]) {
         cam_err("%s the last byter of send buffer must be 0xFF.", __func__);
         return -1;
     }
 
-	ret = memset_s(&xfer, sizeof(xfer), 0, sizeof(xfer));
-	if (ret != 0)
-		cam_err("%s memset failed %d", __func__, __LINE__);
+    memset_s(&xfer, sizeof(xfer), 0, sizeof(xfer));
     xfer[0].tx_buf = &drv_data->tx_buf[0],
     xfer[0].len = send_len-1,
     xfer[0].bits_per_word = 8,
@@ -174,9 +167,7 @@ static int norflash_spi_read_stack(u8 *send, u16 send_len,
     }
     mutex_unlock(&drv_data->busy_lock);
 
-	ret = memcpy_s(recieve, recieve_len, drv_data->rx_buf, recieve_len);
-	if (ret != 0)
-		cam_err("%s memcpy failed %d", __func__, __LINE__);
+    memcpy_s(recieve, recieve_len, drv_data->rx_buf, recieve_len);
     return status;
 }
 
@@ -186,19 +177,14 @@ static int norflash_spi_write_stack(u8 *send, u16 send_len)
     struct spi_transfer xfer;
     struct spi_message  m;
     int status;
-	int ret;
 
     if (!drv_data || !send) {
         cam_err("%s - drv_data or send is NULL.",__func__);
         return -EINVAL;
     }
 
-	ret = memcpy_s(drv_data->tx_buf, send_len, send, send_len);
-	if (ret != 0)
-		cam_err("%s memcpy failed %d", __func__, __LINE__);
-	ret = memset_s(&xfer, sizeof(xfer), 0, sizeof(xfer));
-	if (ret != 0)
-		cam_err("%s memcpy failed %d", __func__, __LINE__);
+    memcpy_s(drv_data->tx_buf, send_len, send, send_len);
+    memset_s(&xfer, sizeof(xfer), 0, sizeof(xfer));
     xfer.tx_buf = drv_data->tx_buf;
     xfer.rx_buf = NULL;
     xfer.len = send_len;
@@ -403,9 +389,7 @@ int m25p_get_array_part_content(u32 type, void *userAddr, unsigned long size)
         cam_err("%s malloc failed.", __func__);
         return -1;
     }
-	ret = memset_s(buff, size + 1, 0, size + 1);
-	if (ret != 0)
-		cam_err("memset failed %d", __LINE__);
+    memset_s(buff, size + 1, 0, size + 1);
 
     needSz = arrayPartTab[type].partLen;
     starAddr = arrayPartTab[type].starAddr;
@@ -541,10 +525,11 @@ int m25p_set_array_part_content(u32 type, void *userAddr, unsigned long size)
         cam_err("%s malloc failed.", __func__);
         return -1;
     }
-	ret = memset_s(data, size + 1 , 0, size + 1);
-	if (ret != 0)
-		cam_err("memset failed %d", __LINE__);
-
+    memset_s(data, size + 1 ,0, size + 1);
+    if(size >sizeof(data)){
+        vfree(data);
+        return -EINVAL;
+    }
     if (copy_from_user(data, argp, size)) {
         cam_err("%s copy_from_user failed.", __func__);
         vfree(data);
@@ -756,12 +741,7 @@ static int m25p_probe(struct spi_device *spi)
         cam_err("probe - can not alloc driver data");
         return -ENOMEM;
     }
-	ret = memset_s(drv_data,
-		sizeof(struct m25p_spi_priv_data),
-		0,
-		sizeof(struct m25p_spi_priv_data));
-	if (ret != 0)
-		cam_err("memset failed %d", __LINE__);
+    memset_s(drv_data, sizeof(struct m25p_spi_priv_data),0, sizeof(struct m25p_spi_priv_data));
 
     plat_data = &drv_data->plat_data;
     ret = m25p_spi_get_dt_data(&spi->dev, plat_data);

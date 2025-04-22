@@ -1,16 +1,4 @@
-/**
-* @copyright    Copyright (c) 2014- Hisilicon Technologies CO., Ltd.
-* @file         hisp_msg.h
-* @brief        Header file
-*
-* @version      1.0
-* @date         2014-05-10 15:24:09
-* @author
-* @change       initial draft
-*
-* @date         2016-12-05 10:00:00
-* @change:      change from "message.h",add some definitions
-*/
+
 
 #ifndef HISP200_MSG_H_INCLUDED
 #define HISP200_MSG_H_INCLUDED
@@ -449,6 +437,21 @@ typedef struct _msg_ack_query_laser_t
     int            status;
     laser_spad_t   spad;
 } msg_ack_query_laser_t;
+
+//typedef struct _msg_req_acquire_camera_t
+//{
+//    unsigned int cam_id;
+//    unsigned int csi_index;
+//    unsigned int i2c_index;
+//    char         sensor_name[NAME_LEN];
+//    char         product_name[NAME_LEN];
+//    unsigned int input_otp_buffer;
+//    unsigned int input_calib_buffer;
+//    unsigned int buffer_size;
+//    unsigned int info_buffer;
+//    unsigned int info_count;
+//    unsigned int factory_calib_buffer;
+//} msg_req_acquire_camera_t;
 
 typedef enum _hisp_phy_id_e
 {

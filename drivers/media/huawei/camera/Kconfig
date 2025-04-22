@@ -75,6 +75,13 @@ config HISI_CAMERA_HISTAR_ISPV200
     ---help---
         Hisilicon histar ispv200 driver.
 
+config HISI_CAMERA_HISTAR_ISPV250
+    tristate "Support histar ispv250 driver"
+    depends on HUAWEI_CAMERA
+    default n
+    ---help---
+        Hisilicon histar ispv250 driver.
+
 config HISI_CAMERA_HISTAR_ISPV210
     tristate "Support histar ispv210 driver"
     depends on HUAWEI_CAMERA

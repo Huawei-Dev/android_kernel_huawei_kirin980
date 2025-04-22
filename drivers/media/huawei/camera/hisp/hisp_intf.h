@@ -1,26 +1,4 @@
-/*
- *Hisilicon K3 SOC camera driver source file
- *
- *Copyright (C) Huawei Technology Co., Ltd.
- *
- *Author:
- *Email:
- *Date:	  2014-11-11
- *
- *This program is free software; you can redistribute it and/or modify
- *it under the terms of the GNU General Public License as published by
- *the Free Software Foundation; either version 2 of the License, or
- *(at your option) any later version.
- *
- *This program is distributed in the hope that it will be useful,
- *but WITHOUT ANY WARRANTY; without even the implied warranty of
- *MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *GNU General Public License for more details.
- *
- *You should have received a copy of the GNU General Public License
- *along with this program; if not, write to the Free Software
- *Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
+
 
 #ifndef __HW_JACKY_KERNEL_HISP_INTERFACE_H__
 #define __HW_JACKY_KERNEL_HISP_INTERFACE_H__
@@ -33,6 +11,8 @@
 #include <media/huawei/hisp120_cfg.h>
 #elif defined( HISP200_CAMERA  )
 #include <media/huawei/hisp200_cfg.h>
+#elif defined( HISP250_CAMERA  )
+#include <media/huawei/hisp250_cfg.h>
 #elif defined( HISP210_CAMERA  )
 #include <media/huawei/hisp210_cfg.h>
 #else
@@ -49,6 +29,10 @@
 
 #include "hwcam_intf.h"
 #include "cam_log.h"
+
+typedef struct _tag_hisp_vtbl hisp_vtbl_t;
+typedef struct _tag_hisp_intf hisp_intf_t;
+typedef struct _tag_hisp_notify_intf hisp_notify_intf_t;
 
 #define HISP_WAIT_TIMEOUT	3000
 
@@ -81,11 +65,6 @@ typedef struct _hisp_dt_data {
 	struct pinctrl_state *pinctrl_idle;
 } hisp_dt_data_t;
 
-struct _tag_hisp_vtbl;
-typedef struct _tag_hisp_intf {
-	struct _tag_hisp_vtbl *vtbl;
-} hisp_intf_t;
-
 typedef struct _tag_hisp_vtbl {
 	char const *(*get_name) (hisp_intf_t *i);
 	int (*config) (hisp_intf_t *i, void *cfg);
@@ -97,14 +76,17 @@ typedef struct _tag_hisp_vtbl {
 	int (*close) (hisp_intf_t *i);
 } hisp_vtbl_t;
 
-struct _tag_hisp_notify_vtbl;
-typedef struct _tag_hisp_notify_intf {
-	struct _tag_hisp_notify_vtbl *vtbl;
-} hisp_notify_intf_t;
+typedef struct _tag_hisp_intf {
+	hisp_vtbl_t *vtbl;
+} hisp_intf_t;
 
 typedef struct _tag_hisp_notify_vtbl {
 	void (*rpmsg_cb) (hisp_notify_intf_t *i, hisp_event_t *isp_ev);
 } hisp_notify_vtbl_t;
+
+typedef struct _tag_hisp_notify_intf {
+	hisp_notify_vtbl_t *vtbl;
+} hisp_notify_intf_t;
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,9,0))
 struct rpmsg_hdr {
@@ -157,8 +139,5 @@ hisp_get_sg_table(int fd,struct device *dev,struct dma_buf **buf,struct dma_buf_
 
 extern void
 hisp_free_dma_buf(struct dma_buf **buf,struct dma_buf_attachment **attach,struct sg_table **table);
-int hisp_set_sec_fw_buffer(struct hisp_cfg_data *cfg);
-int hisp_release_sec_fw_buffer(void);
-int hisp_set_mdc_buffer(struct hisp_cfg_data *cfg);
-int hisp_release_mdc_buffer(void);
+
 #endif /*__HW_JACKY_KERNEL_HISP_INTERFACE_H__ */

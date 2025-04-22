@@ -343,6 +343,9 @@ int hw_csi_enable(csi_index_t csi_index, int csi_lane, int csi_mipi_clk)
 	HW_CSI_SETREG32(reg_base + CSI_REG_PHY_SHUTDOWNZ, 1);
 	HW_CSI_SETREG32(reg_base + CSI_REG_N_LANES, 3);
 
+	//settle_time = 26;
+	//settle_time = 23;
+	//settle_time = 10;
 	settle_time = 23; //29; //16;
 	camera_source = 1;
 

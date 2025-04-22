@@ -72,6 +72,9 @@
 #define PMIC_LDO2_INDEX     1
 #define PMIC_LDO3_INDEX     2
 
+#define PMIC_POWER_ON  1
+#define PMIC_POWER_OFF 0
+
 /* Internal data struct define */
 typedef enum {
     PMIC_POWER_CTRL = 0,

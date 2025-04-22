@@ -526,11 +526,8 @@ static int is_mz_mode(struct stmvl53l1_data *data)
 static void kill_mz_data(VL53L1_MultiRangingData_t *pdata)
 {
 	int i;
-	int ret;
 
-	ret = memset_s(pdata, sizeof(*pdata), 0, sizeof(*pdata));
-	if (ret != 0)
-		vl53l1_errmsg("memset failed %d", __LINE__);
+	memset_s(pdata, sizeof(*pdata), 0, sizeof(*pdata));
 	for (i = 0; i < VL53L1_MAX_RANGE_RESULTS; i++)
 		pdata->RangeData[i].RangeStatus = VL53L1_RANGESTATUS_NONE;
 	pdata->RoiStatus = VL53L1_ROISTATUS_NOT_VALID;
@@ -983,13 +980,9 @@ static ssize_t stmvl53l1_store_roi(struct device *dev,
 		}
 		/*if any set them */
 		if (n_roi >= 0) {
-			if (n_roi) {
-				rc = memcpy_s(data->roi_cfg.UserRois,
-					n_roi*sizeof(rois[0]), rois,
-					n_roi*sizeof(rois[0]));
-				if (rc != 0)
-					vl53l1_errmsg("memcpy failed %d", __LINE__);
-			}
+			if (n_roi)
+				memcpy_s(data->roi_cfg.UserRois, n_roi*sizeof(rois[0]), rois,
+						n_roi*sizeof(rois[0]));
 			data->roi_cfg.NumberOfRoi = n_roi;
 			dump_roi(data->roi_cfg.UserRois,
 					data->roi_cfg.NumberOfRoi);
@@ -2863,12 +2856,7 @@ static int ctrl_calibration_data(struct stmvl53l1_data *data, void __user *p)
 	}
 
 	if (calib.is_read) {
-		rc = memset_s(&calib.data,
-			sizeof(calib.data),
-			0,
-			sizeof(calib.data));
-		if (rc != 0)
-			vl53l1_errmsg("memset failed %d", __LINE__);
+		memset_s(&calib.data, sizeof(calib.data), 0, sizeof(calib.data));
 		rc = VL53L1_GetCalibrationData(&data->stdev, &calib.data);
 		if (rc) {
 			vl53l1_errmsg("VL53L1_GetCalibrationData fail %d", rc);
@@ -2930,13 +2918,7 @@ static int ctrl_zone_calibration_data(struct stmvl53l1_data *data,
 	}
 
 	if (calib->is_read) {
-		rc = memset_s(&calib->data,
-			sizeof(calib->data),
-			0,
-			sizeof(calib->data));
-		if (rc != 0) {
-			vl53l1_errmsg("memset failed %d",__LINE__);
-		}
+		memset_s(&calib->data, sizeof(calib->data),0, sizeof(calib->data));
 		rc = VL53L1_GetZoneCalibrationData(&data->stdev,
 			&calib->data.data);
 		if (rc) {
@@ -4075,8 +4057,6 @@ static int stmvl53l1_laser_get_data(struct stmvl53l1_data *data, void * p)
 {
     hwlaser_RangingData_t* udata = NULL;
     VL53L1_MultiRangingData_t *rdata = NULL;
-	int ret;
-
     if(NULL == data || NULL == p)
         return -EINVAL;
     mutex_lock(&data->work_mutex);
@@ -4091,18 +4071,15 @@ static int stmvl53l1_laser_get_data(struct stmvl53l1_data *data, void * p)
     udata->u.data.HasXtalkValueChanged = rdata->HasXtalkValueChanged;
     udata->u.data.EffectiveSpadRtnCount = rdata->EffectiveSpadRtnCount;
     udata->u.data.DmaxMilliMeter = rdata->DmaxMilliMeter;
-	ret = memcpy_s(&udata->u.data.RangeData,
-		sizeof(udata->u.data.RangeData),
-		&rdata->RangeData,
-		sizeof(udata->u.data.RangeData));
-	if (ret != 0)
-		vl53l1_errmsg("memcpy failed %d", __LINE__);
-	ret = memcpy_s(&udata->u.data.RecommendedDistanceMode,
-		sizeof(udata->u.data.RecommendedDistanceMode),
-		&rdata->RecommendedDistanceMode,
-		sizeof(udata->u.data.RecommendedDistanceMode));
-	if (ret != 0)
-		vl53l1_errmsg("memcpy failed %d", __LINE__);
+    memcpy_s(&udata->u.data.RangeData,
+            sizeof(udata->u.data.RangeData),
+            &rdata->RangeData,
+            sizeof(udata->u.data.RangeData));
+    memcpy_s(&udata->u.data.RecommendedDistanceMode,
+            sizeof(udata->u.data.RecommendedDistanceMode),
+            &rdata->RecommendedDistanceMode,
+            sizeof(udata->u.data.RecommendedDistanceMode));
+
     mutex_unlock(&data->work_mutex);
 
     if (((data->print_interval >0) && (data->print_counter % data->print_interval == 0)) \
@@ -4207,9 +4184,7 @@ static int stmvl53l1_set_params(struct stmvl53l1_data *data, void *p)
 		rc = -ENODEV;
 		goto done;
 	}
-	rc = memcpy_s(&param, sizeof(param), p, sizeof(param));
-	if (rc != 0)
-		vl53l1_errmsg("memcpy failed %d", __LINE__);
+	memcpy_s(&param, sizeof(param), p, sizeof(param));
 	param.status = 0;
 
 	switch (param.name) {

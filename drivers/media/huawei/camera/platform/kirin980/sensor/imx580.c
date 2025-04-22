@@ -267,8 +267,6 @@ imx580_match_id(
     u8  vendor = 0x88;
     char *name = NULL;
     struct sensor_cfg_data *cdata = NULL;
-	int ret;
-
     if(NULL == si || NULL == data)
     {
         cam_err("%s. si or data is NULL.", __func__);
@@ -280,10 +278,9 @@ imx580_match_id(
 
     cam_info("%s name:%s", __func__, sensor->board_info->name);
     cdata->factory = 0;//set 0,means vendor name is get from kernel
-
+    // TODO: check here
     fast_read_nbyte(OTP_REG_VENDOR,&vendor,1);
     switch (vendor) {
-        case 0:
         case 1:
             name = "IMX580_SUNNY";
             break;
@@ -314,12 +311,7 @@ imx580_match_id(
             break;
     }
     cam_info("%s vendor = %x name = %s",__func__,vendor,name);
-	ret = strncpy_s(cdata->cfg.name,
-		DEVICE_NAME_SIZE - 1,
-		name,
-		DEVICE_NAME_SIZE - 1);
-	if (ret != 0)
-		cam_err("%s.strncpy failed", __func__);
+    strncpy_s(cdata->cfg.name, DEVICE_NAME_SIZE-1, name, DEVICE_NAME_SIZE-1);
     cdata->data = sensor->board_info->sensor_index;
 
     return 0;

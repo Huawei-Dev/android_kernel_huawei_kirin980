@@ -263,7 +263,6 @@ ov9286_match_id(
     u8  vendor = 0x88;
     char *name = NULL;
     struct sensor_cfg_data *cdata = NULL;
-	int ret;
     if(NULL == si || NULL == data)
     {
         cam_err("%s. si or data is NULL.", __func__);
@@ -278,7 +277,6 @@ ov9286_match_id(
 
     fast_read_nbyte(OTP_REG_VENDOR,&vendor,1);
     switch (vendor) {
-        case 0:
         case 1:
             name = "OV9286_SUNNY";
             break;
@@ -309,12 +307,7 @@ ov9286_match_id(
             break;
     }
     cam_info("%s vendor = %x name = %s",__func__,vendor,name);
-	ret = strncpy_s(cdata->cfg.name,
-		DEVICE_NAME_SIZE - 1,
-		name,
-		strlen(name) + 1);
-	if (ret != 0)
-		cam_err("%s.strncpy failed", __func__);
+    strncpy_s(cdata->cfg.name, DEVICE_NAME_SIZE-1, name, strlen(name)+1);
     cdata->data = sensor->board_info->sensor_index;
 
     return 0;

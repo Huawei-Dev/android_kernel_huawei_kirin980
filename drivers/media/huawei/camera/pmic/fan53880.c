@@ -50,8 +50,8 @@
 #define BOOST_CTL (0x03)
 #define BOOST_ENABLE (0x0A)
 #define BOOST_VOUT (0x11) //3V-5.5V 25mV/step
-#define FAN53880_VOUT_4V5 0x40
-#define FAN53880_VOUT_5V0 0x54
+#define FAN53880_VOUT_4v5 0x40
+#define FAN53880_VOUT_5v0 0x54
 
 #define FAN53880_BOOST_VOLTAGE_MIN (3000000)
 #define FAN53880_BOOST_VOLTAGE_MAX (5700000)
@@ -80,8 +80,7 @@ struct fan53880_private_data_t {
     unsigned int pin;
     unsigned int voltage[VOUT_MAX];
 	unsigned int ldo2_ctrl;
-	unsigned int shutdown_4v5;
-	unsigned int reset;
+	unsigned int shutdown_4V5;
 };
 
 typedef struct {
@@ -319,8 +318,6 @@ static int fan53880_seq_config(struct hisi_pmic_ctrl_t *pmic_ctrl,
 	mutex_lock(&pmic_mut_fan53880);
 	if (seq_index == VOUT_BOOST) {
 		ret = fan53880_boost_seq_config(pmic_ctrl, seq_index, voltage, state);
-	} else if (seq_index == VOUT_BOOST_EN) {
-		ret = hisi_pmic_gpio_boost_enable(pmic_ctrl, state);
 	} else if (seq_index < VOUT_LDO_5) {
 		if ((pdata->ldo2_ctrl == FAN53880_LDO2_CTRL) && (seq_index == VOUT_LDO_2)) {
 			if (state == 0) {
@@ -407,20 +404,12 @@ static int fan53880_get_dt_data(struct hisi_pmic_ctrl_t *pmic_ctrl)
 	cam_info("%s huawei,pmic_ldo2_ctrl %d", __func__, pdata->ldo2_ctrl);
 
 	rc = of_property_read_u32(dev_node, "hisi,shutdown_4V5",
-		&pdata->shutdown_4v5);
+		&pdata->shutdown_4V5);
 	if (rc < 0) {
-		pdata->shutdown_4v5 = 0;
+		pdata->shutdown_4V5 = 0;
 		cam_info("%s, cannot get shutdown 4v5 set, set 0", __func__);
 	}
-	cam_info("get shutdown_4V5 val = %d", pdata->shutdown_4v5);
-
-	// pmic not reset when exception state
-	rc = of_property_read_u32(dev_node, "hisi,pmic_reset", &pdata->reset);
-	if (rc < 0) {
-		pdata->reset = 1;
-		cam_info("%s, cannot get pmic_reset value, set 1", __func__);
-	}
-	cam_info("%s huawei,pmic_reset %d", __func__, pdata->reset);
+	cam_info("get shutdown_4V5 val = %d", pdata->shutdown_4V5);
     return 0;
 
 fail:
@@ -493,7 +482,7 @@ static int fan53880_init(struct hisi_pmic_ctrl_t *pmic_ctrl)
     }
     cam_debug("%s chip id=%d", __func__, chip_id);
 
-	ret = i2c_func->i2c_write(i2c_client, BOOST_CTL, FAN53880_VOUT_5V0);
+	ret = i2c_func->i2c_write(i2c_client, BOOST_CTL, FAN53880_VOUT_5v0);
 	if (ret < 0)
 		cam_err("%s, set boost volt err", __func__);
 
@@ -589,19 +578,14 @@ static int pmic_check_state_exception(struct hisi_pmic_ctrl_t *pmic_ctrl)
             pmic_ctl_otg_onoff(FAN53880_PIN_DISABLE);
         }
     }
-
-	// reset fan53889 ENABLE
-	if (pdata->reset != 0) {
-		gpio_set_value(pdata->pin, FAN53880_PIN_DISABLE);
-		udelay(1000);
-		gpio_set_value(pdata->pin, FAN53880_PIN_ENABLE);
-	} else {
-		cam_info("%s pmic need not reset", __func__);
-	}
+    //reset fan53889 ENABLE
+    gpio_set_value(pdata->pin,FAN53880_PIN_DISABLE);
+    udelay(1000);
+    gpio_set_value(pdata->pin,FAN53880_PIN_ENABLE);
     return 0;
 }
 
-static void fan53880_shutdown(struct i2c_client *client)
+static int fan53880_shutdown(struct i2c_client *client)
 {
 	struct hisi_pmic_i2c_client *fan_i2c_client = NULL;
 	struct hisi_pmic_ctrl_t *fan_shut_pmic_ctrl = NULL;
@@ -613,17 +597,18 @@ static void fan53880_shutdown(struct i2c_client *client)
 	if (!fan_shut_pmic_ctrl || !fan_shut_pmic_ctrl->pmic_i2c_client ||
 		!fan_shut_pmic_ctrl->pmic_i2c_client->i2c_func_tbl ||
 		!fan_shut_pmic_ctrl->pdata)
-		return;
-	pdata = (struct fan53880_private_data_t *)fan_shut_pmic_ctrl->pdata;
-	if (pdata->shutdown_4v5 == 0) {
+		return -EFAULT;
+	pdata = (struct rt5112_private_data_t *)fan_shut_pmic_ctrl->pdata;
+	if (pdata->shutdown_4V5 == 0) {
 		cam_warn("%s not support shut down to 4v5", __func__);
-		return;
+		return 0;
 	}
 
 	fan_i2c_client = fan_shut_pmic_ctrl->pmic_i2c_client;
 	i2c_func = fan_shut_pmic_ctrl->pmic_i2c_client->i2c_func_tbl;
-	i2c_func->i2c_write(fan_i2c_client, BOOST_CTL, FAN53880_VOUT_4V5);
+	i2c_func->i2c_write(fan_i2c_client, BOOST_CTL, FAN53880_VOUT_4v5);
 	cam_warn("set to 4V5");
+	return 0;
 }
 
 static int fan53880_remove(struct i2c_client *client)

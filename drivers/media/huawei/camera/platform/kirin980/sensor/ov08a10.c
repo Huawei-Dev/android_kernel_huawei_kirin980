@@ -22,6 +22,7 @@
 //lint -save -e826 -e838 -e715 -e747 -e778 -e774 -e732
 //lint -save -e650 -e31 -e731 -e528 -e753 -e737
 
+//static bool s_ov08a10_power_on = false;
 static bool power_on_status = false;//false: power off, true:power on
 struct mutex ov08a10_power_lock;
 
@@ -343,6 +344,18 @@ int ov08a10_config(hwsensor_intf_t* si, void  *argp)
             mutex_unlock(&ov08a10_power_lock);
             /*lint -e455 -esym(455,*)*/
             break;
+        /* case SEN_CONFIG_WRITE_REG: */
+        /*     break; */
+        /* case SEN_CONFIG_READ_REG: */
+        /*     break; */
+        /* case SEN_CONFIG_WRITE_REG_SETTINGS: */
+        /*     break; */
+        /* case SEN_CONFIG_READ_REG_SETTINGS: */
+        /*     break; */
+        /* case SEN_CONFIG_ENABLE_CSI: */
+        /*     break; */
+        /* case SEN_CONFIG_DISABLE_CSI: */
+        /*     break; */
         case SEN_CONFIG_MATCH_ID:
             ret = si->vtbl->match_id(si,argp);
             break;

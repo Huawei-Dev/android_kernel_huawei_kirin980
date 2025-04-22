@@ -222,13 +222,13 @@ static int __check_buffer_vaild(int share_fd, unsigned int req_addr, unsigned in
 static int check_buffer_vaild(jpgenc_config_t* config)
 {
     unsigned int vaild_input_size;
-    unsigned int bufFormat = (unsigned int)(config->buffer.format);
 
     if (__check_buffer_vaild(config->buffer.ion_fd, config->buffer.output_buffer, config->buffer.output_size)) {
         cam_err("%s:check output buffer fail", __func__);
         return -1;
     }
-    if (JPGENC_FORMAT_YUV422 == (bufFormat & JPGENC_FORMAT_BIT)) {
+
+    if(JPGENC_FORMAT_YUV422 == (config->buffer.format & JPGENC_FORMAT_BIT)) {
         vaild_input_size = config->buffer.width * config->buffer.height * 2;
     }
     else {
@@ -250,13 +250,12 @@ static int check_buffer_vaild(jpgenc_config_t* config)
 */
 static int check_config(jpgenc_config_t* config)
 {
-    unsigned int bufFormat;
     cam_info("%s enter ",__func__);
     if (config == NULL){
         cam_err("%s: config is null! (%d)",__func__, __LINE__);
         return -EINVAL;
     }
-    bufFormat = (unsigned int)(config->buffer.format);
+
     if (!CHECK_ALIGN(config->buffer.width, 2) || (config->buffer.width > 8192)){
         cam_err(" width[%d] is invalid! ",config->buffer.width);
         return -1;
@@ -269,7 +268,7 @@ static int check_config(jpgenc_config_t* config)
 
     if ((0 == config->buffer.stride)
             || !CHECK_ALIGN(config->buffer.stride,16)
-            || (config->buffer.stride/16 > ((JPGENC_FORMAT_YUV422 == (bufFormat & JPGENC_FORMAT_BIT)) ? 1024 : 512)))
+            || (config->buffer.stride/16 > ((JPGENC_FORMAT_YUV422 == (config->buffer.format & JPGENC_FORMAT_BIT)) ? 1024 : 512)))
     {
         cam_err(" stride[%d] is invalid! ",config->buffer.stride);
         return -1;
@@ -279,15 +278,14 @@ static int check_config(jpgenc_config_t* config)
         cam_err(" input buffer y[0x%x] is invalid! ",config->buffer.input_buffer_y);
         return -1;
     }
-
-    if ((JPGENC_FORMAT_YUV420 == (bufFormat & JPGENC_FORMAT_BIT))
+    if ((JPGENC_FORMAT_YUV420 == (config->buffer.format & JPGENC_FORMAT_BIT))
             && ((0== config->buffer.input_buffer_uv )|| !CHECK_ALIGN(config->buffer.input_buffer_uv, 16))){
         cam_err(" input buffer uv[0x%x] is invalid! ",config->buffer.input_buffer_uv);
         return -1;
     }
 
-    if ((JPGENC_FORMAT_YUV420 == ((unsigned int)(config->buffer.format) & JPGENC_FORMAT_BIT)) &&
-        (config->buffer.input_buffer_uv - config->buffer.input_buffer_y < config->buffer.stride * 8 * 16)) {
+    if ((JPGENC_FORMAT_YUV420 == (config->buffer.format & JPGENC_FORMAT_BIT))
+            && (config->buffer.input_buffer_uv - config->buffer.input_buffer_y < config->buffer.stride*8*16)){
         cam_err(" buffer format is invalid! ");
         return -1;
     }
@@ -310,7 +308,7 @@ static int check_config(jpgenc_config_t* config)
 static void set_picture_format(void __iomem* base_addr, int fmt)
 {
     unsigned int tmp = 0;
-    if (JPGENC_FORMAT_YUV422 == ((unsigned int)fmt & JPGENC_FORMAT_BIT)) {
+    if (JPGENC_FORMAT_YUV422 == (fmt & JPGENC_FORMAT_BIT)) {
         SET_FIELD_TO_REG((void __iomem*)((char*)base_addr + JPGENC_JPE_PIC_FORMAT_REG),JPGENC_ENC_PIC_FORMAT, 0);/*lint !e845*/
     } else {
         SET_FIELD_TO_REG((void __iomem*)((char*)base_addr + JPGENC_JPE_PIC_FORMAT_REG),JPGENC_ENC_PIC_FORMAT, 1);
@@ -513,7 +511,6 @@ static int hjpeg_soft_reset(hjpeg_base_t *phjpeg)
 */
 static void hjpeg_config_jpeg(jpgenc_config_t* config)
 {
-    unsigned int bufFormat;
     void __iomem*  base_addr = s_hjpeg.hw_ctl.jpegenc_viraddr;
 
     cam_info("%s enter ",__func__);
@@ -521,7 +518,6 @@ static void hjpeg_config_jpeg(jpgenc_config_t* config)
         cam_err("%s: config is null! (%d)",__func__, __LINE__);
         return;
     }
-    bufFormat = (unsigned int)(config->buffer.format);
 
     set_picture_format(base_addr, config->buffer.format);
 
@@ -535,7 +531,7 @@ static void hjpeg_config_jpeg(jpgenc_config_t* config)
         addr_y.bits.address = config->buffer.input_buffer_y >> 4;
         addr_y.bits.reserved = 0;
         set_reg_val((void __iomem*)((char*)base_addr + JPGENC_ADDRESS_Y_REG), addr_y.reg32);
-        if (JPGENC_FORMAT_YUV420 == (bufFormat & JPGENC_FORMAT_BIT)) {
+        if (JPGENC_FORMAT_YUV420 == (config->buffer.format & JPGENC_FORMAT_BIT)) {
             U_JPEGENC_ADDRESS addr_uv;
             addr_uv.bits.address = config->buffer.input_buffer_uv >> 4;
             addr_uv.bits.reserved = 0;
@@ -543,13 +539,13 @@ static void hjpeg_config_jpeg(jpgenc_config_t* config)
         }
     } else {
         SET_FIELD_TO_REG((void __iomem*)((char*)base_addr + JPGENC_ADDRESS_Y_REG),JPGENC_ADDRESS_Y,config->buffer.input_buffer_y >> 4);
-        if (JPGENC_FORMAT_YUV420 == (bufFormat & JPGENC_FORMAT_BIT)) {
+        if (JPGENC_FORMAT_YUV420 == (config->buffer.format & JPGENC_FORMAT_BIT)) {
             SET_FIELD_TO_REG((void __iomem*)((char*)base_addr + JPGENC_ADDRESS_UV_REG),JPGENC_ADDRESS_UV,config->buffer.input_buffer_uv >> 4);
         }
     }
 
     //set preread
-    if (JPGENC_FORMAT_YUV420 == (bufFormat & JPGENC_FORMAT_BIT)) {
+    if (JPGENC_FORMAT_YUV420 == (config->buffer.format & JPGENC_FORMAT_BIT)) {
         SET_FIELD_TO_REG((void __iomem*)((char*)base_addr + JPGENC_PREREAD_REG),JPGENC_PREREAD,4);
     }
     else {
@@ -961,7 +957,7 @@ static int hjpeg_set_reg(hjpeg_intf_t* i, void* cfg)
 
 #ifdef MST_DEBUG
     void __iomem* base_addr = 0;
-    jpgenc_config_t *pcfg = NULL;
+    jpgenc_config_t* pcfg;
     uint32_t addr;
     uint32_t value;
 
@@ -1000,7 +996,7 @@ static int hjpeg_get_reg(hjpeg_intf_t *i, void* cfg)
 
 #ifdef MST_DEBUG
     void __iomem* base_addr = 0;
-    jpgenc_config_t *pcfg = NULL;
+    jpgenc_config_t* pcfg;
     uint32_t addr;
 
     cam_info("%s enter\n",__func__);
@@ -1586,6 +1582,10 @@ static void hjpeg_irq_clr(void __iomem* subctrl1)
 
     set_val = 0x00000002;
 
+/* #ifdef IRQ_TEST */
+/*     set_val = 0x6; */
+/* #endif */
+
     set_reg_val(subctrl1_irq_clr, set_val);   /* [false alarm]:it is a dead code */
 }
 
@@ -1599,6 +1599,11 @@ static void hjpeg_irq_mask(void __iomem* subctrl1, bool enable)
 
     set_val = enable ? 0x0000001D : 0x0000001F;
 
+/* #ifdef IRQ_TEST */
+/*      if (enable) { */
+/*          set_val = 0x19; */
+/*      } */
+/* #endif */
     set_reg_val(subctrl1_irq_mask,  set_val);
     cur_val = get_reg_val(subctrl1_irq_mask);
     if (set_val != cur_val) {

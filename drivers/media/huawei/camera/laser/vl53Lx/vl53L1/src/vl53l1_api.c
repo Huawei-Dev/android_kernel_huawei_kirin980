@@ -193,7 +193,7 @@
 
 
 #define FDA_MAX_TIMING_BUDGET_US 550000
-#define NULL_PRODUCT_ID ""
+
 
 
 
@@ -500,14 +500,14 @@ VL53L1_Error VL53L1_GetDeviceInfo(VL53L1_DEV Dev,
 {
 	VL53L1_Error Status = VL53L1_ERROR_NONE;
 	uint8_t revision_id;
-	VL53L1_LLDriverData_t *pLLData = NULL;
+	VL53L1_LLDriverData_t   *pLLData;
 
 	LOG_FUNCTION_START("");
 
 	pLLData =  VL53L1DevStructGetLLDriverHandle(Dev);
 
-	strncpy_s(pVL53L1_DeviceInfo->ProductId, VL53L1_DEVINFO_STRLEN - 1,
-			NULL_PRODUCT_ID, sizeof(NULL_PRODUCT_ID));
+	strncpy_s(pVL53L1_DeviceInfo->ProductId,VL53L1_DEVINFO_STRLEN-1, "",
+			VL53L1_DEVINFO_STRLEN-1);
 	pVL53L1_DeviceInfo->ProductType =
 			pLLData->nvm_copy_data.identification__module_type;
 
@@ -517,16 +517,16 @@ VL53L1_Error VL53L1_GetDeviceInfo(VL53L1_DEV Dev,
 
 #ifndef VL53L1_USE_EMPTY_STRING
 	if (pVL53L1_DeviceInfo->ProductRevisionMinor == 0)
-		strncpy_s(pVL53L1_DeviceInfo->Name, VL53L1_DEVINFO_STRLEN - 1,
+		strncpy_s(pVL53L1_DeviceInfo->Name,VL53L1_DEVINFO_STRLEN-1,
 				VL53L1_STRING_DEVICE_INFO_NAME0,
-				sizeof(VL53L1_STRING_DEVICE_INFO_NAME0));
+				VL53L1_DEVINFO_STRLEN-1);
 	else
-		strncpy_s(pVL53L1_DeviceInfo->Name, VL53L1_DEVINFO_STRLEN - 1,
+		strncpy_s(pVL53L1_DeviceInfo->Name,VL53L1_DEVINFO_STRLEN-1,
 				VL53L1_STRING_DEVICE_INFO_NAME1,
-				sizeof(VL53L1_STRING_DEVICE_INFO_NAME1));
-	strncpy_s(pVL53L1_DeviceInfo->Type, VL53L1_DEVINFO_STRLEN - 1,
+				VL53L1_DEVINFO_STRLEN-1);
+	strncpy_s(pVL53L1_DeviceInfo->Type,VL53L1_DEVINFO_STRLEN-1,
 			VL53L1_STRING_DEVICE_INFO_TYPE,
-			sizeof(VL53L1_STRING_DEVICE_INFO_TYPE));
+			VL53L1_DEVINFO_STRLEN-1);
 #else
 	pVL53L1_DeviceInfo->Name[0] = 0;
 	pVL53L1_DeviceInfo->Type[0] = 0;

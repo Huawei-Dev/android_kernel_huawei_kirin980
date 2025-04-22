@@ -102,6 +102,7 @@ hwsensor_subdev_get_info(
         hwsensor_t* s,
         hwsensor_info_t* info)
 {
+    int index;
     int i=0;
     int rc = 0;
     sensor_t *sensor = NULL;
@@ -111,10 +112,7 @@ hwsensor_subdev_get_info(
     }
 
     sensor = I2S(s->intf);
-	rc = memset_s(info->name, DEVICE_NAME_SIZE, 0, DEVICE_NAME_SIZE);
-	if (rc != 0) {
-		cam_err("%s memset_s return fail\n", __func__);
-	}
+    memset_s(info->name, DEVICE_NAME_SIZE, 0, DEVICE_NAME_SIZE);
     rc = strncpy_s(info->name, DEVICE_NAME_SIZE - 1, hwsensor_intf_get_name(s->intf),
         strlen(hwsensor_intf_get_name(s->intf))+1);
     if (rc != 0) {
@@ -135,28 +133,11 @@ hwsensor_subdev_get_info(
             return -1;
         }
     } else {
-		rc = memset_s(info->vcm_name,
-			DEVICE_NAME_SIZE,
-			0,
-			DEVICE_NAME_SIZE);
-		if (rc != 0)
-			cam_err("%s memset failed", __func__);
+        memset_s(info->vcm_name, DEVICE_NAME_SIZE, 0, DEVICE_NAME_SIZE);
     }
-
-    if (memset_s(info->sensor_spec, DEVICE_NAME_SIZE, 0, DEVICE_NAME_SIZE) != 0) {
-        info->sensor_spec[0] = '\0';
-        cam_err("%s sensor_spec memset return fail\n", __func__);
-    }
-
-    if (sensor->board_info->sensor_spec && *(sensor->board_info->sensor_spec) != '\0') {
-        if (strncpy_s(info->sensor_spec, DEVICE_NAME_SIZE - 1, sensor->board_info->sensor_spec,
-            strlen(sensor->board_info->sensor_spec) + 1) != 0)
-            cam_err("%s sensor_spec copy error.\n", __func__);
-    }
-
     info->dev_id = s->cam_dev_num;
-    info->mount_position =
-        (hwsensor_position_kind_t)sensor->board_info->sensor_index;
+    index = sensor->board_info->sensor_index;
+    info->mount_position = (hwsensor_position_kind_t)index;
     info->extisp_type = sensor->board_info->extisp_type;
     info->module_type = sensor->board_info->module_type;
     info->flash_pos_type = sensor->board_info->flash_pos_type;

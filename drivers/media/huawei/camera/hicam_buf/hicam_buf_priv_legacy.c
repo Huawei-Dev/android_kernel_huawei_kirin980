@@ -322,7 +322,7 @@ phys_addr_t hicam_internal_get_pgd_base(struct device *dev)
 //lint -save -e429
 int hicam_internal_init(struct device *dev)
 {
-	const char *devname = NULL;
+	const char *devname;
 	struct ion_client *ion_client;
 	struct priv_ion_t *ion = devm_kzalloc(dev, /* ion saved in drvdata. */
 			sizeof(struct priv_ion_t), GFP_KERNEL);

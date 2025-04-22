@@ -1,26 +1,4 @@
-/*
- *  Hisilicon K3 SOC camera driver source file
- *
- *  Copyright (C) Huawei Technology Co., Ltd.
- *
- * Author:
- * Email:
- * Date:	  2014-11-11
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
+
 
 #ifndef __HW_KERNEL_HWCAM_HISP_CFG_BASE_H__
 #define __HW_KERNEL_HWCAM_HISP_CFG_BASE_H__
@@ -49,31 +27,50 @@ typedef struct _tag_hisp_event {
 	hisp_event_kind_t kind;
 } hisp_event_t;
 
+// daemon  IOMMU define diff with kernel define, follow daemon
+// vendor/hisi/ap/bionic/libc/kernel/uapi/media/huawei/mapmodule_cfg.h
+// enum
+// {
+//     POOL_IOMMU_READ    = 1 << 0,
+//     POOL_IOMMU_WRITE   = 1 << 1,
+//     POOL_IOMMU_EXEC    = 1 << 2,
+//     POOL_IOMMU_SEC     = 1 << 3,
+//     POOL_IOMMU_CACHE   = 1 << 4,
+//     POOL_IOMMU_DEVICE  = 1 << 5,
+// };
+
 enum mapType
 {
-	MAP_TYPE_DYNAMIC = 0,
-	MAP_TYPE_RAW2YUV,
-	MAP_TYPE_STATIC,
-	MAP_TYPE_STATIC_SEC,
-	MAP_TYPE_DYNAMIC_CARVEOUT,
-	MAP_TYPE_STATIC_ISP_SEC,
-	MAP_TYPE_MAX,
+    MAP_TYPE_DYNAMIC = 0,
+    MAP_TYPE_RAW2YUV,
+    MAP_TYPE_STATIC,
+    MAP_TYPE_STATIC_SEC,
+    MAP_TYPE_DYNAMIC_CARVEOUT,
+    MAP_TYPE_STATIC_ISP_SEC,
+    MAP_TYPE_MAX,
 };
 
 typedef struct addr_params
 {
-	uint32_t moduleAddr;
-	uint32_t iova;
-	uint32_t sharedFd;
-	uint32_t type;
-	uint32_t prot;
-	uint32_t size;
-	void *vaddr;
-	size_t offset_in_pool;
-	size_t pool_align_size;
-	uint32_t security_isp_mode;
-	uint32_t isApCached;
+    uint32_t moduleAddr;
+    uint32_t iova;
+    uint32_t sharedFd;
+    uint32_t type;
+    uint32_t prot;
+    uint32_t size;
+    void *vaddr;
+    size_t offset_in_pool;
+    size_t pool_align_size;
+    uint32_t security_isp_mode;
+    uint32_t isApCached;
 }addr_param_t;
+
+// enum hisi_isp_rproc_case_attr {
+//     DEFAULT_CASE = 0,
+//     SEC_CASE,
+//     NONSEC_CASE,
+//     INVAL_CASE,
+// };
 
 struct hisp_cfg_data {
 	int cfgtype;
@@ -81,10 +78,6 @@ struct hisp_cfg_data {
 	int isSecure;
 	union {
 		addr_param_t param;
-		struct { // for buffer operation
-			int share_fd;
-			uint32_t buf_size;
-		};
 		uint32_t cfgdata[4];
 	};
 };
@@ -92,27 +85,22 @@ struct hisp_cfg_data {
 enum hisp_config_type {
 	HISP_CONFIG_POWER_ON = 0,
 	HISP_CONFIG_POWER_OFF,
-	HISP_CONFIG_GET_MAP_ADDR,
-	HISP_CONFIG_UNMAP_ADDR,
-	HISP_CONFIG_INIT_MEMORY_POOL,
-	HISP_CONFIG_DEINIT_MEMORY_POOL,
-	HISP_CONFIG_ALLOC_MEM,
-	HISP_CONFIG_FREE_MEM,
-	HISP_CONFIG_ISP_TURBO,
-	HISP_CONFIG_ISP_NORMAL,
-	HISP_CONFIG_ISP_LOWPOWER,
-	HISP_CONFIG_ISP_ULTRALOW,
-	HISP_CONFIG_R8_TURBO,
-	HISP_CONFIG_R8_NORMAL,
-	HISP_CONFIG_R8_LOWPOWER,
-	HISP_CONFIG_R8_ULTRALOW,
-	HISP_CONFIG_PROC_TIMEOUT,
-	HISP_CONFIG_GET_SEC_ISPFW_SIZE,
-	HISP_CONFIG_SET_SEC_ISPFW_BUFFER,
-	HISP_CONFIG_RELEASE_SEC_ISPFW_BUFFER,
-	HISP_CONFIG_SET_MDC_BUFFER,
-	HISP_CONFIG_RELEASE_MDC_BUFFER,
-	HISP_CONFIG_MAX_INDEX
+    HISP_CONFIG_GET_MAP_ADDR,
+    HISP_CONFIG_UNMAP_ADDR,
+    HISP_CONFIG_INIT_MEMORY_POOL,
+    HISP_CONFIG_DEINIT_MEMORY_POOL,
+    HISP_CONFIG_ALLOC_MEM,
+    HISP_CONFIG_FREE_MEM,
+    HISP_CONFIG_ISP_TURBO,
+    HISP_CONFIG_ISP_NORMAL,
+    HISP_CONFIG_ISP_LOWPOWER,
+    HISP_CONFIG_ISP_ULTRALOW,
+    HISP_CONFIG_R8_TURBO,
+    HISP_CONFIG_R8_NORMAL,
+    HISP_CONFIG_R8_LOWPOWER,
+    HISP_CONFIG_R8_ULTRALOW,
+    HISP_CONFIG_PROC_TIMEOUT,
+    HISP_CONFIG_MAX_INDEX
 };
 
 typedef struct _tag_hisp_info {

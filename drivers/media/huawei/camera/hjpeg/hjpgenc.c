@@ -40,7 +40,8 @@
 #include "cam_log.h"
 //lint -save -e429
 
-typedef struct _tag_hjpeg {
+typedef struct _tag_hjpeg
+{
     struct v4l2_subdev                          subdev;
     struct platform_device*                     pdev;
 
@@ -49,9 +50,8 @@ typedef struct _tag_hjpeg {
     hjpeg_intf_t*                               intf;
 
     unsigned int                                jpeg_power_ref;
-    unsigned int                                jpeg_open_ref;
 } hjpeg_t;
-struct mutex jpegOpenLock;
+
 #define SD2Hjpeg(sd) container_of(sd, hjpeg_t, subdev)
 #define I2Hjpeg(jpeg_intf) container_of(jpeg_intf, hjpeg_t, intf)
 
@@ -100,9 +100,8 @@ static long hjpeg_encode_power_on(hjpeg_t* hjpeg)
         }
     }
 
-    mutex_lock(&jpegOpenLock);
     hjpeg->jpeg_power_ref++;
-    mutex_unlock(&jpegOpenLock);
+
     return rc;
 }
 
@@ -122,9 +121,8 @@ static long hjpeg_encode_power_down(hjpeg_t* hjpeg)
         }
     }
 
-    mutex_lock(&jpegOpenLock);
     hjpeg->jpeg_power_ref--;
-    mutex_unlock(&jpegOpenLock);
+
     return rc;
 }
 
@@ -156,6 +154,7 @@ hjpeg_vo_subdev_ioctl(struct v4l2_subdev *sd, unsigned int cmd, void *arg)
 {
     long rc = -EINVAL;
     hjpeg_t* hjpeg = NULL;
+
     hjpeg = SD2Hjpeg(sd);  //lint !e826 !e833
     switch (cmd) {
         case HJPEG_ENCODE_PROCESS:
@@ -167,6 +166,7 @@ hjpeg_vo_subdev_ioctl(struct v4l2_subdev *sd, unsigned int cmd, void *arg)
         case HJPEG_ENCODE_POWERDOWN:
             rc = hjpeg_encode_power_down(hjpeg);
             break;
+
         case HJPEG_ENCODE_SETREG:
             rc = hjpeg_encode_set_reg(hjpeg, arg);
             break;
@@ -193,12 +193,7 @@ static int hjpeg_subdev_open(
         struct v4l2_subdev *sd,
         struct v4l2_subdev_fh *fh)
 {
-    hjpeg_t* hjpeg = NULL;
-    hjpeg = SD2Hjpeg(sd);//lint !e826 !e833
-    mutex_lock(&jpegOpenLock);
-    hjpeg->jpeg_open_ref ++;
-    mutex_unlock(&jpegOpenLock);
-    cam_info("%s hjpeg_sbudev open,OpenRef = %d! \n",__func__,hjpeg->jpeg_open_ref);
+    cam_info("%s hjpeg_sbudev open! \n",__func__);
     return 0;
 }
 
@@ -207,22 +202,7 @@ hjpeg_subdev_close(
         struct v4l2_subdev *sd,
         struct v4l2_subdev_fh *fh)
 {
-    int rc = 0;
-    hjpeg_t* hjpeg = NULL;
-    hjpeg = SD2Hjpeg(sd);//lint !e826 !e833
-    mutex_lock(&jpegOpenLock);
-    if (hjpeg->jpeg_open_ref) {
-        hjpeg->jpeg_open_ref--;
-    }
-    mutex_unlock(&jpegOpenLock);
-    if ((hjpeg->jpeg_open_ref == 0) && (is_hjpeg_encode_power_on(hjpeg))) {
-        cam_warn("%s hjpeg is still on power-on state, power off it.\n",__func__);
-        rc = hjpeg_encode_power_down(hjpeg);
-        if (0 != rc) {
-            cam_err("failed to hjpeg power off! \n");
-        }
-    }
-    cam_info("%s hjpeg_sbudev close!,OpenRef = %d \n", __func__,hjpeg->jpeg_open_ref);
+    cam_info("%s hjpeg_sbudev close! \n", __func__);
     return 0;
 }
 
@@ -266,7 +246,7 @@ hjpeg_register(
 
     subdev = &jpeg->subdev;
     mutex_init(&jpeg->lock);
-    mutex_init(&jpegOpenLock);
+
     v4l2_subdev_init(subdev, &s_subdev_ops_hjpeg);
     subdev->internal_ops = &s_subdev_internal_ops_hjpeg;
     snprintf(subdev->name, sizeof(subdev->name),
@@ -282,7 +262,7 @@ hjpeg_register(
     jpeg->intf = si;
     jpeg->pdev = pdev;
     jpeg->jpeg_power_ref = 0;
-    jpeg->jpeg_open_ref = 0;
+
 register_fail:
     return rc;
 }

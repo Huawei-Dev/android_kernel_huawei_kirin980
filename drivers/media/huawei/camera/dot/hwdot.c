@@ -100,18 +100,10 @@ hwdot_subdev_get_info(
      hwdot_info_t* info)
 {
     dot_t *ic = NULL;
-	int ret;
 
-	ret = memset_s(info->name, HWDOT_NAME_SIZE, 0, HWDOT_NAME_SIZE);
-	if (ret != 0)
-		HWCAM_CFG_ERR("%s.memset failed %d", __func__, __LINE__);
-
-	ret = strncpy_s(info->name,
-		HWDOT_NAME_SIZE - 1,
-		hwdot_intf_get_name(dot->hw),
-		strlen(hwdot_intf_get_name(dot->hw)) + 1);
-	if (ret != 0)
-		HWCAM_CFG_ERR("%s.strncpy failed %d", __func__, __LINE__);
+    memset_s(info->name, HWDOT_NAME_SIZE, 0, HWDOT_NAME_SIZE);
+    strncpy_s(info->name, HWDOT_NAME_SIZE - 1, hwdot_intf_get_name(dot->hw),
+         strlen(hwdot_intf_get_name(dot->hw)) + 1);
 
     ic = INTF2DOT(dot->hw);
     info->i2c_idx  = ic->i2c_index;

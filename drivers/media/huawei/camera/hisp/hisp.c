@@ -1,26 +1,4 @@
-/*
- *Hisilicon K3 SOC camera driver source file
- *
- *Copyright (C) Huawei Technology Co., Ltd.
- *
- *Author:
- *Email:
- *Date:	  2014-11-11
- *
- *This program is free software; you can redistribute it and/or modify
- *it under the terms of the GNU General Public License as published by
- *the Free Software Foundation; either version 2 of the License, or
- *(at your option) any later version.
- *
- *This program is distributed in the hope that it will be useful,
- *but WITHOUT ANY WARRANTY; without even the implied warranty of
- *MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *GNU General Public License for more details.
- *
- *You should have received a copy of the GNU General Public License
- *along with this program; if not, write to the Free Software
- *Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
+
 
 //lint -save -e7
 //lint -save -e30 -e142 -e613 -e429
@@ -32,6 +10,8 @@
 #include <media/huawei/hisp120_cfg.h>
 #elif defined( HISP200_CAMERA  )
 #include <media/huawei/hisp200_cfg.h>
+#elif defined( HISP250_CAMERA  )
+#include <media/huawei/hisp250_cfg.h>
 #elif defined( HISP210_CAMERA  )
 #include <media/huawei/hisp210_cfg.h>
 #else
@@ -56,13 +36,13 @@
 #include <media/videobuf2-core.h>
 #include <linux/string.h>
 
-#include "hicam_buf.h"
 #include "hisp_intf.h"
 #include "cam_log.h"
 #include <dsm/dsm_pub.h>
 
 #define  DSM_DEV_BUFF_SIZE 1024
 #define CREATE_TRACE_POINTS
+#include "trace_hisp.h"
 
 
 static struct dsm_dev dev_hisp = {
@@ -77,10 +57,6 @@ static struct dsm_dev dev_hisp = {
 static struct dsm_client *client_hisp = NULL;
 int hisi_isp_rproc_setpinctl(struct pinctrl *isp_pinctrl, struct pinctrl_state *pinctrl_def, struct pinctrl_state *pinctrl_idle);
 int hisi_isp_rproc_setclkdepend(struct clk *aclk_dss, struct clk *pclk_dss);
-int hisp_secmem_pa_set(u64 sec_boot_phymem_addr, unsigned int trusted_mem_size);
-int hisp_secmem_pa_release(void);
-int hisp_mdcmem_pa_set(u64 mdc_phymem_addr, unsigned int mdc_mem_size, int shared_fd);
-int hisp_mdcmem_pa_release(void);
 /**@brief adapt to all Histar ISP
  *
  *When Histar ISP is probed, this sturcture will be initialized,
@@ -96,8 +72,6 @@ typedef struct _tag_hisp {
 	hisp_notify_intf_t notify;
 } hisp_t;
 
-static bool hisp_mdcmem_set;
-static bool hisp_secmem_set;
 #define SD2HISP(sd) container_of(sd, hisp_t, subdev)
 #define Notify2HISP(i) container_of(i, hisp_t, notify)
 
@@ -170,7 +144,6 @@ hisp_subdev_get_system_timestamp(hisp_system_time_t* hisp_system_time )
     hisp_system_time->s_system_couter_rate = arch_timer_get_rate();
     do_gettimeofday(&(hisp_system_time->s_timeval));
 }
-
 /*Function declaration */
 /**********************************************
  *ioctl function for v4l2 subdev
@@ -220,11 +193,13 @@ hisp_vo_subdev_ioctl(struct v4l2_subdev *sd, unsigned int cmd, void *arg)
 	case HISP_IOCTL_SEND_RPMSG:
 		cam_debug("Enter HISP_IOCTL_SEND_RPMSG!\n");
 		memcpy(&isp_msg, (hisp_msg_t *)arg, len);
+		trace_hisp_rpmsg_send(&isp_msg);
 		rc = isp->hw->vtbl->send_rpmsg(isp->hw, &isp_msg, len);
 		break;
 	case HISP_IOCTL_RECV_RPMSG:
 		cam_debug("Enter HISP_IOCTL_RECV_RPMSG!\n");
 		rc = isp->hw->vtbl->recv_rpmsg(isp->hw, arg, len);
+		trace_hisp_rpmsg_recv(arg);
 		break;
 	default:
 		cam_err("invalid IOCTL CMD(0x%x)!\n", cmd);
@@ -548,110 +523,5 @@ hisp_free_dma_buf(struct dma_buf **buf,struct dma_buf_attachment **attach,struct
 	*table = NULL;
 	*attach = NULL;
 	*buf = NULL;
-}
-
-int hisp_set_sec_fw_buffer(struct hisp_cfg_data *cfg)
-{
-	int rc;
-	uint32_t size;
-	phys_addr_t phys;
-	struct sg_table *sgt;
-
-	sgt = hicam_buf_get_sgtable(cfg->share_fd);
-	if (IS_ERR_OR_NULL(sgt)) {
-		cam_err("%s: error get sg_table of share_fd:%d.",
-			__func__, cfg->share_fd);
-		return PTR_ERR(sgt);
-	}
-
-	phys = sg_phys(sgt->sgl);
-	size = sgt->sgl->length;
-	if (size < cfg->buf_size) {
-		cam_err("%s: real size [%u] less than claimed [%u].",
-			__func__, size, cfg->buf_size);
-		rc = -ERANGE;
-		goto err_buf_size;
-	}
-
-	// incase something happens, mdc is not release as expected,
-	// like Tomestone. we release it here before next set.
-	if (hisp_secmem_set) {
-		cam_info("%s: abnormal case, but do it.", __func__);
-		(void)hisp_release_sec_fw_buffer();
-	}
-
-	rc = hisp_secmem_pa_set(phys, size);
-	if (rc < 0)
-		cam_err("%s: pa set error:%d", __func__, rc);
-	else
-		hisp_secmem_set = true;
-
-err_buf_size:
-	hicam_buf_put_sgtable(sgt);
-	return rc;
-}
-
-int hisp_release_sec_fw_buffer(void)
-{
-	int rc = hisp_secmem_pa_release();
-
-	if (rc < 0)
-		cam_err("%s: fail, rc:%d", __func__, rc);
-	else
-		hisp_secmem_set = false;
-	return rc;
-}
-
-int hisp_set_mdc_buffer(struct hisp_cfg_data *cfg)
-{
-	int rc;
-	uint32_t size;
-	phys_addr_t phys;
-	struct sg_table *sgt;
-
-	sgt = hicam_buf_get_sgtable(cfg->share_fd);
-	if (IS_ERR_OR_NULL(sgt)) {
-		cam_err("%s: error get sg_table of share_fd:%d.",
-			__func__, cfg->share_fd);
-		return PTR_ERR(sgt);
-	}
-
-	phys = sg_phys(sgt->sgl);
-	size = sgt->sgl->length;
-
-	if (size < cfg->buf_size) {
-		cam_err("%s: real size [%u] less than claimed [%u].",
-			__func__, size, cfg->buf_size);
-		rc = -ERANGE;
-		goto err_buf_size;
-	}
-
-	// incase something happens, mdc is not release as expected,
-	// like Tomestone. we release it here before next set.
-	if (hisp_mdcmem_set) {
-		cam_info("%s: abnormal case, but do it.", __func__);
-		(void)hisp_release_mdc_buffer();
-	}
-
-	rc = hisp_mdcmem_pa_set(phys, size, cfg->share_fd);
-	if (rc < 0)
-		cam_err("%s: pa set error:%d", __func__, rc);
-	else
-		hisp_mdcmem_set = true;
-
-err_buf_size:
-	hicam_buf_put_sgtable(sgt);
-	return rc;
-}
-
-int hisp_release_mdc_buffer(void)
-{
-	int rc = hisp_mdcmem_pa_release();
-
-	if (rc < 0)
-		cam_err("%s: fail, rc:%d", __func__, rc);
-	else
-		hisp_mdcmem_set = false;
-	return rc;
 }
 //lint -restore

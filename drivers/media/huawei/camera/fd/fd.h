@@ -1,10 +1,12 @@
 #ifndef _FD_BASE_H_
 #define _FD_BASE_H_
 #include <linux/miscdevice.h>
+#include <linux/dma-mapping.h>
 #include <asm/io.h>
 #include <linux/sched.h>
 #include <linux/wait.h>
 #include <linux/interrupt.h>
+#include <linux/hisi/hisi_ion.h>
 
 struct fd_smmu_dev{
     struct iommu_domain *domain;
@@ -67,10 +69,10 @@ struct fd_iomem_res {
 };
 
 struct mem_base {
-	unsigned long img_phys_addr;
-	size_t        img_size;
-	unsigned long ipu_phys_addr;
-	size_t        ipu_size;
+    ion_phys_addr_t img_phys_addr;
+    size_t          img_size;
+    ion_phys_addr_t ipu_phys_addr;
+    size_t          ipu_size;
 };
 //#define POWER_CTRL_HW_INTF_FD      (0)
 //#define POWER_CTRL_CFG_REGS_FD     (1)
@@ -92,6 +94,7 @@ struct fd_device {
     struct mutex lock;
     unsigned int smmu_flag;            /*1: enable smmu;0 :smmu stream bypass*/
     unsigned int ram_config;           /*1: need config ram; 0: use asic register default value*/
+    struct ion_client*                          ion_client;
     int                                         img_share_fd;
     int                                         ipu_share_fd;
     struct mem_base                             mem_base;
@@ -111,6 +114,7 @@ struct fd_device {
     void __iomem* mstr_vir_base;                   /* smmu master virtual base */
     phys_addr_t  top_phy_base;
     u32         top_mem_size;
+    int rc_seq[FD_RC_MAX+1];                          /* fd power sequece */
     int smmu_img_fd;
     int smmu_ipu_fd;
 };

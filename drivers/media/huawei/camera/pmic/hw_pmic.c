@@ -97,27 +97,6 @@ static irqreturn_t hisi_pmic_interrupt_handler(int vec, void *info)
 	return IRQ_HANDLED;
 }
 
-int hisi_pmic_gpio_boost_enable(struct hisi_pmic_ctrl_t *pmic_ctrl, int state)
-{
-	int ret = -EPERM;
-	struct hisi_pmic_info *pmic_info = NULL;
-
-	cam_info("%s enter\n", __func__);
-	if (!pmic_ctrl)
-		return ret;
-	pmic_info = &pmic_ctrl->pmic_info;
-	if (pmic_info->boost_en_pin == 0) {
-		cam_info("boost enable pin not controled here\n");
-		return ret;
-	}
-
-	if (state)
-		gpio_set_value(pmic_info->boost_en_pin, 1);
-	else
-		gpio_set_value(pmic_info->boost_en_pin, 0);
-	return 0;
-}
-
 int hisi_pmic_setup_intr(struct hisi_pmic_ctrl_t *pmic_ctrl)
 {
 	struct device_node *dev_node = NULL;
@@ -208,7 +187,6 @@ int hisi_pmic_get_dt_data(struct hisi_pmic_ctrl_t *pmic_ctrl)
 {
 	struct device_node *dev_node;
 	struct hisi_pmic_info *pmic_info;
-	static bool gpio_req_status = false;
 	int rc = -1;
 
 	cam_info("%s enter.\n", __func__);
@@ -245,26 +223,6 @@ int hisi_pmic_get_dt_data(struct hisi_pmic_ctrl_t *pmic_ctrl)
 	if (rc < 0) {
 		cam_err("%s failed %d\n", __func__, __LINE__);
 		goto fail;
-	}
-
-	rc = of_property_read_u32(dev_node, "hw,boost-pin",
-		&pmic_info->boost_en_pin);
-	if (rc < 0) {
-		cam_warn("%s, get boost enable pin failed\n", __func__);
-		pmic_info->boost_en_pin = 0;
-		rc = 0;
-	} else {
-		cam_info("enable boost-pin = %d\n", pmic_info->boost_en_pin);
-		if (!gpio_req_status) {
-			rc = gpio_request(pmic_info->boost_en_pin,
-				"hisi_pmic_boost_en");
-			if (rc < 0) {
-				cam_err("fail req boost en = %d\n", rc);
-				return -EPERM;
-			}
-			gpio_direction_output(pmic_info->boost_en_pin, 1);
-			gpio_req_status = true;
-		}
 	}
 
 fail:

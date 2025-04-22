@@ -45,6 +45,9 @@ else ifeq ($(CONFIG_HISI_CAMERA_HISTAR_ISPV210), y)
 EXTRA_CFLAGS += -DHISP210_CAMERA
 	obj-y += hisp210/
 
+else ifeq ($(CONFIG_HISI_CAMERA_HISTAR_ISPV250), y)
+EXTRA_CFLAGS += -DHISP250_CAMERA
+	obj-y += hisp250/
 endif
 
 

@@ -120,14 +120,8 @@ hwfpga_subdev_get_info(
      hwfpga_t* fpga,
      hwfpga_info_t* info)
 {
-	int ret;
-
-	ret = memcpy_s(info->name,
-		HWFPGA_NAME_SIZE,
-		hwfpga_intf_get_name(fpga->hw),
-		HWFPGA_NAME_SIZE);
-	if (ret != 0)
-		HWCAM_CFG_ERR("%s.memcpy failed %d", __func__, __LINE__);
+    memcpy_s(info->name, HWFPGA_NAME_SIZE,hwfpga_intf_get_name(fpga->hw),
+         HWFPGA_NAME_SIZE);
     HWCAM_CFG_INFO("fpga name(%s)\n", info->name);
     return 0;
 }

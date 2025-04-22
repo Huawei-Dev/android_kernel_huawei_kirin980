@@ -37,6 +37,7 @@
 #include <media/v4l2-event.h>
 #include <media/v4l2-image-sizes.h>
 #include <media/v4l2-mediabus.h>
+#include <media/v4l2-of.h>
 #include <media/v4l2-subdev.h>
 #include <media/huawei/camera.h>
 #include <hwcam_intf.h>

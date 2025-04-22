@@ -188,9 +188,7 @@ static int insert_device(void)
 		.addr = STMVL53L1_SLAVE_ADDR,
 	};
 
-	ret = memset_s(&info, sizeof(info), 0, sizeof(info));
-	if (ret != 0)
-		vl53l1_errmsg("memset failed %d", __LINE__);
+	memset_s(&info, sizeof(info), 0, sizeof(info));
 	strcpy(info.type, "stmvl53l1");
 	info.addr = STMVL53L1_SLAVE_ADDR;
 	adapter = i2c_get_adapter(adapter_nb);

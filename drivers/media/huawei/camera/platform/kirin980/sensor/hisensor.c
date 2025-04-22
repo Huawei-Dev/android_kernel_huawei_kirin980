@@ -22,10 +22,10 @@
 #define CTL_RESET_HOLD    (0)
 #define CTL_RESET_RELEASE (1)
 
-#define LPM3_GPU_BUCK_ADDR       0xFFF0A45C
-#define LPM3_GPU_BUCK_MAP_BYTE 8
+#define LPM3_GPU_BUCK_ADDR       (0xFFF0A45C)
+#define LPM3_GPU_BUCK_MAP_BYTE (8)
 
-unsigned int *lpm3;
+unsigned int *lpm3 = NULL;
 
 extern struct hw_csi_pad hw_csi_pad;
 extern int strncpy_s(char *strDest, size_t destMax, const char *strSrc, size_t count);
@@ -191,7 +191,6 @@ int get_ext_name(sensor_t *sensor, struct sensor_cfg_data *cdata)
 	int volt = 0;
 	int max = 0;
 	int min = 0;
-	int ret;
 
 	if (NULL == sensor || NULL == cdata) {
 		cam_err("%s. si or data is NULL.", __func__);
@@ -200,10 +199,7 @@ int get_ext_name(sensor_t *sensor, struct sensor_cfg_data *cdata)
 
 	if(sensor->board_info->ext_type == EXT_INFO_NO_ADC){
 		cam_info("%s no adc channel, use ext_name config in overlay:%s", __func__, sensor->board_info->ext_name[0]);
-		ret = strncpy_s(cdata->info.extend_name, DEVICE_NAME_SIZE - 1, sensor->board_info->ext_name[0], strlen(sensor->board_info->ext_name[0])+1);
-		if (ret != 0) {
-			cam_err("%s strncpy_s error %d", __func__, ret);
-		}
+		strncpy_s(cdata->info.extend_name, DEVICE_NAME_SIZE - 1, sensor->board_info->ext_name[0], strlen(sensor->board_info->ext_name[0])+1);
 	}
 
 	if(sensor->board_info->ext_type == EXT_INFO_ADC){
@@ -220,10 +216,7 @@ int get_ext_name(sensor_t *sensor, struct sensor_cfg_data *cdata)
 			if((volt < max) && (volt > min))
 			{
 				cam_info("%s adc ext_name: %s\n", __func__, sensor->board_info->ext_name[j]);
-				ret = strncpy_s(cdata->info.extend_name, DEVICE_NAME_SIZE - 1, sensor->board_info->ext_name[j], strlen(sensor->board_info->ext_name[j])+1);
-				if (ret != 0) {
-					cam_err("%s strncpy_s error %d", __func__, ret);
-				}
+				strncpy_s(cdata->info.extend_name, DEVICE_NAME_SIZE - 1, sensor->board_info->ext_name[j], strlen(sensor->board_info->ext_name[j])+1);
 			}
 		}
 	}
@@ -235,7 +228,6 @@ static int hisensor_match_id(hwsensor_intf_t* si, void * data)
 {
 	sensor_t* sensor = NULL;
 	struct sensor_cfg_data *cdata = NULL;
-	int ret;
 	if (NULL == si || NULL == data) {
 		cam_err("%s. si or data is NULL.", __func__);
 		return -EINVAL;
@@ -250,10 +242,7 @@ static int hisensor_match_id(hwsensor_intf_t* si, void * data)
 
 	cdata = (struct sensor_cfg_data *)data;
 	cdata->data = sensor->board_info->sensor_index;
-	ret = memset_s(cdata->info.extend_name, DEVICE_NAME_SIZE, 0, DEVICE_NAME_SIZE);
-	if (ret != 0) {
-		cam_err("%s memset_s error %d", __func__, ret);
-	}
+	memset_s(cdata->info.extend_name, DEVICE_NAME_SIZE, 0, DEVICE_NAME_SIZE);
 
 	if(sensor->board_info->ext_type != 0){
 		get_ext_name(sensor, cdata);
@@ -663,10 +652,12 @@ static int32_t hisensor_platform_probe(struct platform_device* pdev)
 				cam_err("%s:ioremap failed!", __func__);
 			else
 				cam_info("%s:ioremap success!", __func__);
-		} else {
+		}
+		else {
 			cam_info("%s:lpm3 is not NULL,continue!", __func__);
 		}
-	} else {
+	}
+	else {
 		cam_info("%s:do not set lpm3_gpu_buck!", __func__);
 	}
 
@@ -716,10 +707,12 @@ static int32_t hisensor_platform_remove(struct platform_device* pdev)
 			iounmap(lpm3);
 			lpm3 = NULL;
 			cam_info("%s:iounmap success!", __func__);
-		} else {
+		}
+		else {
 			cam_info("%s:lpm3 is NULL, do not iounmap!", __func__);
 		}
-	} else {
+	}
+	else {
 		cam_info("%s:do not lpm3 iounmap!", __func__);
 	}
 

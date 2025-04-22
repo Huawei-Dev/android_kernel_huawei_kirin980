@@ -30,7 +30,7 @@
 static int do_cfg_isp_smmu(hjpeg_hw_ctl_t *hw_ctl)
 {
     u32 SMMU_SMRX_NS_offset;
-    bool bypass = false;
+    bool bypass;
     void __iomem* smmu_base_addr = hw_ctl->smmu_viraddr;
 
     cam_debug("%s enter ",__func__);
@@ -67,7 +67,7 @@ static int do_cfg_smmu(hjpeg_hw_ctl_t *hw_ctl, void* pgd)
     u32                     SMMU_SMRX_NS_offset;
     U_SMMU_SMMU_SCR         smmu_scr;
     U_SMMU_SMMU_ADDR_MSB    smmu_addr_msb;
-    bool bypass = false;
+    bool bypass;
     phy_pgd_t * phy_pgd = (phy_pgd_t*)pgd;
     void __iomem* smmu_base_addr = hw_ctl->smmu_viraddr;
 

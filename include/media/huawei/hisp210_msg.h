@@ -1,14 +1,4 @@
-/**
-* @copyright    Copyright (c) 2014- Hisilicon Technologies CO., Ltd.
-* @file         hisp_msg.h
-* @brief        Header file
-*
-* @version      1.0
-* @date         2018-05-10
-* @author
-* @change       initial draft
-*
-*/
+
 
 #ifndef HISP_MSG_H_INCLUDED
 #define HISP_MSG_H_INCLUDED

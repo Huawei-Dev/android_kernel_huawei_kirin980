@@ -1,30 +1,31 @@
+#include <linux/version.h>
 #include <linux/init.h>
 #include <linux/module.h>
 #include <linux/device.h>
 #include <linux/fs.h>
 #include <linux/of_device.h>
+#include <linux/of_gpio.h>
 #include <linux/of.h>
-#include <linux/io.h>
 #include <linux/platform_device.h>
 #include <linux/sched.h>
 #include <linux/slab.h>
 #include <linux/types.h>
 #include <linux/miscdevice.h>
 #include <linux/interrupt.h>
-#include <linux/uaccess.h>
+#include <linux/dma-mapping.h>
+#include <asm/uaccess.h>
+#include <linux/iommu.h>
+#include <linux/hisi-iommu.h>
+#include <linux/dma-buf.h>
 #include <linux/scatterlist.h>
 #include <linux/clk.h>
 #include <linux/regulator/consumer.h>
 #include <linux/regulator/driver.h>
 #include <linux/regulator/machine.h>
 #include "../../../../include/media/huawei/fd_drv_cfg.h"
-#include "../hicam_buf.h"
 #include "fd_log.h"
 #include "fd.h"
 
-#define MAX_32BIT_MASK (0xFFFFFFFF)
-#define HIGH_WORD_SHIFT (32)
-#define PHY_ADDR_HIGH_32BIT_LSB_BIT_MASK (0x7F)
 
 ktime_t pre_start, pre_end,tme_start,tme_end;
 s64 PRE_time,TME_time;
@@ -517,6 +518,11 @@ static int fd_open(struct inode *inode, struct file *fd)
         fd_err("Failed to power on fd.");
         goto err_out1;
     }
+    pdev->ion_client = hisi_ion_client_create("hisi-fd");
+    if (IS_ERR_OR_NULL(pdev->ion_client )) {
+        fd_err("failed to create ion client!\n");
+        goto err_out2;
+    }
     ret = request_irq(pdev->fd_irq, fd_irq_handler, 0, "fd_irq", (void *)pdev);
     if (ret) {
         fd_err("Failed to request fd irq.%d", ret);
@@ -530,6 +536,8 @@ static int fd_open(struct inode *inode, struct file *fd)
     return ret;
 
 err_out:
+    ion_client_destroy(pdev->ion_client);
+err_out2:
     fd_poweroff(pdev);
 err_out1:
     atomic_inc(&pdev->accessible);
@@ -540,6 +548,7 @@ err_out1:
 static int fd_release(struct inode *inode, struct file *fd)
 {
     struct fd_device *pdev = (struct fd_device *)fd->private_data;
+    struct ion_client*  ion = NULL;
     if (NULL == pdev) {
         fd_err("dev is NULL.");
         return -ENODEV;
@@ -547,6 +556,10 @@ static int fd_release(struct inode *inode, struct file *fd)
     fd_dbg("FD device close.");
     if (atomic_sub_and_test(0, &pdev->accessible)) {
         free_irq(pdev->fd_irq, pdev);
+        swap(ion, pdev->ion_client);
+        if (ion) {
+            ion_client_destroy(ion);
+        }
         fd_poweroff(pdev);
         atomic_inc(&pdev->accessible);
     }
@@ -658,7 +671,7 @@ static REGISTER_TYPE fd_get_register_type(uint32_t offset, uint32_t size)
     return FD_REGS_ERROR;
 }
 
-static bool check_buffer_valid(uint32_t base_addr, uint32_t size, unsigned long phys_addr, size_t phys_size)
+static bool check_buffer_valid(uint32_t base_addr, uint32_t size, ion_phys_addr_t phys_addr, size_t phys_size)
 {
     if (0 == base_addr)
         return true;
@@ -683,46 +696,71 @@ static bool check_buffer_valid(uint32_t base_addr, uint32_t size, unsigned long 
 
 static long get_buffer_info_from_fd(struct fd_device *pdev, int share_fd, unsigned long *addr, size_t *size)
 {
-	if (pdev->smmu_flag == 0) {
-		struct sg_table* sgt = hicam_buf_get_sgtable(share_fd);
-		if (IS_ERR_OR_NULL(sgt)) {
-			fd_err("hicam_buf_get_sgtable failed!");
-			return -1;
-		}
+    long rc = 0;
+    if (0 == pdev->smmu_flag) {
+        struct dma_buf *buf = NULL;
+        struct dma_buf_attachment *attach = NULL;
+        struct sg_table *sgt = NULL;
+        struct scatterlist *sgl = NULL;
 
-		if (IS_ERR_OR_NULL(sgt->sgl)) {
-			fd_err("sgl is error!");
-			hicam_buf_put_sgtable(sgt);
-			sgt = NULL;
-			return -1;
-		}
+        buf = dma_buf_get(share_fd);
+        if (IS_ERR(buf))
+            return -1;
 
-		/* Get physical addresses from scatter list */
-		*addr = (unsigned long)sg_phys(sgt->sgl);
-		*size = sg_dma_len(sgt->sgl);
+        attach = dma_buf_attach(buf, pdev->device.this_device);
+        if (IS_ERR(attach)) {
+            rc = -1;
+            goto _err_dma_buf_attach;
+        }
 
-		hicam_buf_put_sgtable(sgt);
-		sgt = NULL;
-	} else {
-		struct iommu_format iommu_format = {
-			.prot = 0,
-			.iova = 0,
-			.size = 0
-		};
+        sgt = dma_buf_map_attachment(attach, DMA_BIDIRECTIONAL);
+        if (IS_ERR_OR_NULL(sgt)) {
+            rc = -1;
+            goto _err_dma_buf_map_attachment;
+        }
 
-		int ret = hicam_buf_map_iommu(share_fd, &iommu_format);
-		if (ret < 0) {
-			fd_err("hicam_buf_map_iommu failed!");
-			return -1;
-		}
+        sgl = sgt->sgl;
+        if (IS_ERR_OR_NULL(sgl)) {
+            rc = -1;
+            goto _err_dma_buf_map_attachment;
+        }
 
-		*addr = iommu_format.iova;
-		*size = iommu_format.size;
+        // Get physical addresses from scatter list
+        *addr = (unsigned long)sg_phys(sgl);
+        *size = sg_dma_len(sgl);
 
-		hicam_buf_unmap_iommu(share_fd, &iommu_format);
-	}
+        _err_dma_buf_map_attachment:
+        dma_buf_detach(buf, attach);
+        _err_dma_buf_attach:
+        dma_buf_put(buf);
+        return rc;
+    } else {
+        struct ion_handle *ionhnd;
+        struct iommu_map_format iommu_format;
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4,9,0))
+        ionhnd = ion_import_dma_buf(pdev->ion_client, share_fd);/*lint !e838*/
+#else
+        ionhnd = ion_import_dma_buf_fd(pdev->ion_client, share_fd);/*lint !e838*/
+#endif
+        if (IS_ERR(ionhnd)) {
+            fd_err("%s:invalid ion handle ipu share fd", __func__);
+            return -1;
+        }
 
-	return 0;
+        memset_s(&iommu_format, sizeof(struct iommu_map_format), 0, sizeof(struct iommu_map_format));
+        if (ion_map_iommu(pdev->ion_client, ionhnd, &iommu_format)) {
+            fd_err("%s, ion_map_iommu error(ipu)", __func__);
+            ion_free(pdev->ion_client, ionhnd);
+            return -1;
+        }
+        *addr = iommu_format.iova_start;
+        *size = iommu_format.iova_size;
+        ion_unmap_iommu(pdev->ion_client, ionhnd);
+
+        ion_free(pdev->ion_client, ionhnd);
+    }
+
+    return rc;
 }
 
 static long get_buffer_addr(struct fd_device *pdev)
@@ -1398,13 +1436,20 @@ static int fd_setup_irq(struct platform_device *pdev, struct fd_device *fd_Dev)
 }
 static void fd_get_pgd_base(struct fd_device *fd_Dev)
 {
-	phys_addr_t phys_addr = hicam_buf_get_pgd_base();
-	if (phys_addr == 0) {
-		fd_warn("phys_addr is 0");
-	}
+    struct iommu_domain_data *info;
 
-	fd_Dev->phy_pgd_base = (unsigned int)(phys_addr & MAX_32BIT_MASK);
-	fd_Dev->phy_pgd_fama_ptw_msb = (unsigned int)((phys_addr >> HIGH_WORD_SHIFT) & PHY_ADDR_HIGH_32BIT_LSB_BIT_MASK);
+    fd_Dev->phy_pgd_base = 0;
+    //get iommu domain
+    if ((fd_Dev->domain = hisi_ion_enable_iommu(NULL)) == NULL) {
+        fd_err("[%s] Failed : iommu_domain_alloc.%pK\n", __func__, fd_Dev->domain);
+        return;
+    }
+    if ((info = (struct iommu_domain_data *)fd_Dev->domain->priv) == NULL) {
+        fd_err("[%s] Failed : info.%pK\n",__func__, info);
+        return;
+    }
+    fd_Dev->phy_pgd_base = (unsigned int)info->phy_pgd_base;
+    fd_Dev->phy_pgd_fama_ptw_msb = ((unsigned int)(info->phy_pgd_base >> 32)) & 0x0000007F;
 
 }
 

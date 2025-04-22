@@ -31,6 +31,7 @@
 #include <linux/kthread.h>
 #include <linux/interrupt.h>
 #include <linux/of_gpio.h>
+
 #include <huawei_platform/sensor/hw_comm_pmic.h>
 
 #define DEFINE_HISI_PMIC_MUTEX(name) \
@@ -65,7 +66,6 @@ struct hisi_pmic_info {
 	unsigned int irq;
 	unsigned int flag;
 	int mutex_flag;
-	unsigned int boost_en_pin;
 };
 
 struct hisi_pmic_ctrl_t;
@@ -134,5 +134,4 @@ int pmic_enable_boost(int value);
 int pmic_ctl_otg_onoff(bool on_off);
 void hisi_pmic_release_intr(struct hisi_pmic_ctrl_t *pmic_ctrl);
 int hisi_pmic_setup_intr(struct hisi_pmic_ctrl_t *pmic_ctrl);
-int hisi_pmic_gpio_boost_enable(struct hisi_pmic_ctrl_t *pmic_ctrl, int state);
 #endif

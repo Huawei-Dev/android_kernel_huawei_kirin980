@@ -130,7 +130,6 @@ static void fpga_dsm_client_notify(struct ice40_spi_priv_data *drv_data,
 static void fpga_load_firmware_notify(struct ice40_spi_priv_data *drv_data)
 {
     char buff[MAX_BUFF_SIZE] = {0};
-	int ret;
 
     if (drv_data == NULL) {
         cam_err("%s drvdata is NULL.", __func__);
@@ -143,9 +142,7 @@ static void fpga_load_firmware_notify(struct ice40_spi_priv_data *drv_data)
         fpga_dsm_client_notify(drv_data, buff, fpga_common_err_table[LOAD_FW_ERR].err_num);
     }
     if (drv_data->self_check_fail_time > 0) {
-		ret = memset_s(buff, MAX_BUFF_SIZE, 0, MAX_BUFF_SIZE);
-		if (ret != 0)
-			cam_err("memset failed %d", __LINE__);
+        memset_s(buff, MAX_BUFF_SIZE, 0, MAX_BUFF_SIZE);
         snprintf_s(buff, MAX_BUFF_SIZE, MAX_BUFF_SIZE - 1, "%s, fail times: %d.",
             fpga_common_err_table[SELF_TEST_ERR].err_name, drv_data->self_check_fail_time);
         fpga_dsm_client_notify(drv_data, buff, fpga_common_err_table[SELF_TEST_ERR].err_num);
@@ -465,8 +462,6 @@ EXPORT_SYMBOL(ice40_spi_close_fun);
 static int ice40_spi_read_reg(struct ice40_spi_priv_data *devdata, u8 addr, u8 *val)
 {
     int status;
-	int ret;
-	const unsigned int buffsize = 2;
     struct spi_transfer xfer;
     struct spi_message  m;
 
@@ -477,14 +472,10 @@ static int ice40_spi_read_reg(struct ice40_spi_priv_data *devdata, u8 addr, u8 *
 
     /* 1bit r/w + 5bit addr + 2bit dont care */
     /* 8bit dont care */
-	ret = memset_s(&(devdata->tx_buf[0]), buffsize, 0, buffsize);
-	if (ret != 0)
-		cam_err("memset failed %d", __LINE__);
+    memset_s(&(devdata->tx_buf[0]), 2, 0, 2);
     devdata->tx_buf[0] = (u8)((addr << 2) + 0x80);
 
-	ret = memset_s(&xfer, sizeof(xfer), 0, sizeof(xfer));
-	if (ret != 0)
-		cam_err("memset failed %d", __LINE__);
+    memset_s(&xfer, sizeof(xfer), 0, sizeof(xfer));
     xfer.tx_buf = devdata->tx_buf;
     xfer.rx_buf = devdata->rx_buf;
     xfer.len = 2;
@@ -506,8 +497,6 @@ static int ice40_spi_read_reg(struct ice40_spi_priv_data *devdata, u8 addr, u8 *
 static int ice40_spi_write_reg(struct ice40_spi_priv_data *devdata, u8 addr, u8 val)
 {
     int status;
-	int ret;
-	const unsigned int buffsize = 2;
     struct spi_transfer xfer;
     struct spi_message  m;
 
@@ -516,15 +505,11 @@ static int ice40_spi_write_reg(struct ice40_spi_priv_data *devdata, u8 addr, u8 
         return -EINVAL;
     }
 
-	ret = memset_s(&(devdata->tx_buf[0]), buffsize, 0, buffsize);
-	if (ret != 0)
-		cam_err("memset failed %d", __LINE__);
+    memset_s(&(devdata->tx_buf[0]), 2, 0, 2);
     devdata->tx_buf[0] = (addr << 2);
     devdata->tx_buf[1] = val;
 
-	ret = memset_s(&xfer, sizeof(xfer), 0, sizeof(xfer));
-	if (ret != 0)
-		cam_err("memset failed %d", __LINE__);
+    memset_s(&xfer, sizeof(xfer), 0, sizeof(xfer));
     xfer.tx_buf = devdata->tx_buf;
     xfer.rx_buf = NULL;
     xfer.len = 2;
@@ -615,12 +600,7 @@ static int ice40_spi_load_fw_code(struct ice40_spi_priv_data *devdata, char *nam
         }
         else {
             one_size = left;
-			ret = memset_s(devdata->tx_buf,
-				SPI_BLOCK_BUF_SIZE,
-				0,
-				SPI_BLOCK_BUF_SIZE);
-			if (ret != 0)
-				cam_err("memset failed %d", __LINE__);
+            memset_s(devdata->tx_buf, SPI_BLOCK_BUF_SIZE,0, SPI_BLOCK_BUF_SIZE);
         }
 
         ret = vfs_read(fp, (char *)devdata->tx_buf, one_size, &pos);
@@ -639,12 +619,7 @@ static int ice40_spi_load_fw_code(struct ice40_spi_priv_data *devdata, char *nam
     cam_info("%s succeed to send %d blocks", __func__, block);
 
     /* go on output clock signal for spi SCLK */
-	ret = memset_s(devdata->tx_buf,
-		SPI_BLOCK_BUF_SIZE,
-		0,
-		SPI_BLOCK_BUF_SIZE);
-	if (ret != 0)
-		cam_err("memset failed %d", __LINE__);
+    memset_s(devdata->tx_buf, SPI_BLOCK_BUF_SIZE,0, SPI_BLOCK_BUF_SIZE);
     ret = spi_write(devdata->spi, devdata->tx_buf, clock_cycle_num);
     if (ret < 0) {
             cam_err("%s spi send error %d", __func__, ret);
@@ -1116,9 +1091,7 @@ static int ice40_spi_probe(struct spi_device *spi)
         cam_err("probe - can not alloc driver data");
         return -ENOMEM;
     }
-	ret = memset_s(drv_data, sizeof(*drv_data), 0, sizeof(*drv_data));
-	if (ret != 0)
-		cam_err("memset failed %d", __LINE__);
+    memset_s(drv_data, sizeof(*drv_data), 0, sizeof(*drv_data));
 
     plat_data = &drv_data->plat_data;
     ret = ice40_spi_get_dt_data(&spi->dev, plat_data);

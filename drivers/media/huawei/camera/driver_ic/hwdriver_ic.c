@@ -100,21 +100,10 @@ hwdriveric_subdev_get_info(
      hwdriveric_info_t* info)
 {
     driveric_t *ic = NULL;
-	int ret;
 
-	ret = memset_s(info->name,
-		HWDRIVERIC_NAME_SIZE,
-		0,
-		HWDRIVERIC_NAME_SIZE);
-	if (ret != 0)
-		HWCAM_CFG_ERR("%s.strncpy failed", __func__);
-
-	ret = strncpy_s(info->name,
-		HWDRIVERIC_NAME_SIZE - 1,
-		hwdriveric_intf_get_name(driveric->hw),
-		strlen(hwdriveric_intf_get_name(driveric->hw)) + 1);
-	if (ret != 0)
-		HWCAM_CFG_ERR("%s.strncpy failed", __func__);
+    memset_s(info->name, HWDRIVERIC_NAME_SIZE, 0, HWDRIVERIC_NAME_SIZE);
+    strncpy_s(info->name, HWDRIVERIC_NAME_SIZE - 1, hwdriveric_intf_get_name(driveric->hw),
+         strlen(hwdriveric_intf_get_name(driveric->hw))+1);
 
     ic = INTF2DRIVERIC(driveric->hw);
 

@@ -148,7 +148,6 @@ static int send_client_msg(void *msg_data, int msg_size)
 int ipp_in_process(struct ipp_work_t *pwork)
 {
 	struct stmvl53l1_data *data = NULL;
-	int ret;
 
 	ipp_dbg("enter");
 	_ipp_dump_work(pwork, IPP_WORK_MAX_PAYLOAD, STMVL53L1_CFG_MAX_DEV);
@@ -165,12 +164,7 @@ int ipp_in_process(struct ipp_work_t *pwork)
 		/* if  it was already handled ignore it */
 		if (data->ipp.waited_xfer_id == pwork->xfer_id) {
 			/* ok that is what we are expecting back */
-			ret = memcpy_s(&data->ipp.work_out,
-				pwork->payload,
-				pwork,
-				pwork->payload);
-			if (ret != 0)
-				ipp_err("memcpy failed %d", __LINE__);
+			memcpy_s(&data->ipp.work_out, pwork->payload, pwork, pwork->payload);
 			data->ipp.buzy |= IPP_STATE_COMPLETED;
 			ipp_dbg("to wake ipp waiter as buzy state %d",
 					data->ipp.buzy);
