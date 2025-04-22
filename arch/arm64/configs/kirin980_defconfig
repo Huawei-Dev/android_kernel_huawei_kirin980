@@ -4887,7 +4887,8 @@ CONFIG_HISPIPP_V200=y
 #
 # Hisilicon ISP FD
 #
-# CONFIG_HISPFD is not set
+CONFIG_HISPFD=y
+# CONFIG_HISPFD_V130 is not set
 
 #
 # Hisilicon Performace Control
