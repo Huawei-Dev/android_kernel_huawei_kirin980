@@ -41,7 +41,7 @@ OAL_STATIC oal_void hmac_add_ddr_freq_req(oal_void)
         return;
     }
 
-    pm_qos_add_request(g_st_auto_ddr_freq_mgmt.pst_auto_ddr_freq, PM_QOS_MEMORY_THROUGHPUT, HMAC_DDR_MAX_FREQ);
+    pm_qos_add_request(g_st_auto_ddr_freq_mgmt.pst_auto_ddr_freq, PM_QOS_MEMORY_THROUGHPUT, (unsigned long)HMAC_DDR_MAX_FREQ);
 
     OAM_WARNING_LOG0(0, OAM_SF_ANY, "{hmac_add_ddr_freq_req::add ddr freq req to kernel SUCC!}");
 }

@@ -726,75 +726,78 @@ void ipf_om_dump_init(void)
 
 static int ipf_probe(struct platform_device *pdev)
 {
-	struct resource	*regs;
-	int ret;
-	struct ipf_share_mem_map* sm = bsp_ipf_get_sharemem();
+    struct resource	*regs;
+    int ret;
+    struct ipf_share_mem_map* sm = bsp_ipf_get_sharemem();
 
-	regs = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-	if (!regs)
-		return -ENXIO;
+    regs = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+    if (!regs)
+	return -ENXIO;
 
     if(memset_s(&g_ipf_ctx, sizeof(g_ipf_ctx), 0, sizeof(ipf_ctx_t)))
     {
         bsp_err("memset_s failed\n");
     }
+    
     g_ipf_ctx.irq = platform_get_irq(pdev, 0);
     if (unlikely(g_ipf_ctx.irq == 0))
         return -ENXIO;
 
-	g_ipf_ctx.regs = devm_ioremap_resource(&pdev->dev, regs);
-	if (IS_ERR(g_ipf_ctx.regs))
-		return PTR_ERR(g_ipf_ctx.regs);
+    g_ipf_ctx.regs = devm_ioremap_resource(&pdev->dev, regs);
+    if (IS_ERR(g_ipf_ctx.regs))
+	return PTR_ERR(g_ipf_ctx.regs);
 	
 
-	g_ipf_ctx.dev = &pdev->dev;
-	g_ipf_ctx.dma_mask = 0xffffffffULL;
-	g_ipf_ctx.dev->dma_mask = &g_ipf_ctx.dma_mask;
-	spin_lock_init(&g_ipf_ctx.filter_spinlock);
+    g_ipf_ctx.dev = &pdev->dev;
+    g_ipf_ctx.dma_mask = 0xffffffffULL;
+    g_ipf_ctx.dev->dma_mask = &g_ipf_ctx.dma_mask;
+    spin_lock_init(&g_ipf_ctx.filter_spinlock);
 
-	g_ipf_ctx.clk = devm_clk_get(g_ipf_ctx.dev, "ipf_clk");
-	if (IS_ERR(g_ipf_ctx.clk)) {
-		bsp_err("ipf clock not available\n");
-		return -ENXIO;
-	} else {
-		ret = clk_prepare_enable(g_ipf_ctx.clk);
-		if (ret) {
-			bsp_err("failed to enable ipf clock\n");
-			return ret;
-		}
+    g_ipf_ctx.clk = devm_clk_get(g_ipf_ctx.dev, "ipf_clk");
+    if (IS_ERR(g_ipf_ctx.clk)) {
+	bsp_err("ipf clock not available\n");
+	return -ENXIO;
+    } else {
+	ret = clk_prepare_enable(g_ipf_ctx.clk);
+	if (ret) {
+		bsp_err("failed to enable ipf clock\n");
+		return ret;
 	}
+    }
 
     (void)of_property_read_u32_array(pdev->dev.of_node, "rst_crg", g_ipf_ctx.reset_peri_crg, 5);
     g_ipf_ctx.peribase = (void *)ioremap_nocache(g_ipf_ctx.reset_peri_crg[0], PERI_CRG_4K);
-    if(!g_ipf_ctx.peribase)
+    
+    if (!g_ipf_ctx.peribase)
     {
         bsp_err("ipf peribase ioremap_nocache failed\n");
     }
-	g_ipf_ctx.limit_addr = (IPF_LIMIT_ADDR_S *)sm->trans_limit;
+    
+    g_ipf_ctx.limit_addr = (IPF_LIMIT_ADDR_S *)sm->trans_limit;
     g_ipf_ctx.memblock_show = (unsigned long *)sm->memlock;
-    if(memset_s((void*)sm->trans_limit, sizeof(sm->trans_limit), 0x0, IPF_TRANS_LIMIT_SIZE))
+    
+    if (memset_s((void*)sm->trans_limit, sizeof(sm->trans_limit), 0x0, IPF_TRANS_LIMIT_SIZE))
     {
         bsp_err("memset_s failed\n");
     }
-    if(memset_s((void*)sm->memlock, sizeof(sm->memlock), 0x0, IPF_ADDR_MEMBLOCK_SIZE))
+    
+    if (memset_s((void*)sm->memlock, sizeof(sm->memlock), 0x0, IPF_ADDR_MEMBLOCK_SIZE))
     {
         bsp_err("memset_s failed\n");
     }
 
-	if(ipf_get_limit_addr()){
-		g_ipf_ctx.not_get_space++;
-		bsp_err("ipf addr limit func disable\n");
-	}
+    if (ipf_get_limit_addr()){
+	g_ipf_ctx.not_get_space++;
+	bsp_err("ipf addr limit func disable\n");
+    }
 
-	ipf_init();
-
-	g_ipf_ctx.pm = &ipf_dev_pm_ops;
-	sm->init.status.acore = IPF_PWR_UP;
+    ipf_init();
+    g_ipf_ctx.pm = &ipf_dev_pm_ops;
+    sm->init.status.acore = IPF_PWR_UP;
     sm->init.status.save = 0;
-
     ipf_om_dump_init();
     
-	return 0;
+    return 0;
 }
 static int ipf_remove(struct platform_device *pdev)
 {
