@@ -6,7 +6,7 @@ extern "C" {
 #endif
 #endif
 
-/* 1 头文件包含 */
+/* 1 ?????????? */
 #include "hmac_dscr_th_opt.h"
 #include "hmac_resource.h"
 #include "mac_data.h"
@@ -15,7 +15,7 @@ extern "C" {
 
 #undef THIS_FILE_ID
 #define THIS_FILE_ID OAM_FILE_ID_HMAC_DSCR_TH_OPT_C
-/* 2 全局变量定义 */
+/* 2 ???????????? */
 oal_int32 g_l_large_pps_start_level = -20000;
 oal_uint32 g_ul_large_pps_interval = 10000;
 oal_int32 g_l_small_pps_start_level = -2000;
@@ -32,14 +32,14 @@ oal_uint32 g_ul_small_interval = 6;
 oal_uint32 aul_theshold_large_dscr[HMAC_LARGE_DSCR_TH_LEVEL];
 oal_uint32 aul_theshold_small_dscr[HMAC_SMALL_DSCR_TH_LEVEL];
 
-/* 3 函数实现 */
+/* 3 ???????? */
 
 OAL_STATIC oal_void hmac_calculate_dscr_th(oal_int32 l_delta_trx_large_pps, oal_int32 l_delta_trx_small_pps,
                                            oal_uint32 *pul_theshold_large_dscr, oal_uint32 *pul_theshold_small_dscr)
 {
     oal_uint32 ul_index;
 
-    /* 根据tx/rx pps差值分别计算大、小包门限 */
+    /* ????tx/rx pps???????????????????????? */
     if (l_delta_trx_large_pps <= al_delta_large_pps[0]) {
         *pul_theshold_large_dscr = aul_theshold_large_dscr[0];
     } else {
@@ -107,7 +107,7 @@ OAL_STATIC oal_uint32 hmac_send_dscr_th_update_event(hmac_device_stru *pst_hmac_
     st_dscr_th.ul_small_queue_th = pst_hmac_device->st_dscr_th_opt.ul_small_queue_th;
 
     /***************************************************************************
-        抛事件到DMAC层, 同步RX描述符门限到device侧
+        ????????DMAC??, ????RX????????????device??
     ***************************************************************************/
     ul_ret = hmac_config_send_event(pst_mac_vap, WLAN_CFGID_SET_DSCR_TH, OAL_SIZEOF(mac_h2d_dscr_th_stru), (oal_uint8 *)&st_dscr_th);
     if (OAL_UNLIKELY(OAL_SUCC != ul_ret)) {
@@ -145,10 +145,10 @@ oal_void hmac_rx_dscr_th_opt(oal_uint32 ul_tx_large_pps, oal_uint32 ul_rx_large_
         return;
     }
 
-    /* 将当前流量统计值更新至hmac device中的描述符门限优化结构体 */
+    /* ??????????????????????hmac device???????????????????????? */
     hmac_flow_statistics_update(pst_hmac_device, ul_tx_large_pps, ul_rx_large_pps, ul_tx_small_pps, ul_rx_small_pps);
 
-    /* 若需要下发门限, 则抛事件至device */
+    /* ??????????????, ??????????device */
     hmac_rx_dscr_th_update(pst_hmac_device);
 }
 

@@ -1,22 +1,22 @@
 
 
 /*****************************************************************************
-  1 头文件包含
+  1 ??????????
 *****************************************************************************/
 #include "plat_efuse.h"
 #include "board.h"
 #include "securec.h"
 /*****************************************************************************
-  2 全局变量定义
+  2 ????????????
 *****************************************************************************/
 uint8 hi110x_ec_version = V100;
 
 /*****************************************************************************
-  3 函数实现
+  3 ????????
 *****************************************************************************/
 /*
- * 函 数 名  : read_efuse_ec_version
- * 功能描述  : 从device EFUSE中读取EC版本号
+ * ?? ?? ??  : read_efuse_ec_version
+ * ????????  : ??device EFUSE??????EC??????
  */
 void read_efuse_ec_version(void)
 {
@@ -46,8 +46,8 @@ void read_efuse_ec_version(void)
         PS_PRINT_DBG("ec version[%d]=0x%x\n", i, buff[i]);
     }
 
-    uc_ec_version = buff[1];         // Byte24(0x50000771)对应bit[191:184]
-    uc_ec_version &= ((uint8)0x03);  // bit[185:184]标示EC version
+    uc_ec_version = buff[1];         // Byte24(0x50000771)????bit[191:184]
+    uc_ec_version &= ((uint8)0x03);  // bit[185:184]????EC version
 
     if (V100 == uc_ec_version) {
         PS_PRINT_INFO("hi110x read efuse V100[0x%x]\n", uc_ec_version);
@@ -61,9 +61,9 @@ void read_efuse_ec_version(void)
 }
 
 /*
- * 函 数 名  : get_ec_version
- * 功能描述  : 获取hi110x芯片EC版本号
- * 返 回 值  : EC版本号
+ * ?? ?? ??  : get_ec_version
+ * ????????  : ????hi110x????EC??????
+ * ?? ?? ??  : EC??????
  */
 uint8 get_ec_version(void)
 {
@@ -71,8 +71,8 @@ uint8 get_ec_version(void)
 }
 
 /*
- * 函 数 名  : mask_bits
- * 功能描述  : 将位段置为零
+ * ?? ?? ??  : mask_bits
+ * ????????  : ????????????
  */
 static void mask_bits(uint32 value[], uint32 start_bits, uint32 end_bits)
 {
@@ -91,9 +91,9 @@ static void mask_bits(uint32 value[], uint32 start_bits, uint32 end_bits)
     }
 }
 /*
- * 函 数 名  : check_efuse_file_exist
- * 功能描述  : 检查文件是否存在
- * 返 回 值  : static int32
+ * ?? ?? ??  : check_efuse_file_exist
+ * ????????  : ????????????????
+ * ?? ?? ??  : static int32
  */
 static int32 check_efuse_file_exist(void)
 {
@@ -110,8 +110,8 @@ static int32 check_efuse_file_exist(void)
 }
 
 /*
- * 函 数 名  : get_efuse_from_device
- * 功能描述  : 从device获取efuse信息
+ * ?? ?? ??  : get_efuse_from_device
+ * ????????  : ??device????efuse????
  */
 static int32 get_efuse_from_device(uint32 *buff, int32 len)
 {
@@ -137,8 +137,8 @@ static int32 get_efuse_from_device(uint32 *buff, int32 len)
     return SUCC;
 }
 /*
- * 函 数 名  : store_efuse_into_file
- * 功能描述  : 将efuse信息保存在下
+ * ?? ?? ??  : store_efuse_into_file
+ * ????????  : ??efuse????????????
  */
 static int32 store_efuse_into_file(uint32 *buff)
 {
@@ -158,7 +158,7 @@ static int32 store_efuse_into_file(uint32 *buff)
     mask_bits(buff, DIEID_BIT_53, DIEID_BIT_53);
     mask_bits(buff, DIEID_BIT_79, DIEID_BIT_95);
 
-    memset_s(&fs, sizeof(fs), 0x00, sizeof(fs)); /* [false alarm]:fortify误报  */
+    memset_s(&fs, sizeof(fs), 0x00, sizeof(fs)); /* [false alarm]:fortify????  */
 
     fp = filp_open(EFUSE_FILE_PATH, O_CREAT | O_RDWR, 0644);
     if (IS_ERR(fp)) {
@@ -186,8 +186,8 @@ static int32 store_efuse_into_file(uint32 *buff)
 }
 
 /*
- * 函 数 名  : store_efuse_info
- * 功能描述  : 存储efuse信息
+ * ?? ?? ??  : store_efuse_info
+ * ????????  : ????efuse????
  */
 void store_efuse_info(void)
 {

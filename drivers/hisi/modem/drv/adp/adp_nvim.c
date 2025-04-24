@@ -61,16 +61,16 @@
 
 
 /*****************************************************************************
-* 函 数 名  : mdrv_nv_readex
+* ?? ?? ??  : mdrv_nv_readex
 *
-* 功能描述  : 读不同Modem NV项数据
+* ????????  : ??????Modem NV??????
 *
-* 输入参数  :
-* 输出参数  : 无
+* ????????  :
+* ????????  : ??
 *
-* 返 回 值  : OK
+* ?? ?? ??  : OK
 *
-* 修改记录  : Yangzhi create
+* ????????  : Yangzhi create
 *
 *****************************************************************************/
 unsigned int mdrv_nv_readex(unsigned int modemid, unsigned int itemid, void *pdata, unsigned int ulLength)
@@ -117,17 +117,17 @@ unsigned int mdrv_nv_om_write(unsigned int modemid, unsigned int itemid, unsigne
 }
 
 /*****************************************************************************
-* 函 数 名  : mdrv_nv_get_modem_num
+* ?? ?? ??  : mdrv_nv_get_modem_num
 *
-* 功能描述  : 获取NV镜像支持的odem个数
+* ????????  : ????NV??????????odem????
 *
-* 输入参数  : 无
+* ????????  : ??
 *
-* 输出参数  : 无
+* ????????  : ??
 *
-* 返 回 值  : modem个数
+* ?? ?? ??  : modem????
 *
-* 修改记录  :
+* ????????  :
 *
 *****************************************************************************/
 unsigned int mdrv_nv_get_modem_num(void)
@@ -136,16 +136,16 @@ unsigned int mdrv_nv_get_modem_num(void)
 }
 
 /*****************************************************************************
-* 函 数 名  : mdrv_nv_get_length
+* ?? ?? ??  : mdrv_nv_get_length
 *
-* 功能描述  : 获取NV长度
+* ????????  : ????NV????
 *
-* 输入参数  :
-* 输出参数  : 无
+* ????????  :
+* ????????  : ??
 *
-* 返 回 值  : OK
+* ?? ?? ??  : OK
 *
-* 修改记录  : Yangzhi create
+* ????????  : Yangzhi create
 *
 *****************************************************************************/
 unsigned int mdrv_nv_get_length(unsigned int itemid, unsigned int *pulLength)
@@ -163,16 +163,16 @@ unsigned int mdrv_nv_get_length(unsigned int itemid, unsigned int *pulLength)
 }
 
 /*****************************************************************************
-* 函 数 名  : mdrv_nv_read_partex
+* ?? ?? ??  : mdrv_nv_read_partex
 *
-* 功能描述  : 读NV项数据
+* ????????  : ??NV??????
 *
-* 输入参数  :
-* 输出参数  : 无
+* ????????  :
+* ????????  : ??
 *
-* 返 回 值  : OK
+* ?? ?? ??  : OK
 *
-* 修改记录  : Yangzhi create
+* ????????  : Yangzhi create
 *
 *****************************************************************************/
 unsigned int mdrv_nv_read_partex(unsigned int modemid, unsigned int itemid, unsigned int ulOffset, void *pdata, unsigned int ulLength)
@@ -193,16 +193,16 @@ unsigned int mdrv_nv_read_partex(unsigned int modemid, unsigned int itemid, unsi
 }
 
 /*****************************************************************************
-* 函 数 名  : mdrv_nv_read
+* ?? ?? ??  : mdrv_nv_read
 *
-* 功能描述  : 读NV项数据
+* ????????  : ??NV??????
 *
-* 输入参数  :
-* 输出参数  : 无
+* ????????  :
+* ????????  : ??
 *
-* 返 回 值  : OK
+* ?? ?? ??  : OK
 *
-* 修改记录  : Yangzhi create
+* ????????  : Yangzhi create
 *
 *****************************************************************************/
 unsigned int mdrv_nv_read(unsigned int itemid, void *pdata, unsigned int ulLength)
@@ -211,16 +211,16 @@ unsigned int mdrv_nv_read(unsigned int itemid, void *pdata, unsigned int ulLengt
 }
 
 /*****************************************************************************
-* 函 数 名  : mdrv_nv_readpart
+* ?? ?? ??  : mdrv_nv_readpart
 *
-* 功能描述  : 读部分NV项数据
+* ????????  : ??????NV??????
 *
-* 输入参数  :
-* 输出参数  : 无
+* ????????  :
+* ????????  : ??
 *
-* 返 回 值  : OK
+* ?? ?? ??  : OK
 *
-* 修改记录  : Yangzhi create
+* ????????  : Yangzhi create
 *
 *****************************************************************************/
 unsigned int mdrv_nv_readpart(unsigned int itemid, unsigned int ulOffset, void *pdata, unsigned int ulLength)
@@ -229,16 +229,16 @@ unsigned int mdrv_nv_readpart(unsigned int itemid, unsigned int ulOffset, void *
 }
 
 /*****************************************************************************
-* 函 数 名  : mdrv_nv_restore_result
+* ?? ?? ??  : mdrv_nv_restore_result
 *
-* 功能描述  :  恢复结果检查
+* ????????  :  ????????????
 *
-* 输入参数  :
-* 输出参数  : 无
+* ????????  :
+* ????????  : ??
 *
-* 返 回 值  : OK
+* ?? ?? ??  : OK
 *
-* 修改记录  : Yangzhi create
+* ????????  : Yangzhi create
 *
 *****************************************************************************/
 unsigned int mdrv_nv_restore_result(void)
@@ -259,16 +259,16 @@ unsigned int mdrv_nv_restore_result(void)
 }
 
 /*****************************************************************************
-* 函 数 名  : mdrv_nv_restore
+* ?? ?? ??  : mdrv_nv_restore
 *
-* 功能描述  :  恢复生产NV项
+* ????????  :  ????????NV??
 *
-* 输入参数  :
-* 输出参数  : 无
+* ????????  :
+* ????????  : ??
 *
-* 返 回 值  : OK
+* ?? ?? ??  : OK
 *
-* 修改记录  : Yangzhi create
+* ????????  : Yangzhi create
 *
 *****************************************************************************/
 unsigned int mdrv_nv_restore()
@@ -282,16 +282,16 @@ void * mdrv_nv_get_addr(unsigned int modemid, unsigned int itemid)
 EXPORT_SYMBOL(mdrv_nv_get_addr);
 
 /*****************************************************************************
-* 函 数 名  : mdrv_nv_flush
+* ?? ?? ??  : mdrv_nv_flush
 *
-* 功能描述  : 将内存中的nv数据刷到flash 文件系统中
+* ????????  : ??????????nv????????flash ??????????
 *
-* 输入参数  :
-* 输出参数  : 无
+* ????????  :
+* ????????  : ??
 *
-* 返 回 值  : OK
+* ?? ?? ??  : OK
 *
-* 修改记录  : Yangzhi create
+* ????????  : Yangzhi create
 *
 *****************************************************************************/
 unsigned int mdrv_nv_flush(void)
@@ -300,14 +300,14 @@ unsigned int mdrv_nv_flush(void)
 }
 
 /*****************************************************************************
-* 函 数 名  : mdrv_nv_backup
+* ?? ?? ??  : mdrv_nv_backup
 *
-* 功能描述  :  备份NV数据
+* ????????  :  ????NV????
 *
-* 输入参数  :
-* 输出参数  : 无
+* ????????  :
+* ????????  : ??
 *
-* 返 回 值  : OK
+* ?? ?? ??  : OK
 *
 *
 *****************************************************************************/
@@ -316,17 +316,17 @@ unsigned int mdrv_nv_backup()
    return NV_ERROR;
 }
 /*****************************************************************************
-* 函 数 名  : mdrv_nv_readex
+* ?? ?? ??  : mdrv_nv_readex
 *
-* 功能描述  : 对校准NV进行CRC校验
+* ????????  : ??????NV????CRC????
 *
-* 输入参数  : u32 mode
+* ????????  : u32 mode
 *
-* 输出参数  : 无
+* ????????  : ??
 *
-* 返 回 值  : OK
+* ?? ?? ??  : OK
 *
-* 修改记录  : Fuxin create
+* ????????  : Fuxin create
 *
 *****************************************************************************/
 unsigned int mdrv_nv_check_factorynv(u32 mode)

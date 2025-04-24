@@ -4,7 +4,7 @@
 #define __OAL_LINUX_CACHE_H__
 
 /*****************************************************************************
-  1 其他头文件包含
+  1 ??????????????
 *****************************************************************************/
 #include <linux/version.h>
 
@@ -38,47 +38,47 @@
 #include <linux/cache.h>
 
 /*****************************************************************************
-  2 宏定义
+  2 ??????
 *****************************************************************************/
 #define oal_cacheline_aligned ____cacheline_aligned
 
 /*****************************************************************************
-  3 枚举定义
+  3 ????????
 *****************************************************************************/
 
 /*****************************************************************************
-  4 全局变量声明
+  4 ????????????
 *****************************************************************************/
 extern void __iomem *l2cache_base;
 
 /*****************************************************************************
-  5 消息头定义
+  5 ??????????
 *****************************************************************************/
 
 /*****************************************************************************
-  6 消息定义
+  6 ????????
 *****************************************************************************/
 
 /*****************************************************************************
-  7 STRUCT定义
+  7 STRUCT????
 *****************************************************************************/
 
 /*****************************************************************************
-  8 UNION定义
+  8 UNION????
 *****************************************************************************/
 
 /*****************************************************************************
-  9 OTHERS定义
+  9 OTHERS????
 *****************************************************************************/
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 44) || defined(_PRE_PLAT_FEATURE_HI110X_PCIE))
 #else
 extern struct cpu_cache_fns cpu_cache;
 /*
- * 函 数 名  : oal_l1cache_flush
- * 功能描述  : flush L1 Cache
- * 输入参数  : 无
- * 输出参数  : 无
- * 返 回 值  : 无
+ * ?? ?? ??  : oal_l1cache_flush
+ * ????????  : flush L1 Cache
+ * ????????  : ??
+ * ????????  : ??
+ * ?? ?? ??  : ??
  */
 OAL_STATIC OAL_INLINE oal_void oal_l1cache_flush(oal_void)
 {
@@ -86,12 +86,12 @@ OAL_STATIC OAL_INLINE oal_void oal_l1cache_flush(oal_void)
 }
 
 /*
- * 函 数 名  : oal_l2cache_dcache_lock
- * 功能描述  : L2 cache锁住或释放对应的Dcache 的cache way
- * 输入参数  : en_flag: OAL_TRUE表示锁住，OAL_FALSE表示释放
- *             ul_way: 要锁住或者释放的对应的cache way
- * 输出参数  : 无
- * 返 回 值  : 无
+ * ?? ?? ??  : oal_l2cache_dcache_lock
+ * ????????  : L2 cache????????????????Dcache ??cache way
+ * ????????  : en_flag: OAL_TRUE??????????OAL_FALSE????????
+ *             ul_way: ??????????????????????cache way
+ * ????????  : ??
+ * ?? ?? ??  : ??
  */
 OAL_STATIC OAL_INLINE oal_void oal_l2cache_dcache_lock(oal_bool_enum_uint8 en_flag, oal_uint32 ul_way)
 {
@@ -119,12 +119,12 @@ OAL_STATIC OAL_INLINE oal_void oal_l2cache_dcache_lock(oal_bool_enum_uint8 en_fl
 }
 
 /*
- * 函 数 名  : oal_l2cache_icache_lock
- * 功能描述  : L2 cache锁住或释放对应的Icache 的cache way
- * 输入参数  : en_flag: OAL_TRUE表示锁住，OAL_FALSE表示释放
- *             ul_way: 要锁住或者释放的对应的cache way
- * 输出参数  : 无
- * 返 回 值  : 无
+ * ?? ?? ??  : oal_l2cache_icache_lock
+ * ????????  : L2 cache????????????????Icache ??cache way
+ * ????????  : en_flag: OAL_TRUE??????????OAL_FALSE????????
+ *             ul_way: ??????????????????????cache way
+ * ????????  : ??
+ * ?? ?? ??  : ??
  */
 OAL_STATIC OAL_INLINE oal_void oal_l2cache_icache_lock(oal_bool_enum_uint8 en_flag, oal_uint32 ul_way)
 {
@@ -149,11 +149,11 @@ OAL_STATIC OAL_INLINE oal_void oal_l2cache_icache_lock(oal_bool_enum_uint8 en_fl
 }
 
 /*
- * 函 数 名  : oal_cache_flush_all
- * 功能描述  : clean 并 invalid L2 cache
- * 输入参数  : 无
- * 输出参数  : 无
- * 返 回 值  : 无
+ * ?? ?? ??  : oal_cache_flush_all
+ * ????????  : clean ?? invalid L2 cache
+ * ????????  : ??
+ * ????????  : ??
+ * ?? ?? ??  : ??
  */
 OAL_STATIC OAL_INLINE oal_void oal_cache_flush_all(oal_void)
 {
@@ -161,11 +161,11 @@ OAL_STATIC OAL_INLINE oal_void oal_cache_flush_all(oal_void)
 }
 
 /*
- * 函 数 名  : oal_cache_rxtx_lock
- * 功能描述  : 将rx tx流程关键代码关键数据锁进L2 cache
- * 输入参数  : 无
- * 输出参数  : 无
- * 返 回 值  : 无
+ * ?? ?? ??  : oal_cache_rxtx_lock
+ * ????????  : ??rx tx????????????????????????L2 cache
+ * ????????  : ??
+ * ????????  : ??
+ * ?? ?? ??  : ??
  */
 OAL_STATIC OAL_INLINE oal_void oal_cache_rxtx_lock(oal_void)
 {
@@ -180,7 +180,7 @@ OAL_STATIC OAL_INLINE oal_void oal_cache_rxtx_lock(oal_void)
 #endif
 
 /*****************************************************************************
-  10 函数声明
+  10 ????????
 *****************************************************************************/
 
 #endif /* end of oal_cache.h */
