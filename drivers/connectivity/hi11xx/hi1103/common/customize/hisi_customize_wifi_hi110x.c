@@ -3219,9 +3219,9 @@ OAL_STATIC oal_uint32 hwifi_config_nvram_second_coefficient_check(oal_uint8 *puc
     oal_uint8        uc_param_idx;
 
     /* ?????????????? */
-    if (OAL_SUCC != hwifi_config_sepa_coefficient_from_param(puc_cust_nvram_info, l_nv_params, &us_nv_param_num, OAL_SIZEOF(l_nv_params)/OAL_SIZEOF(oal_int16)) ||
+    if (OAL_SUCC != hwifi_config_sepa_coefficient_from_param(puc_cust_nvram_info, l_nv_params, &us_nv_param_num, OAL_SIZEOF(l_nv_params)/OAL_SIZEOF(oal_int32)) ||
         (us_nv_param_num % DY_CALI_PARAMS_TIMES) ||
-         OAL_SUCC != hwifi_config_sepa_coefficient_from_param(puc_ini_pa_params, l_ini_params, &us_ini_param_num, OAL_SIZEOF(l_ini_params)/OAL_SIZEOF(oal_int16)) ||
+         OAL_SUCC != hwifi_config_sepa_coefficient_from_param(puc_ini_pa_params, l_ini_params, &us_ini_param_num, OAL_SIZEOF(l_ini_params)/OAL_SIZEOF(oal_int32)) ||
         (us_ini_param_num % DY_CALI_PARAMS_TIMES) ||
         (us_nv_param_num != us_ini_param_num))
     {
