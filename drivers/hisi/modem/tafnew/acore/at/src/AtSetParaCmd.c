@@ -14326,7 +14326,7 @@ VOS_UINT32 AT_GetM2MFreqLockPara(
                 break;
 
             case AT_MTA_M2M_FREQLOCK_MODE_WCDMA:
-                if ((gastAtParaList[4].usParaLen == 0))
+                if (gastAtParaList[4].usParaLen == 0)
                 {
                     pstFreqLockInfo->enableFlag                 = AT_MTA_M2M_FREQLOCK_FLAG_TYPE_ON;
                     pstFreqLockInfo->ucMode                     = AT_MTA_M2M_FREQLOCK_MODE_WCDMA;
@@ -14344,7 +14344,7 @@ VOS_UINT32 AT_GetM2MFreqLockPara(
                 break;
 
             case AT_MTA_M2M_FREQLOCK_MODE_TDSCDMA:
-                if ((gastAtParaList[4].usParaLen == 0))
+                if (gastAtParaList[4].usParaLen == 0)
                 {
                     pstFreqLockInfo->enableFlag                 = AT_MTA_M2M_FREQLOCK_FLAG_TYPE_ON;
                     pstFreqLockInfo->ucMode                     = AT_MTA_M2M_FREQLOCK_MODE_TDSCDMA;
@@ -14362,7 +14362,7 @@ VOS_UINT32 AT_GetM2MFreqLockPara(
                 break;
 
             case AT_MTA_M2M_FREQLOCK_MODE_LTE:
-                if ((gastAtParaList[5].usParaLen == 0))
+                if (gastAtParaList[5].usParaLen == 0)
                 {
                     pstFreqLockInfo->enableFlag                 = AT_MTA_M2M_FREQLOCK_FLAG_TYPE_ON;
                     pstFreqLockInfo->ucMode                     = AT_MTA_M2M_FREQLOCK_MODE_LTE;
@@ -15784,7 +15784,7 @@ VOS_UINT32 AT_ConvertSysCfgExLteBandPara(
     TAF_MEM_SET_S(pstPrefBandPara, sizeof(TAF_USER_SET_LTE_PREF_BAND_INFO_STRU), 0x00, sizeof(TAF_USER_SET_LTE_PREF_BAND_INFO_STRU));
 
     /* ?????????????????? */
-    if ((TAF_MMA_LTE_BAND_MAX_LENGTH * AT_HEX_LEN_OF_ULONG_TYPE < usLen))
+    if ((TAF_MMA_LTE_BAND_MAX_LENGTH * AT_HEX_LEN_OF_ULONG_TYPE) < usLen)
     {
         return AT_CME_INCORRECT_PARAMETERS;
     }
