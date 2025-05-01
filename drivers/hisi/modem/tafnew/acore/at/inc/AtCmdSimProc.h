@@ -46,7 +46,7 @@
 *
 */
 
-#ifndef __ATCMDSIMROC_H__
+#ifndef __ATCMDSIMPROC_H__
 #define __ATCMDSIMPROC_H__
 
 /*****************************************************************************
