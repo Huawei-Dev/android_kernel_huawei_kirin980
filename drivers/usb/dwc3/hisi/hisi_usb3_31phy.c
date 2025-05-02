@@ -428,15 +428,15 @@ static void _combophy_firmware_write(struct hisi_usb_combophy *combophy)
 
 	usb_info("fw_size[%d]\n", fw_size);
 
-	/*选择CR 接口： MISC54[4] =  1*/
+	/*??????CR ????????? MISC54[4] =  1*/
 	set_bits(BIT(SOC_USB31_MISC_CTRL_USB_MISC_CFG54_usb3_phy0_cr_para_sel_START),
 		SOC_USB31_MISC_CTRL_USB_MISC_CFG54_ADDR(usb3_misc_ctrl_base));
-	/*toggle clock * 32次： MISC54[2] =  1； MISC54[2] =  0；循环32次*/
+	/*toggle clock * 32?????? MISC54[2] =  1??? MISC54[2] =  0?????????32???*/
 	usb31phy_cr_32clk();
 
 	/*
-	3、等待PHY准备好
-	 wait for sram_init_done：MISC5c[12]  ==1
+	3?????????PHY?????????
+	 wait for sram_init_done???MISC5c[12]  ==1
 	*/
 	cnt = 20;
 	while(cnt--) {
@@ -450,8 +450,8 @@ static void _combophy_firmware_write(struct hisi_usb_combophy *combophy)
 		pr_info("[%s]wait sram init done cnt %d\n", __func__, cnt);
 
 	/*
-	4、更新firmware:
-	将获得的firmware，依次写入（调用CR写函数）
+	4?????????firmware:
+	????????????firmware????????????????????????CR????????????
 	*/
 	i = 0;
 	usb31phy_cr_write(0xc000+i,firmware[i]); /* fist write after system startup always failed */
@@ -460,7 +460,7 @@ static void _combophy_firmware_write(struct hisi_usb_combophy *combophy)
 		usb31phy_cr_fast_write(0xc000+i,firmware[i]);
 	}
 
-	/*toggle clock * 32次： MISC54[2] =  1； MISC54[2] =  0；循环32次*/
+	/*toggle clock * 32?????? MISC54[2] =  1??? MISC54[2] =  0?????????32???*/
 	usb31phy_cr_32clk();
 
 	if (hisi_dwc3_is_es()) {
@@ -486,15 +486,15 @@ static void _combophy_firmware_write(struct hisi_usb_combophy *combophy)
 	set_bits(BIT(SOC_USB31_MISC_CTRL_USB_MISC_CFG54_usb3_phy0_cr_para_ack_START),
 		SOC_USB31_MISC_CTRL_USB_MISC_CFGB4_ADDR(usb3_misc_ctrl_base));
 
-	/*5、通知PHY读取数据
+	/*5?????????PHY????????????
 	sram_ext_ld_done =1: MISC5c[3]  =1*/
 	set_bits(BIT(SOC_USB31_MISC_CTRL_USB_MISC_CFG54_usb3_phy0_cr_para_rd_en_START),
 		SOC_USB31_MISC_CTRL_USB_MISC_CFG5C_ADDR(usb3_misc_ctrl_base));
 
-	/*toggle clock * 32次： MISC54[2] =  1； MISC54[2] =  0；循环32次*/
+	/*toggle clock * 32?????? MISC54[2] =  1??? MISC54[2] =  0?????????32???*/
 	usb31phy_cr_32clk();
 
-	/*6、延迟1mS，等PHY OK*/
+	/*6?????????1mS??????PHY OK*/
 	msleep(1);
 }
 

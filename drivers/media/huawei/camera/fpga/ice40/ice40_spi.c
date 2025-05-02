@@ -80,23 +80,23 @@ extern struct dsm_client *client_camera_user;
 
 /*
 0x02-reg
-bit7：M2-2异常
-bit6：M2-1异常
-bit5：Y异常
-bit4：M1-2异常
-bit3：M1-1异常
-bit2：X异常
-bit1：bit1=bit7 | bit6 | bit5 | bit4 | bit3 | bit2
-bit0：0
+bit7??M2-2????
+bit6??M2-1????
+bit5??Y????
+bit4??M1-2????
+bit3??M1-1????
+bit2??X????
+bit1??bit1=bit7 | bit6 | bit5 | bit4 | bit3 | bit2
+bit0??0
 */
 static struct err_map fpga_irq_err_table[] =
 {   // 927011003 927011004 927011005 927011006 927011007 927011008
-    {0x04, "Projector over current", DSM_FPGA_PROJ_OVER_CURRENT},                        /*投射器电流过大 bit2*/
-    {0x20, "Illuminator over current", DSM_FPGA_ILLU_OVER_CURRENT},                      /*补光灯电流过大 bit5*/
-    {0x08, "Projector pulse too long", DSM_FPGA_PROJ_PLUS_TOO_LONG},                      /*投射器电流脉冲宽度异常 bit3*/
-    {0x40, "Illuminator pulse too long", DSM_FPGA_ILLU_PLUS_TOO_LONG},                    /*补光灯电流脉冲宽度异常 bit6*/
-    {0x10, "Projector pulse frequency over limit", DSM_FPGA_PROJ_FREQU_OVER_LIMIT},          /*投射器电流脉冲周期异常 bit4*/
-    {0x80, "Illuminator pulse frequency over limit", DSM_FPGA_ILLU_FREQU_OVER_LIMIT},        /*补光灯电流脉冲周期异常 bit7*/
+    {0x04, "Projector over current", DSM_FPGA_PROJ_OVER_CURRENT},                        /*?????????????? bit2*/
+    {0x20, "Illuminator over current", DSM_FPGA_ILLU_OVER_CURRENT},                      /*?????????????? bit5*/
+    {0x08, "Projector pulse too long", DSM_FPGA_PROJ_PLUS_TOO_LONG},                      /*?????????????????????? bit3*/
+    {0x40, "Illuminator pulse too long", DSM_FPGA_ILLU_PLUS_TOO_LONG},                    /*?????????????????????? bit6*/
+    {0x10, "Projector pulse frequency over limit", DSM_FPGA_PROJ_FREQU_OVER_LIMIT},          /*?????????????????????? bit4*/
+    {0x80, "Illuminator pulse frequency over limit", DSM_FPGA_ILLU_FREQU_OVER_LIMIT},        /*?????????????????????? bit7*/
 };
 
 static struct err_map fpga_common_err_table[] =
@@ -104,9 +104,9 @@ static struct err_map fpga_common_err_table[] =
     [LOAD_FW_ERR]    = {0x01, "FPGA load image error", DSM_FPGA_LOAD_FW_FAIL},
     [SPI_RW_ERR]     = {0x01, "FPGA SPI error", DSM_FPGA_SPI_RW_FAIL},
     [SELF_TEST_ERR]  = {0x01, "FPGA Self Test error", DSM_FPGA_SELT_TEST_FAIL},
-    [AGE_PROJ_ERR]   = {0x01, "Ageing projector pulse frequency over limit", DSM_FPGA_AGEING_PROJ_FREQU_LIMIT},   /*投射器老化脉宽检测异常 0x0E-reg*/
-    [AGE_ILLU_ERR]   = {0x01, "Ageing illuminator pulse frequency over limit", DSM_FPGA_AGEING_ILLU_FREQU_LIMIT}, /*补光灯老化脉宽检测异常 0x0F-reg*/
-    [OTHER_FILL_ERR] = {0x01, "FPGA other failed", DSM_FPGA_OTHER_FAIL},                             /*未定义异常*/
+    [AGE_PROJ_ERR]   = {0x01, "Ageing projector pulse frequency over limit", DSM_FPGA_AGEING_PROJ_FREQU_LIMIT},   /*?????????????????????? 0x0E-reg*/
+    [AGE_ILLU_ERR]   = {0x01, "Ageing illuminator pulse frequency over limit", DSM_FPGA_AGEING_ILLU_FREQU_LIMIT}, /*?????????????????????? 0x0F-reg*/
+    [OTHER_FILL_ERR] = {0x01, "FPGA other failed", DSM_FPGA_OTHER_FAIL},                             /*??????????*/
 };
 static void fpga_dsm_client_notify(struct ice40_spi_priv_data *drv_data,
     char *err_name, u32 err_code)
@@ -151,11 +151,11 @@ static void fpga_load_firmware_notify(struct ice40_spi_priv_data *drv_data)
 
 /*
 for reg: 0x0E 0x0F
-读出的数值:
-0x0E < 5ms  寄存器内容正常
-0x0F < 11ms 寄存器内容正常
-计算方法:
-bit7-bit4 ms数；bit3-bit0 80us； PW=(bit7-bit4)+(bit3-bit0)*0.08 ms
+??????????:
+0x0E < 5ms  ??????????????
+0x0F < 11ms ??????????????
+????????:
+bit7-bit4 ms????bit3-bit0 80us?? PW=(bit7-bit4)+(bit3-bit0)*0.08 ms
 */
 int fpga_plus_wide_value_check(struct ice40_spi_priv_data *drvdata,
                u8 addr, u8 *value, u8 limitVal)
@@ -528,10 +528,10 @@ static int ice40_spi_write_reg(struct ice40_spi_priv_data *devdata, u8 addr, u8 
 }
 
 /*
-AP需要使能0x10自检寄存器的bit7，等待2ms后，读取0x10的bit6，
-如果为1，表示FPGA正常工作
-如果为0，表示FPGA逻辑没有工作
-退出自检，关闭bit7
+AP????????0x10????????????bit7??????2ms????????0x10??bit6??
+??????1??????FPGA????????
+??????0??????FPGA????????????
+??????????????bit7
 */
 static int ice40_spi_self_check(struct ice40_spi_priv_data *devdata)
 {

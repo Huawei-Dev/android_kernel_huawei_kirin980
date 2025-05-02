@@ -525,7 +525,7 @@ static int dwc3_release(struct hisi_dwc3_device *hisi_dwc3)
 	if (hisi_dwc3_select_lbintpll_clk()) {
 		select_lbintpll_clk(hisi_dwc3);
 	} else {
-		/* SCCLKDIV5(0x264)  bi[14]=0， bit[30]=1 */
+		/* SCCLKDIV5(0x264)  bi[14]=0??? bit[30]=1 */
 		ret = clk_set_rate(hisi_dwc3->gt_clk_usb2phy_ref, CLK_FREQ_19_2M);
 		if (ret) {
 			usb_err("usb2phy_ref set rate failed, ret=%d\n", ret);

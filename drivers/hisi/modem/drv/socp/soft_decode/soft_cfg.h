@@ -50,7 +50,7 @@
 #define _SCM_CFG_H_
 
 /*****************************************************************************
-  1 其他头文件包含
+  1 ??????????????
 *****************************************************************************/
 #include <mdrv.h>
 #include <mdrv_diag_system.h>
@@ -64,7 +64,7 @@ extern "C"{
 #endif
 
 /**************************************************************************
-  5 Log函数定义
+  5 Log????????
 **************************************************************************/
 
 enum SOCP_SOFT_DECODE_CB_ENUM
@@ -75,7 +75,7 @@ enum SOCP_SOFT_DECODE_CB_ENUM
     SOCP_DECODER_DST_CB_BUTT
 };
 
-/* 通道接收数据、数据长度、回卷数据、回卷数据长度 */
+/* ?????????????????????????????????????????????? */
 typedef void (*SCM_DECODERDESTFUCN)(SOCP_DECODER_DST_ENUM_U32 enChanID,unsigned char *pucData, unsigned int ulSize, unsigned char *pucRBData, unsigned int ulRBSize);
 
 u32 SCM_RegDecoderDestProc(SOCP_DECODER_DST_ENUM_U32 enChanlID, SCM_DECODERDESTFUCN func);

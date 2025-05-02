@@ -61,7 +61,7 @@ static SINT32 VP9HAL_CheckHeadMsg(MEM_BUFFER_S* pVdhMemMap, SINT32 PicMsgSlotPhy
 }
 
 /************************************************************************/
-/*  º¯ÊýÊµÏÖ                                                            */
+/*  ????????                                                            */
 /************************************************************************/
 static SINT32 VP9HAL_CfgPicMsg( VDMHAL_HWMEM_S *pHwMem, MEM_BUFFER_S* pVdhMemMap,
 	UINT32 *pPicHeightMb, UINT32 *pPicWidthMb)
