@@ -450,7 +450,7 @@ void bsp_nvm_icc_task(void* parm)
     nv_cmd_req *msg;
 
     /* coverity[self_assign] */
-    parm = parm;
+    UNUSED(parm);
 
     /* coverity[no_escape] */
     while(1)
