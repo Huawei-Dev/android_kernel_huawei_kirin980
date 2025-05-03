@@ -53,13 +53,12 @@ extern "C"
 {
 #endif
 
+#include "drv_comm.h"
 
 #define MDRV_OK                  (0)
 #define MDRV_ERROR               (-1)
 
 typedef int (*FUNCPTR_1)(int);
-typedef int  (*pFUNCPTR)(void);
-typedef void (*VOIDFUNCPTR)(unsigned int );
 
 #ifdef __cplusplus
 }
