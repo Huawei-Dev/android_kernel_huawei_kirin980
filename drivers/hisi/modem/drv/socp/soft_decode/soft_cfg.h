@@ -75,9 +75,6 @@ enum SOCP_SOFT_DECODE_CB_ENUM
     SOCP_DECODER_DST_CB_BUTT
 };
 
-/* ?????????????????????????????????????????????? */
-typedef void (*SCM_DECODERDESTFUCN)(SOCP_DECODER_DST_ENUM_U32 enChanID,unsigned char *pucData, unsigned int ulSize, unsigned char *pucRBData, unsigned int ulRBSize);
-
 u32 SCM_RegDecoderDestProc(SOCP_DECODER_DST_ENUM_U32 enChanlID, SCM_DECODERDESTFUCN func);
 void SCM_RcvDataDispatch(OM_HDLC_STRU *pstHdlcCtrl, u8 ucDataType);
 
