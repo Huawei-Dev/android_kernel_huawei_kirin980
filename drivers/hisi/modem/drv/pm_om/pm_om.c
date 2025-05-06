@@ -457,16 +457,17 @@ int bsp_pm_info_stat_register(pm_info_cbfun pcbfun, struct pm_info_usr_data *usr
 	list_add_tail(&pm_info->entry, &g_pmom_ctrl.pm_info.list);
 	spin_unlock_irqrestore(&g_pmom_ctrl.pm_info.lock, flags);
 
-	//pmom_pr_err("ok\n");
-	/* coverity[leaked_storage] */
-	return PM_OM_OK;  /*lint !e429*/
+	return PM_OM_OK;
 }
-/*lint -restore +e144 +e413 +e613 +e64 +e826*/
 
-/*lint --e{528}*/
-EXPORT_SYMBOL(bsp_pm_log_type);         /*lint !e19 */
-EXPORT_SYMBOL(bsp_pm_log);              /*lint !e19 */
-EXPORT_SYMBOL(pm_om_ctrl_get);          /*lint !e19 */
-EXPORT_SYMBOL(bsp_pm_log_addr_get);     /*lint !e19 */
-EXPORT_SYMBOL(bsp_pm_dump_get);         /*lint !e19 */
-EXPORT_SYMBOL(g_pmom_ctrl); /*lint !e19 */
+EXPORT_SYMBOL(bsp_pm_log_type);
+EXPORT_SYMBOL(bsp_pm_log);
+EXPORT_SYMBOL(pm_om_ctrl_get);
+EXPORT_SYMBOL(bsp_pm_log_addr_get);
+EXPORT_SYMBOL(bsp_pm_dump_get);
+EXPORT_SYMBOL(g_pmom_ctrl);
+
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+module_init(bsp_pm_om_log_init);
+arch_initcall_sync(bsp_pm_om_dump_init);
+#endif

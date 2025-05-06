@@ -188,3 +188,7 @@ int get_system_status(void)
 
 EXPORT_SYMBOL_GPL(system_status_init);
 EXPORT_SYMBOL_GPL(get_system_status);
+
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+core_initcall(sysctrl_init);
+#endif

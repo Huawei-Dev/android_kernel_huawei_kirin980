@@ -99,5 +99,6 @@ __init int diag_init(void)
     return ERR_MSP_SUCCESS;
 }
 
-
-
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+module_init(diag_init);
+#endif

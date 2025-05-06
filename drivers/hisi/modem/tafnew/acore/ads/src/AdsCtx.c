@@ -1547,6 +1547,8 @@ VOS_VOID __exit ADS_PlatDevExit(void)
 	platform_driver_unregister(&g_stAdsPlatDevDriver);
 }
 
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+module_init(ADS_PlatDevInit);
+module_exit(ADS_PlatDevExit);
 #endif
-
-
+#endif

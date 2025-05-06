@@ -1149,6 +1149,6 @@ VOS_VOID APP_VCOM_MNTN_LogPrintf(VOS_UINT32 ulLvl, VOS_CHAR *pcFmt, ...)
     return;
 }
 
-
-
-
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+module_init(APP_VCOM_Init);
+#endif

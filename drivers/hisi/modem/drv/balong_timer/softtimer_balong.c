@@ -610,4 +610,6 @@ EXPORT_SYMBOL(bsp_softtimer_free);
 EXPORT_SYMBOL(check_softtimer_support_type);
 EXPORT_SYMBOL(show_list);
 
-
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+arch_initcall(bsp_softtimer_init);
+#endif

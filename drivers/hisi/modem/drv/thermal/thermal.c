@@ -202,3 +202,7 @@ int thermal_up_init(void)
     }
     return THERMAL_UP_OK;
 }
+
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+module_init(thermal_up_init);
+#endif

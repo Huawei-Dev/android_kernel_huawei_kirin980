@@ -91,4 +91,8 @@ int __init pmic_dcxo_init(void)
 	return 0;
 }
 
-
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+#ifdef CONFIG_PHONE_DCXO_AP
+module_init(pmic_dcxo_init);
+#endif
+#endif

@@ -1086,6 +1086,10 @@ EXPORT_SYMBOL(bsp_nvm_reload);
 EXPORT_SYMBOL(bsp_nvm_update_default);
 EXPORT_SYMBOL(bsp_nvm_get_modem_num);
 
-
-
-
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+device_initcall(nv_init_dev);
+#endif
+#if (FEATURE_OFF == FEATURE_DELAY_MODEM_INIT)
+module_init(modem_nv_init);
+module_exit(modem_nv_exit);
+#endif

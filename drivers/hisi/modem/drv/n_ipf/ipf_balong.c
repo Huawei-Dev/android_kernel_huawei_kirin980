@@ -845,6 +845,6 @@ EXPORT_SYMBOL(ipf_register_wakeup_dlcb);
 MODULE_LICENSE("GPL v2");
 MODULE_ALIAS("platform:ipf");
 
-
-/*lint -restore*/
-
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+module_init(ipf_pltfm_driver_init);
+#endif

@@ -164,3 +164,7 @@ int __init bsp_efuse_agent_init(void)
 
     return EFUSE_OK;
 }
+
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+module_init(bsp_efuse_agent_init);
+#endif

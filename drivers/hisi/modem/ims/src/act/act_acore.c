@@ -484,3 +484,10 @@ void __exit act_cdev_exit(void)
     unregister_chrdev_region(devno, 1);
 }
 
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+MODULE_AUTHOR("HUAWEI");
+MODULE_LICENSE("Dual BSD/GPL");
+
+module_init(act_cdev_init);
+module_exit(act_cdev_exit);
+#endif

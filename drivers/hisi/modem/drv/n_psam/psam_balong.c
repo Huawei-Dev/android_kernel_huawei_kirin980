@@ -559,3 +559,7 @@ EXPORT_SYMBOL(psam_register_adq_empty_dlcb);
 MODULE_DESCRIPTION("Balong Specific Psam Driver");
 MODULE_LICENSE("GPL v2");
 MODULE_ALIAS("platform:psam");
+
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+module_init(psam_pltfm_driver_init);
+#endif

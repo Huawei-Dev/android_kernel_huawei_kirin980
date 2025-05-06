@@ -140,3 +140,6 @@ int __init pmic_modem_ocp_init(void)
     return ret;
 }
 
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+module_init(pmic_modem_ocp_init);
+#endif

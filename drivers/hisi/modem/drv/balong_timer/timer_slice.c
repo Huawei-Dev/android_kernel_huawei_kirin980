@@ -349,3 +349,7 @@ EXPORT_SYMBOL(bsp_get_stamp_addr_phy);
 EXPORT_SYMBOL(bsp_slice_getcurtime);
 EXPORT_SYMBOL(bsp_slice_getcurtime_hrt);
 EXPORT_SYMBOL(slice_set_judgetime);
+
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+core_initcall(bsp_slice_init);
+#endif

@@ -198,3 +198,7 @@ struct mperf_info*  bsp_mem_get_mperf_info(void)
 		return NULL;
 }
 EXPORT_SYMBOL(bsp_mem_get_mperf_info);
+
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+module_init(bsp_mem_init_mperf_info);
+#endif

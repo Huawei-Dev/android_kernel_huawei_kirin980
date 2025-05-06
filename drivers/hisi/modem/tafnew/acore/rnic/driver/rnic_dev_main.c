@@ -801,4 +801,7 @@ STATIC void __exit rnic_exit(void)
 module_param(rnic_dev_log_level, uint, S_IRUGO | S_IWUSR);
 MODULE_PARM_DESC(rnic_dev_log_level, "rnic device log level");
 
-
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+module_init(rnic_init);
+module_exit(rnic_exit);
+#endif

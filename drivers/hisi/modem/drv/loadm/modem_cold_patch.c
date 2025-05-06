@@ -269,7 +269,6 @@ int bsp_modem_cold_patch_init(void)
     return 0;
 }
 
-
-
-
-
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+module_init(bsp_modem_cold_patch_init);
+#endif

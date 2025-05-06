@@ -554,5 +554,6 @@ int mdrv_udi_ioctl(UDI_HANDLE handle, unsigned int u32Cmd, void* pParam)
 
 EXPORT_SYMBOL(mdrv_udi_ioctl);
 
-
-
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+arch_initcall(bsp_udi_init);
+#endif

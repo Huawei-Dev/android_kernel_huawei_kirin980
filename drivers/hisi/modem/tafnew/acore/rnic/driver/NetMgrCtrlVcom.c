@@ -536,6 +536,7 @@ STATIC void __exit nm_bind_pid_exit(void)
 	NM_CTRL_LOGI("succ.");
 }
 
-
-
-
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+module_init(NM_CTRL_Init);
+module_init(nm_bind_pid_init);
+#endif

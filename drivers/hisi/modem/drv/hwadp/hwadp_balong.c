@@ -145,3 +145,6 @@ int hwadp_init(void)
     return ret;
 }
 
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+subsys_initcall(hwadp_init);
+#endif

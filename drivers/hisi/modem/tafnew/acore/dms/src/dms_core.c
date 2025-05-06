@@ -1145,6 +1145,12 @@ VOS_VOID DMS_InitModemStatus(VOS_VOID)
 
 
 /* This function is called on driver initialization and exit */
-
-
-
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+module_init(DMS_InitPorCfgFile);
+module_init(DMS_InitGetSliceFile);
+module_init(DMS_InitModemStatusFile);
+module_init(DMS_NLK_Init);
+#if (FEATURE_ON == FEATURE_LOGCAT_SINGLE_CHANNEL)
+module_exit(DMS_NLK_Exit);
+#endif
+#endif

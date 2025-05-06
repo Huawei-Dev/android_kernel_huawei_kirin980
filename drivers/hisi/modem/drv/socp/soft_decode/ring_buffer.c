@@ -532,3 +532,6 @@ int __init diag_ring_buffer_init(void)
     return BSP_OK;
 }
 
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+module_init(diag_ring_buffer_init);
+#endif

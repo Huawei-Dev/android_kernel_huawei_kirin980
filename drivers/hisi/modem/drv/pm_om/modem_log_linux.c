@@ -579,3 +579,6 @@ ipc_err:
 	return MODEM_LOG_NO_IPC_SRC;
 }
 
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+module_init(modem_log_init);
+#endif

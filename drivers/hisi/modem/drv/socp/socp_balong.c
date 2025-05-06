@@ -5191,5 +5191,6 @@ EXPORT_SYMBOL(BSP_SOCP_DrxRestoreRegAppOnly);
 EXPORT_SYMBOL(bsp_socp_get_state);
 EXPORT_SYMBOL(socp_is_encdst_chan_empty);
 
-
-
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+module_init(socp_init);
+#endif

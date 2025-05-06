@@ -533,7 +533,6 @@ void bsp_timer_show(void){
 		}
 }
 
-/*lint -save -e19*/
 EXPORT_SYMBOL(bsp_hardtimer_int_clear);
 EXPORT_SYMBOL(bsp_hardtimer_int_mask);
 EXPORT_SYMBOL(bsp_hardtimer_int_unmask);
@@ -544,7 +543,7 @@ EXPORT_SYMBOL(bsp_hardtimer_enable);
 EXPORT_SYMBOL(bsp_hardtimer_disable);
 EXPORT_SYMBOL(bsp_hardtimer_free);
 EXPORT_SYMBOL(get_next_schedule_time);
-/*lint -restore +e19*/
 
-
-
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+arch_initcall(hi_timer_init);
+#endif

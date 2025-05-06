@@ -197,5 +197,6 @@ void dump_set_init_phase(u32 phase)
     return BSP_OK;
 }
 
-
-
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+module_init(bsp_dump_init);
+#endif

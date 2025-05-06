@@ -1181,18 +1181,22 @@ int __init bsp_reset_init(void)
 	return 0;
 }
 
-EXPORT_SYMBOL(bsp_cp_reset); /*lint !e19 */
-EXPORT_SYMBOL(bsp_reset_is_successful); /*lint !e19 */
-EXPORT_SYMBOL(modem_reset_fail_id_get); /*lint !e19 */
-EXPORT_SYMBOL(reset_reboot_system); /*lint !e19 */
-EXPORT_SYMBOL(bsp_modem_power_off); /*lint !e19 */
-EXPORT_SYMBOL(bsp_modem_power_on); /*lint !e19 */
-EXPORT_SYMBOL(bsp_reset_control_get); /*lint !e19 */
-EXPORT_SYMBOL(bsp_reset_ccore_is_reboot); /*lint !e19 */
-EXPORT_SYMBOL(get_scbakdata13); /*lint !e19 */
-EXPORT_SYMBOL(reset_pm_notify); /*lint !e19 */
-EXPORT_SYMBOL(reset_feature_on); /*lint !e19 */
-EXPORT_SYMBOL(reset_ril_on); /*lint !e19 */
-EXPORT_SYMBOL(reset_ctrl_debug_show); /*lint !e19 */
-EXPORT_SYMBOL(bsp_reset_is_connect_ril); /*lint !e19 */
-EXPORT_SYMBOL(bsp_reset_is_feature_on); /*lint !e19 */
+EXPORT_SYMBOL(bsp_cp_reset);
+EXPORT_SYMBOL(bsp_reset_is_successful);
+EXPORT_SYMBOL(modem_reset_fail_id_get);
+EXPORT_SYMBOL(reset_reboot_system);
+EXPORT_SYMBOL(bsp_modem_power_off);
+EXPORT_SYMBOL(bsp_modem_power_on);
+EXPORT_SYMBOL(bsp_reset_control_get);
+EXPORT_SYMBOL(bsp_reset_ccore_is_reboot);
+EXPORT_SYMBOL(get_scbakdata13);
+EXPORT_SYMBOL(reset_pm_notify);
+EXPORT_SYMBOL(reset_feature_on);
+EXPORT_SYMBOL(reset_ril_on);
+EXPORT_SYMBOL(reset_ctrl_debug_show);
+EXPORT_SYMBOL(bsp_reset_is_connect_ril);
+EXPORT_SYMBOL(bsp_reset_is_feature_on);
+
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+module_init(bsp_reset_init);
+#endif

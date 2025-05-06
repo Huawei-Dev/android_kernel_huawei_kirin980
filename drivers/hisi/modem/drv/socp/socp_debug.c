@@ -945,6 +945,6 @@ EXPORT_SYMBOL(socp_show_enc_dst_chan_add);
 EXPORT_SYMBOL(socp_show_enc_dst_chan_all);
 EXPORT_SYMBOL(socp_debug_cnt_show);
 
-
-
-
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+module_init(socp_debug_init);
+#endif

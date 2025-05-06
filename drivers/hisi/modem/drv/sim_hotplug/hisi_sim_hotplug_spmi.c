@@ -2132,7 +2132,7 @@ static void __exit hisi_sim_hotplug_exit(void)
 MODULE_DESCRIPTION("Sim hotplug driver");
 MODULE_LICENSE("GPL v2");
 
-/*lint -restore */
-/*lint -e528 +esym(528,*)*/
-/*lint -e753 +esym(753,*)*/
-/*lint -e752 +esym(502,*)*/
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+late_initcall(hisi_sim_hotplug_init);
+module_exit(hisi_sim_hotplug_exit);
+#endif

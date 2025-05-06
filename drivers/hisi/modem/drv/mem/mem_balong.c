@@ -862,6 +862,6 @@ EXPORT_SYMBOL(bsp_sfree_dbg);
 EXPORT_SYMBOL(bsp_malloc_dbg);
 EXPORT_SYMBOL(bsp_smalloc_dbg);
 
-
-
-
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+module_init(bsp_mem_init);
+#endif

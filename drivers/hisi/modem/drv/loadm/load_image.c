@@ -1171,5 +1171,6 @@ int __init bsp_load_image_init(void)
     return 0;
 }
 
-
-
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+core_initcall(bsp_load_image_init);
+#endif

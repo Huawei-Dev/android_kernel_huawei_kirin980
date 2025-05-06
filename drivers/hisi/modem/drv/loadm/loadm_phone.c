@@ -302,3 +302,7 @@ static void __exit his_modem_exit_driver(void)
 MODULE_DESCRIPTION("HIS Balong  Modem load ");
 MODULE_LICENSE("GPL");
 
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+module_init(his_modem_init_driver);
+module_exit(his_modem_exit_driver);
+#endif

@@ -494,9 +494,6 @@ u32 diag_fill_soft_header(u32 pFile)
     return BSP_OK;
 }
 
-
-
-
 void diag_fill_soft_tail(u32 pFile, s8 *FilePath)
 {
     u32 ret;
@@ -513,7 +510,6 @@ void diag_fill_soft_tail(u32 pFile, s8 *FilePath)
 
 EXPORT_SYMBOL(diag_save_soft_decode_info);
 
-
-
-
-
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+module_init(SCM_SoftDecodeCfgRcvTaskInit);
+#endif

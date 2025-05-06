@@ -223,7 +223,8 @@ int fiq_init(void)
 	bsp_err("init OK\n");
 	return 0;
 }
-EXPORT_SYMBOL(bsp_send_cp_fiq);            /*lint !e19 */
+EXPORT_SYMBOL(bsp_send_cp_fiq);
 
-/*lint -restore +e754 +e550 +e528*/
-
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+arch_initcall(fiq_init);
+#endif

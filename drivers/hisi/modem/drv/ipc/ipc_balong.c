@@ -887,6 +887,8 @@ EXPORT_SYMBOL(ipc_modem_reset_cb);
 EXPORT_SYMBOL(bsp_ipc_spin_lock_timeout);
 EXPORT_SYMBOL(bsp_ipc_int_mask_status_dump);
 
-/*lint -restore +e19*/
-
-
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+arch_initcall(hi_ipc_init);
+MODULE_LICENSE("GPL");
+MODULE_AUTHOR("Hisilicon Drive Group");
+#endif

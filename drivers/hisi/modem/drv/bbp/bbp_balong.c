@@ -82,4 +82,6 @@ int __init balong_bbp_acore_init(void)
     return 0;
 }
 
-
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+module_init(balong_bbp_acore_init);
+#endif

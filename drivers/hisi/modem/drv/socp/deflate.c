@@ -1448,4 +1448,7 @@ int deflate_dev_init(void)
     return 0;
 }
 
-
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+device_initcall(deflate_dev_init);
+module_init(deflate_init);
+#endif

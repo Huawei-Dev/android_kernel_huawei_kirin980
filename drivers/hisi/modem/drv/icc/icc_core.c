@@ -1302,3 +1302,6 @@ EXPORT_SYMBOL(bsp_icc_event_unregister);/*lint !e19 */
 EXPORT_SYMBOL(bsp_icc_dynamic_event_register);/*lint !e19 */
 EXPORT_SYMBOL(icc_channel_empty);/*lint !e19 */
 
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+arch_initcall(bsp_icc_init);
+#endif

@@ -208,3 +208,7 @@ int __init bsp_hds_init(void)
 }
 
 EXPORT_SYMBOL(bsp_transreport);
+
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+module_init(bsp_hds_init);
+#endif

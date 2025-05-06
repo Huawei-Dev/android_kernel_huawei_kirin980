@@ -364,5 +364,6 @@ EXPORT_SYMBOL_GPL(bsp_version_get_product_inner_name);
 EXPORT_SYMBOL_GPL(bsp_get_version_info);
 EXPORT_SYMBOL_GPL(bsp_version_debug);
 
-/*lint -restore*/
-
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+module_init(bsp_version_acore_init);
+#endif

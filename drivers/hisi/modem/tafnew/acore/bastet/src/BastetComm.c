@@ -581,5 +581,11 @@ void __exit bastet_modem_driver_exit(void)
 
 }
 
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+module_init(bastet_modem_driver_init);
+module_exit(bastet_modem_driver_exit);
 
-
+MODULE_AUTHOR("huawei.com");
+MODULE_LICENSE("GPL");
+MODULE_DESCRIPTION("Bastet Modem driver");
+#endif

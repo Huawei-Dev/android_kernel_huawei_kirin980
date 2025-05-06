@@ -312,4 +312,6 @@ int __init bsp_modem_boot_init(void)
     return ret;
 }
 
-
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+module_init(bsp_modem_boot_init);
+#endif

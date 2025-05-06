@@ -225,3 +225,7 @@ int __init his_boot_init(void)
 
     return ret;
 }
+
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+late_initcall(his_boot_init);
+#endif

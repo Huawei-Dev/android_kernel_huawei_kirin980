@@ -82,3 +82,6 @@ int __init bsp_shared_mem_init(void)
 
 EXPORT_SYMBOL_GPL(g_mem_ctrl);
 
+#ifdef CONFIG_HISI_BALONG_MODEM_MODULE
+core_initcall(bsp_shared_mem_init);
+#endif

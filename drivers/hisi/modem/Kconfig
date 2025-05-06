@@ -29,5 +29,11 @@ config BALONG_OAM_PS
         help
          tlmsp tlps gumsp gups taf acore image
 
+config HISI_BALONG_MODEM_MODULE
+	bool "Hisilicon integrate modem module"
+	default n
+        help
+        Hisilicon inline modem module config support
+
 source "drivers/hisi/modem/drv/Kconfig"
 endmenu
