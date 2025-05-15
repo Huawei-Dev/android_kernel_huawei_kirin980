@@ -12,7 +12,7 @@ typedef struct {
 } misc_message_type;
 
 #define MISC_BOOT_RECOVERY_STR  "boot-recovery"
-#define MISC_NODE_PATH  "/dev/block/bootdevice/by-name/misc"
+#define MISC_NODE_PATH  "/dev/block/by-name/misc"
 
 
 #endif

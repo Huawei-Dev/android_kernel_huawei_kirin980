@@ -59,7 +59,7 @@
 
 #define SEC_MAX_SIZE    64
 #define ISP_ATF_CPU 1
-#define DEVICE_PATH  "/dev/block/bootdevice/by-name/"
+#define DEVICE_PATH  "/dev/block/by-name/"
 
 #define A7_REQUEST_ADDR         0xD0000000
 #define A7_REQUEST_BUF_SIZE     0x96000
