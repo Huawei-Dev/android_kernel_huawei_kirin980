@@ -50,7 +50,7 @@
 #define ABNS_A_LOG_LAST_FASTBOOT "last_fastboot_log"
 #define ABNS_A_LOG_KMEGSLOG      "kmsgcat-log"
 
-#define HISI_RSV_PART_NAME_STR "/dev/block/bootdevice/by-name/reserved2"
+#define HISI_RSV_PART_NAME_STR "/dev/block/by-name/reserved2"
 
 #define ABNS_TYPE_CMDLINE_STR    "abns_type"
 #define ABNS_SWTYPE_CMDLINE_STR  "androidboot.swtype"

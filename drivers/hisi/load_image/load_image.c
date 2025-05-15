@@ -36,7 +36,7 @@
 
 #include <linux/version.h>
 
-#define DEVICE_PATH  "/dev/block/bootdevice/by-name/"
+#define DEVICE_PATH  "/dev/block/by-name/"
 /* 1M Bytes */
 #define SECBOOT_BUFLEN  		  (0x100000)
 /* use for store vrl or imgdata */
