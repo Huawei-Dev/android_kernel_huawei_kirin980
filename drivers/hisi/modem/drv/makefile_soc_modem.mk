@@ -360,10 +360,6 @@ drv-$(CONFIG_UDI_SUPPORT)   += udi/udi_balong.o udi/adp_udi.o
 
 drv-y       += version/version_balong.o
 
-ifeq ($(strip $(CFG_CONFIG_WAN)),YES)
-drv-y       += wan/ipf_ap.o wan/ipf_ap_test.o wan/wan.o
-endif
-
 # module makefile end
 else
 
@@ -474,9 +470,6 @@ ifeq ($(strip $(CFG_FEATURE_PC5_DATA_CHANNEL)),FEATURE_ON)
 obj-y				+= pcv_adaptor/pcv_adaptor.o
 endif
 
-ifeq ($(strip $(CFG_CONFIG_WAN)),YES)
-obj-y               += wan/
-endif
 obj-y               += buildin/
 endif
 obj-$(CONFIG_PCIE_BALONG_DEV)          += pcie_balong_dev/
