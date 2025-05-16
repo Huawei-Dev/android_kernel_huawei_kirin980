@@ -198,14 +198,6 @@ drv-$(CONFIG_EFUSE_BALONG_AGENT)    += efuse/efuse_balong_agent.o
 endif
 drv-y               += efuse/efuse_balong_ioctl.o
 
-ifeq ($(strip $(CFG_CONFIG_EICC)),YES)
-drv-y               += eicc/eicc_driver.o
-drv-y               += eicc/eicc_acpu.o
-drv-y               += eicc/eicc_core.o
-drv-y               += eicc/eicc_interface.o
-drv-y               += eicc/eicc_test.o
-endif
-
 ifeq ($(strip $(CONFIG_BALONG_ESPE)),y)
 drv-y               += espe/spe_core.o espe/spe_platform_balong.o espe/spe_desc.o espe/spe_entry.o espe/spe_port.o espe/spe_dbg.o
 drv-$(CONFIG_DEBUG_FS)          += espe/spe_debugfs.o
@@ -434,9 +426,6 @@ obj-y               += icc/
 endif
 obj-y               += reset/
 obj-y               += sec_call/
-ifeq ($(strip $(CFG_CONFIG_EICC)),YES)
-obj-y               += eicc/
-endif
 
 obj-$(CONFIG_RFILE_SUPPORT) += rfile/
 ifeq ($(strip $(CFG_FEATURE_TDS_WCDMA_DYNAMIC_LOAD)),FEATURE_ON)
