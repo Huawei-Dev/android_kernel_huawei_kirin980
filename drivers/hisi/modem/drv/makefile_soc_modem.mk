@@ -314,9 +314,6 @@ drv-y               += log/bsp_om_log.o
 drv-y               += adp/adp_print.o
 endif
 
-ifeq ($(strip $(CFG_CONFIG_AXIMEM_BALONG)),YES)
-drv-y               += aximem/aximem.o
-endif
 ifeq ($(strip $(CFG_CONFIG_MAA_BALONG)),YES)
 drv-y               += maa/maa_acore.o maa/bsp_maa.o
 endif
@@ -527,13 +524,9 @@ ifeq ($(strip $(CFG_CONFIG_SYSBUS)),YES)
 obj-y           += sys_bus/
 endif
 
-ifeq ($(strip $(CFG_CONFIG_AXIMEM_BALONG)),YES)
-obj-y               += aximem/
-endif
 ifeq ($(strip $(CFG_CONFIG_MAA_BALONG)),YES)
 obj-y           += maa/
 endif
-
 
 obj-$(CONFIG_BALONG_ESPE)   += espe/
 
