@@ -192,15 +192,6 @@ subdir-ccflags-y+= -Idrivers/hisi/modem/drv/dump/comm\
 				   -Idrivers/hisi/modem/drv/dump/core\
                    -Idrivers/hisi/modem/drv/dump/apr
 
-
-
-ifeq ($(strip $(CFG_CONFIG_ECDC)),YES)
-drv-y           += ecdc/ecdc_serviceman.o
-drv-y           += ecdc/ecdc_genlserver.o
-drv-y           += ecdc/ecdc_panrpc.o
-drv-y           += ecdc/llt_distribute.o
-endif
-
 ifeq ($(strip $(CFG_CONFIG_EFUSE)),YES)
 drv-$(CONFIG_EFUSE_BALONG)      += efuse/efuse_balong.o
 drv-$(CONFIG_EFUSE_BALONG_AGENT)    += efuse/efuse_balong_agent.o
@@ -447,9 +438,6 @@ ifeq ($(strip $(CFG_CONFIG_EICC)),YES)
 obj-y               += eicc/
 endif
 
-ifeq ($(strip $(CFG_CONFIG_ECDC)),YES)
-obj-y               += ecdc/
-endif
 obj-$(CONFIG_RFILE_SUPPORT) += rfile/
 ifeq ($(strip $(CFG_FEATURE_TDS_WCDMA_DYNAMIC_LOAD)),FEATURE_ON)
 obj-y               += load_ps/
