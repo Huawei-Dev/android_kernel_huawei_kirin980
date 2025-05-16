@@ -239,13 +239,11 @@ endif
 drv-y += llt_tools/llt_tool.o
 endif
 
-ifneq ($(strip $(CFG_CONFIG_MLOADER)),YES)
 drv-y           += loadm/load_image.o
 ifeq ($(strip $(CFG_FEATURE_DELAY_MODEM_INIT)),FEATURE_ON)
 drv-y           += loadm/loadm_phone.o
 else
 drv-y           += loadm/loadm_mbb.o
-endif
 endif
 
 ifeq ($(strip $(CFG_CONFIG_COLD_PATCH)),YES)
@@ -268,16 +266,6 @@ drv-y               += mbb_modem_stub/mbb_modem_stub.o
 ifeq ($(strip $(CONFIG_MEM_BALONG)),y)
 drv-$(CONFIG_MEM_BALONG)    += mem/mem_balong.o
 drv-$(CONFIG_ENABLE_TEST_CODE) += mem/mem_balong_test.o
-endif
-
-ifeq ($(strip $(CFG_CONFIG_MLOADER)),YES)
-drv-y           += mloader/mloader_comm.o
-drv-y           += mloader/mloader_load_image.o
-ifeq ($(strip $(CFG_CONFIG_LOAD_SEC_IMAGE)),YES)
-drv-y           += mloader/mloader_load_image_sec.o
-else
-drv-y           += mloader/mloader_load_image_unsec.o
-endif
 endif
 
 drv-y           += mperf/s_mperf.o
@@ -430,11 +418,7 @@ ifeq ($(strip $(CFG_FEATURE_NV_SEC_ON)),YES)
 obj-y               += sec_nvim/
 endif
 
-ifeq ($(strip $(CFG_CONFIG_MLOADER)),YES)
-obj-y += mloader/
-else
 obj-$(CONFIG_IMAGE_LOAD) += loadm/
-endif
 
 obj-y           += adp/
 obj-y           += hwadp/
