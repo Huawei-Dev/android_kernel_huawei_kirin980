@@ -481,10 +481,6 @@ obj-y               += buildin/
 endif
 obj-$(CONFIG_PCIE_BALONG_DEV)          += pcie_balong_dev/
 
-ifeq ($(strip $(CFG_CONFIG_VCOM_AGENT)),YES)
-obj-y += vcom/vcom_agent.o
-endif
-
 ifeq ($(strip $(CFG_CONFIG_MODEM_BOOT)),YES)
 obj-y += modem_boot/modem_boot_mbb.o
 endif

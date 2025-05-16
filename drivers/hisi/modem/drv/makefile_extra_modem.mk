@@ -91,9 +91,6 @@ ifeq ($(strip $(CFG_CONFIG_VCOM_NODE)),YES)
 drv-y += vcom/vcom.o
 drv-y += vcom/vcom_balong_power.o
 endif
-ifeq ($(strip $(CFG_CONFIG_VCOM_AGENT)),YES)
-drv-y += vcom/vcom_agent.o
-endif
 
 ifeq ($(strip $(CFG_CONFIG_BALONG_PCIE_CDEV_RC)),YES)
 drv-y += pfunc/pcie_cdev.o
@@ -190,9 +187,6 @@ endif
 ifeq ($(strip $(CFG_CONFIG_VCOM_NODE)),YES)
 obj-y += vcom/vcom.o
 obj-y += vcom/vcom_balong_power.o
-endif
-ifeq ($(strip $(CFG_CONFIG_VCOM_AGENT)),YES)
-obj-y += vcom/vcom_agent.o
 endif
 ifeq ($(strip $(CFG_CONFIG_UART_BOOT)),YES)
 obj-y += modem_boot/uart_boot_dev.o
