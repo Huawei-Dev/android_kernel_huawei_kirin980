@@ -312,10 +312,6 @@ drv-$(CONFIG_ENABLE_TEST_CODE)  += rfile/rfile_api_test.o
 drv-y += s_memory/s_memory.o
 drv-$(CONFIG_S_MEMORY_TEST)     += s_memory/s_memory_test.o
 
-ifeq ($(strip $(CFG_CONFIG_SC)),YES)
-drv-y                           += sc/sc_balong.o
-endif
-
 drv-$(CONFIG_SEC_CALL)          += sec_call/sec_call.o
 
 ifeq ($(strip $(CFG_FEATURE_NV_SEC_ON)),YES)
@@ -433,9 +429,6 @@ obj-y   += onoff/
 
 obj-y   += efuse/
 
-ifeq ($(strip $(CFG_CONFIG_SC)),YES)
-obj-y               += sc/
-endif
 obj-y           += pm_om/
 
 obj-$(CONFIG_PMIC_OCP) += ocp/
