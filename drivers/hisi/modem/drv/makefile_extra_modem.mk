@@ -149,11 +149,6 @@ drv-y           += diag/ppm/OmPortSwitch.o
 drv-y           += socp/soft_decode/ring_buffer.o
 endif
 
-ifeq ($(strip $(CFG_CONFIG_DIAG_NETLINK)),YES)
-drv-y           += diag_vcom/diag_vcom_main.o
-drv-y           += diag_vcom/diag_vcom_handler.o
-endif
-
 drv-y += version/version_emdm.o
 
 ifeq ($(strip $(CFG_ENABLE_BUILD_OM)),YES)
@@ -274,11 +269,6 @@ obj-y           += diag/ppm/OmCpAgentPpm.o
 obj-y           += diag/ppm/OmPortSwitch.o
 obj-y           += diag/comm/diag_comm.o
 obj-y           += socp/soft_decode/ring_buffer.o
-endif
-
-ifeq ($(strip $(CFG_CONFIG_DIAG_NETLINK)),YES)
-obj-y           += diag_vcom/diag_vcom_main.o
-obj-y           += diag_vcom/diag_vcom_handler.o
 endif
 
 obj-y += version/version_emdm.o

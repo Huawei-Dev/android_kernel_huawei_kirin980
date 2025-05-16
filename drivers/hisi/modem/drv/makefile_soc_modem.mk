@@ -156,11 +156,6 @@ ifeq ($(strip $(CFG_CONFIG_MODULE_BUSSTRESS)),YES)
 else
 drv-$(CONFIG_ENABLE_TEST_CODE) += diag_frame/diag_frame_test.o
 endif
-
-ifeq ($(strip $(CFG_CONFIG_DIAG_NETLINK)),YES)
-drv-y           += diag_vcom/diag_vcom_main.o
-drv-y           += diag_vcom/diag_vcom_handler.o
-endif
 endif
 endif
 
@@ -494,13 +489,6 @@ obj-y           += log/
 endif
 
 obj-y               += diag/
-ifneq ($(strip $(OBB_SEPARATE)),true)
-ifeq ($(strip $(CFG_CONFIG_DIAG_SYSTEM)),YES)
-ifeq ($(strip $(CFG_CONFIG_DIAG_NETLINK)),YES)
-obj-y               += diag_vcom/
-endif
-endif
-endif
 obj-y           += hds/
 
 ifeq ($(strip $(CFG_CONFIG_SYSBUS)),YES)
