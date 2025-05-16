@@ -263,9 +263,6 @@ drv-y               += log/bsp_om_log.o
 drv-y               += adp/adp_print.o
 endif
 
-ifeq ($(strip $(CFG_CONFIG_MAA_BALONG)),YES)
-drv-y               += maa/maa_acore.o maa/bsp_maa.o
-endif
 drv-y               += mbb_modem_stub/mbb_modem_stub.o
 
 ifeq ($(strip $(CONFIG_MEM_BALONG)),y)
@@ -451,10 +448,6 @@ obj-y           += hds/
 
 ifeq ($(strip $(CFG_CONFIG_SYSBUS)),YES)
 obj-y           += sys_bus/
-endif
-
-ifeq ($(strip $(CFG_CONFIG_MAA_BALONG)),YES)
-obj-y           += maa/
 endif
 
 ifeq ($(strip $(CFG_CONFIG_NEW_PLATFORM)),YES)
