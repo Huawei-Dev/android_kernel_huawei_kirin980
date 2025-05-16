@@ -507,11 +507,6 @@ ifeq ($(strip $(CFG_CONFIG_BALONG_PCIE_CDEV)),YES)
 obj-y += pfunc/
 endif
 
-ifeq ($(strip $(CFG_CONFIG_BALONG_PCIE_ETH_EP)),YES)
-obj-y         += peth/
-endif
-
-
 ifeq ($(strip $(CFG_CONFIG_MODEM_BOOT)),YES)
 obj-y += modem_boot/modem_boot_mbb.o
 endif
