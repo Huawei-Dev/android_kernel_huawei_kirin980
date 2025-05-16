@@ -118,9 +118,6 @@ endif
 drv-$(CONFIG_BBP_ACORE) += bbp/bbp_balong.o
 
 subdir-ccflags-y += -Idrivers/hisi/modem/drv/hds
-ifeq ($(strip $(CFG_BOARD_TRACE)),YES)
-drv-y     += board_trace/board_trace_balong.o
-endif
 
 ifeq ($(strip $(CFG_CONFIG_CSHELL)),YES)
 drv-y += console/ringbuffer.o
@@ -515,10 +512,6 @@ endif
 endif
 endif
 obj-y           += hds/
-
-ifeq ($(strip $(CFG_BOARD_TRACE)),YES)
-obj-y           += board_trace/
-endif
 
 ifeq ($(strip $(CFG_CONFIG_SYSBUS)),YES)
 obj-y           += sys_bus/
