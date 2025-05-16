@@ -198,14 +198,6 @@ drv-$(CONFIG_EFUSE_BALONG_AGENT)    += efuse/efuse_balong_agent.o
 endif
 drv-y               += efuse/efuse_balong_ioctl.o
 
-ifeq ($(strip $(CONFIG_BALONG_ESPE)),y)
-drv-y               += espe/spe_core.o espe/spe_platform_balong.o espe/spe_desc.o espe/spe_entry.o espe/spe_port.o espe/spe_dbg.o
-drv-$(CONFIG_DEBUG_FS)          += espe/spe_debugfs.o
-drv-$(CONFIG_BALONG_ESPE_XFRM)  += espe/spe_xfrm.o
-drv-y                           += espe/nic/espe_nic.o
-drv-y                           += espe/nic/espe_ncm.o
-endif
-
 ifeq ($(strip $(CFG_CONFIG_CCPU_FIQ_SMP)),YES)
 drv-y           += fiq/fiq_smp.o
 else
@@ -471,8 +463,6 @@ endif
 ifeq ($(strip $(CFG_CONFIG_MAA_BALONG)),YES)
 obj-y           += maa/
 endif
-
-obj-$(CONFIG_BALONG_ESPE)   += espe/
 
 ifeq ($(strip $(CFG_CONFIG_NEW_PLATFORM)),YES)
 obj-y           += n_ipf/

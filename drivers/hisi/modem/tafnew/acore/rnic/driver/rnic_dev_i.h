@@ -312,11 +312,6 @@ int rnic_associate_spe_netdev(uint8_t devid);
 #endif /* CONFIG_BALONG_SPE_WAN */
 #endif /* CONFIG_BALONG_SPE */
 
-#if (defined(CONFIG_BALONG_ESPE))
-/*lint -esym(752,rnic_set_espe_port_config)*/
-int rnic_set_espe_port_config(const struct rnic_espe_port_config_s *port_config);
-#endif /* CONFIG_BALONG_ESPE */
-
 /*lint -esym(752,rnic_register_device_notifier)*/
 int rnic_register_device_notifier(
 					const struct rnic_deivce_notifier_s *dev_notifer);
