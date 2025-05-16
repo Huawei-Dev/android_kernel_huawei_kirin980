@@ -66,10 +66,6 @@ subdir-ccflags-y += -DMODULE_EXTRA_MODEM
 
 drv-y += sysboot/sysboot_balong.o
 
-ifeq ($(strip $(CFG_CONFIG_RFS_SERVER)),YES)
-drv-y += rfs_server/rfs_server.o
-endif
-
 ifeq ($(strip $(CFG_CONFIG_BALONG_PCIE_DEV)),YES)
 drv-y += pcie_balong_dev/pcie_balong_dev.o
 drv-y += pcie_boot_dev/pcie_boot_dev.o
@@ -209,10 +205,6 @@ endif
 
 obj-y += s_memory/s_memory.o
 obj-y += icc/icc_core.o icc/icc_linux.o icc/icc_debug.o
-
-ifeq ($(strip $(CFG_CONFIG_RFS_SERVER)),YES)
-obj-y += rfs_server/
-endif
 
 ifeq ($(strip $(CFG_CONFIG_BALONG_PCIE_DEV)),YES)
 obj-y += pcie_balong_dev/pcie_balong_dev.o
