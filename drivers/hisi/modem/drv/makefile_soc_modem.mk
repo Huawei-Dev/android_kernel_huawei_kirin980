@@ -277,10 +277,6 @@ endif
 
 drv-y           += net_helper/ip_limit.o
 
-ifeq ($(strip $(CFG_CONFIG_NRDSP)),YES)
-drv-y           += nrdsp/nrdsp_dump_tcm.o
-endif
-
 EXTRA_CFLAGS += -I$(srctree)/drivers/hisi/modem/include/nv/product/
 ifneq ($(strip $(CFG_FEATURE_NV_SEC_ON)),YES)
 ifeq ($(strip $(CFG_FEATURE_NV_FLASH_ON)),YES)
@@ -404,9 +400,6 @@ obj-$(CONFIG_RFILE_SUPPORT) += rfile/
 obj-y               += sync/
 ifeq ($(strip $(CFG_ENABLE_BUILD_SOCP)),YES)
 obj-y           += socp/
-endif
-ifeq ($(strip $(CFG_CONFIG_NRDSP)),YES)
-obj-y               += nrdsp/
 endif
 ifeq ($(strip $(CFG_ENABLE_BUILD_OM)),YES)
 obj-y               += dump/
