@@ -108,15 +108,6 @@ endif
 drv-y           += diag/adp/adp_diag.o
 drv-y           += adp/adp_slt.o
 
-ifeq ($(strip $(CFG_CONFIG_APPLOG)),YES)
-drv-y       += applog/applog_balong.o
-ifeq ($(strip $(CFG_CONFIG_MODULE_BUSSTRESS)),YES)
-#drv-y       += applog/applog_balong_test.o
-else
-drv-$(CONFIG_ENABLE_TEST_CODE) += applog/applog_balong_test.o
-endif
-endif
-
 ifeq ($(strip $(CFG_CONFIG_MODULE_TIMER)),YES)
 drv-y   += balong_timer/timer_slice.o
 drv-y   += balong_timer/hardtimer_arm.o
@@ -605,9 +596,6 @@ ifeq ($(strip $(CFG_ENABLE_BUILD_OM)),YES)
 obj-y               += om/
 endif
 obj-y               += pm_om/
-endif
-ifeq ($(strip $(CFG_CONFIG_APPLOG)),YES)
-obj-y               += applog/
 endif
 obj-y               += diag_frame/
 ifeq ($(strip $(CFG_CONFIG_DLOCK)),YES)
