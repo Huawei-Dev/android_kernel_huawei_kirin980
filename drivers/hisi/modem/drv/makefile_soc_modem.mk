@@ -239,10 +239,6 @@ endif
 drv-y += llt_tools/llt_tool.o
 endif
 
-ifeq ($(strip $(CFG_FEATURE_TDS_WCDMA_DYNAMIC_LOAD)),FEATURE_ON)
-drv-y       += load_ps/bsp_loadps.o
-endif
-
 ifneq ($(strip $(CFG_CONFIG_MLOADER)),YES)
 drv-y           += loadm/load_image.o
 ifeq ($(strip $(CFG_FEATURE_DELAY_MODEM_INIT)),FEATURE_ON)
@@ -420,9 +416,6 @@ obj-y               += reset/
 obj-y               += sec_call/
 
 obj-$(CONFIG_RFILE_SUPPORT) += rfile/
-ifeq ($(strip $(CFG_FEATURE_TDS_WCDMA_DYNAMIC_LOAD)),FEATURE_ON)
-obj-y               += load_ps/
-endif
 obj-y               += sync/
 ifeq ($(strip $(CFG_ENABLE_BUILD_SOCP)),YES)
 obj-y           += socp/

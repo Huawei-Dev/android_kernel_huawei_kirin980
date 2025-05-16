@@ -9,7 +9,6 @@ CFG_FEATURE_BALONG_CL                           := FEATURE_ON
 CFG_FEATURE_LTE_CAT_PART_R11                    := YES
 CFG_TL_PS_MAX_TRCH_NUM_8    := YES
 CFG_FEATURE_LPP                                 := FEATURE_ON
-CFG_FEATURE_TDS_WCDMA_DYNAMIC_LOAD         := FEATURE_OFF
 CFG_FEATURE_CSG                            := FEATURE_ON
 CFG_FEATURE_DFS_SYNC                            := FEATURE_OFF
 CFG_FEATURE_VERSION_V8                          := FEATURE_OFF
