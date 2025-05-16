@@ -119,16 +119,6 @@ drv-$(CONFIG_BBP_ACORE) += bbp/bbp_balong.o
 
 subdir-ccflags-y += -Idrivers/hisi/modem/drv/hds
 
-ifeq ($(strip $(CFG_CONFIG_CSHELL)),YES)
-drv-y += console/ringbuffer.o
-drv-y += console/console.o
-drv-y += console/virtshell.o
-drv-y += console/cshell_port.o
-drv-y += console/uart_dev.o
-drv-y += console/con_platform.o
-drv-y += console/cshell_logger.o
-endif
-
 ifneq ($(strip $(OBB_SEPARATE)),true)
 ifeq ($(strip $(CFG_CONFIG_DIAG_SYSTEM)),YES)
 subdir-ccflags-y+= -Idrivers/hisi/modem/drv/diag/scm \
@@ -539,10 +529,6 @@ obj-$(CONFIG_MEM_BALONG)    += mem/
 obj-y   += onoff/
 
 obj-y   += efuse/
-
-ifeq ($(strip $(CFG_CONFIG_CSHELL)),YES)
-obj-y += console/
-endif
 
 ifeq ($(strip $(CFG_CONFIG_SC)),YES)
 obj-y               += sc/
