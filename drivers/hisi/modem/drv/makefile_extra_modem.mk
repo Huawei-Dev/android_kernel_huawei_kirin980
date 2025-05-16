@@ -151,22 +151,6 @@ endif
 
 drv-y += version/version_emdm.o
 
-ifeq ($(strip $(CFG_ENABLE_BUILD_OM)),YES)
-subdir-ccflags-y+= -Idrivers/hisi/modem/drv/dump/mdmext
-drv-y+= dump/mdmext/dump_mdmext_area.o
-drv-y+= dump/mdmext/dump_mdmext_baseinfo.o
-drv-y+= dump/mdmext/dump_mdmext_comm.o
-drv-y+= dump/mdmext/dump_mdmext_fastboot_agent.o
-drv-y+= dump/mdmext/dump_mdmext_field.o
-drv-y+= dump/mdmext/dump_mdmext_kernel_agent.o
-drv-y+= dump/mdmext/dump_mdmext_pcie_comm.o
-drv-y+= dump/mdmext/dump_mdmext_core.o
-drv-y+= dump/mdmext/dump_mdmext_hook.o
-drv-y+= dump/mdmext/dump_mdmext_ko_dump.o
-drv-y+= log/bsp_om_log.o
-drv-y+= adp/adp_print.o
-endif
-
 ifeq ($(strip $(CFG_CONFIG_BALONG_ADC)),YES)
 drv-y += adc/bsp_adc.o
 endif
@@ -273,21 +257,6 @@ endif
 
 obj-y += version/version_emdm.o
 
-ifeq ($(strip $(CFG_ENABLE_BUILD_OM)),YES)
-subdir-ccflags-y+= -Idrivers/hisi/modem/drv/dump/mdmext
-obj-y+= dump/mdmext/dump_mdmext_area.o
-obj-y+= dump/mdmext/dump_mdmext_baseinfo.o
-obj-y+= dump/mdmext/dump_mdmext_comm.o
-obj-y+= dump/mdmext/dump_mdmext_config.o
-obj-y+= dump/mdmext/dump_mdmext_fastboot_agent.o
-obj-y+= dump/mdmext/dump_mdmext_field.o
-obj-y+= dump/mdmext/dump_mdmext_kernel_agent.o
-obj-y+= dump/mdmext/dump_mdmext_pcie_comm.o
-obj-y+= dump/mdmext/dump_mdmext_core.o
-obj-y+= dump/mdmext/dump_mdmext_hook.o
-obj-y+= log/bsp_om_log.o
-obj-y+= adp/adp_print.o
-endif
 ifeq ($(strip $(CFG_CONFIG_BALONG_ADC)),YES)
 obj-y += adc/bsp_adc.o
 endif
