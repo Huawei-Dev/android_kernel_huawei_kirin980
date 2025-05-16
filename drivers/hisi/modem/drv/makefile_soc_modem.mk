@@ -161,10 +161,6 @@ endif
 
 drv-y           += diag_frame/diag_frame.o
 
-ifeq ($(strip $(CFG_CONFIG_DLOCK)),YES)
-drv-y           += dlock/dlock_balong.o
-endif
-
 ifeq ($(strip $(CFG_ENABLE_BUILD_OM)),YES)
 drv-y           += dump/apr/dump_apr.o
 drv-y           += dump/comm/dump_config.o
@@ -558,9 +554,6 @@ endif
 obj-y               += pm_om/
 endif
 obj-y               += diag_frame/
-ifeq ($(strip $(CFG_CONFIG_DLOCK)),YES)
-obj-y               += dlock/
-endif
 obj-$(CONFIG_BBP_ACORE)             += bbp/
 obj-y               += net_helper/
 obj-y               += mbb_modem_stub/
