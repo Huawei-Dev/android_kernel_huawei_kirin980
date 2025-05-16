@@ -224,10 +224,6 @@ drv-$(CONFIG_IPC_DRIVER)        += ipc/ipc_balong.o
 drv-$(CONFIG_ENABLE_TEST_CODE)  += ipc/ipc_balong_test.o
 endif
 
-ifneq ($(strip $(CFG_CONFIG_NEW_PLATFORM)),YES)
-drv-$(CONFIG_IPF_SUPPORT)       += ipf/ipf_balong.o
-endif
-
 ifeq ($(strip $(OBB_LLT_MDRV)),y)
 ifeq ($(strip $(llt_gcov)),y)
 GCOV_PROFILE := y
@@ -302,10 +298,6 @@ drv-$(CONFIG_BALONG_MODEM_ONOFF)    += onoff/bsp_modem_boot.o
 
 drv-$(CONFIG_PM_OM_BALONG) +=  pm_om/pm_om.o pm_om/pm_om_platform.o pm_om/pm_om_debug.o pm_om/pm_om_pressure.o pm_om/bsp_ring_buffer.o pm_om/modem_log_linux.o
 drv-$(CONFIG_PM_OM_BALONG_TEST) +=  pm_om/pm_om_test.o
-
-ifneq ($(strip $(CFG_CONFIG_NEW_PLATFORM)),YES)
-drv-$(CONFIG_PSAM_SUPPORT)      += psam/psam_balong.o
-endif
 
 drv-$(CONFIG_BALONG_MODEM_RESET)+= reset/reset_balong.o
 
@@ -430,9 +422,6 @@ endif
 ifeq ($(strip $(CFG_CONFIG_NEW_PLATFORM)),YES)
 obj-y           += n_ipf/
 obj-y           += n_psam/
-else
-obj-y           += ipf/
-obj-y           += psam/
 endif
 
 obj-y           += udi/
