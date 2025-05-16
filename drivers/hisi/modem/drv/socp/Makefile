@@ -5,7 +5,7 @@ GCOV_PROFILE_socp_balong_test.o := n
 GCOV_PROFILE_socp_api_test.o := n
 endif
 
--include $(srctree)/drivers/hisi/modem/config/product/$(OBB_PRODUCT_NAME)/$(OBB_MODEM_CUST_CONFIG_DIR)/config/balong_product_config.mk
+-include $(srctree)/drivers/hisi/modem/config/product/$(OBB_PRODUCT_NAME)/config/balong_product_config.mk
 ifeq ($(strip $(CFG_DIAG_SYSTEM_5G)),YES)
 obj-y       += socp_enc.o
 else

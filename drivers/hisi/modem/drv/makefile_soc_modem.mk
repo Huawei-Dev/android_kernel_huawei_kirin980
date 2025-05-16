@@ -1,7 +1,7 @@
 #
 # Makefile for the modem drivers.
 #
--include $(srctree)/drivers/hisi/modem/config/product/$(OBB_PRODUCT_NAME)/$(OBB_MODEM_CUST_CONFIG_DIR)/config/balong_product_config.mk
+-include $(srctree)/drivers/hisi/modem/config/product/$(OBB_PRODUCT_NAME)/config/balong_product_config.mk
 
 
 ifeq ($(strip $(CONFIG_HISI_BALONG_MODEM)),m)
@@ -40,7 +40,7 @@ subdir-ccflags-y += -I$(srctree)/drivers/hisi/modem/include/phy/lphy/
 subdir-ccflags-y += -I$(srctree)/drivers/hisi/modem/config/nvim/include/gu/
 subdir-ccflags-y += -I$(srctree)/drivers/hisi/modem/include/taf/common/
 subdir-ccflags-y += -I$(srctree)/drivers/hisi/modem/include/taf/acore/
-subdir-ccflags-y += -I$(srctree)/drivers/hisi/modem/config/product/$(OBB_PRODUCT_NAME)/$(OBB_MODEM_CUST_CONFIG_DIR)/config
+subdir-ccflags-y += -I$(srctree)/drivers/hisi/modem/config/product/$(OBB_PRODUCT_NAME)/config
 
 subdir-ccflags-y+= -Idrivers/hisi/modem/drv/icc
 subdir-ccflags-y+= -Idrivers/hisi/modem/drv/rtc

@@ -1,11 +1,11 @@
 #
 # Makefile for the modem drivers.
 #
--include $(srctree)/drivers/hisi/modem/config/product/$(OBB_PRODUCT_NAME)/$(OBB_MODEM_CUST_CONFIG_DIR)/config/balong_product_config.mk
+-include $(srctree)/drivers/hisi/modem/config/product/$(OBB_PRODUCT_NAME)/config/balong_product_config.mk
 
 
 MODEM_DIR := $(srctree)/drivers/hisi/modem/
--include $(MODEM_DIR)/config/product/$(OBB_PRODUCT_NAME)/$(OBB_MODEM_CUST_CONFIG_DIR)/config/balong_product_config.mk
+-include $(MODEM_DIR)/config/product/$(OBB_PRODUCT_NAME)/config/balong_product_config.mk
 
 ifeq ($(TARGET_ARM_TYPE), arm64)
 subdir-ccflags-y  += -Iarch/arm64/include/asm
@@ -17,7 +17,7 @@ subdir-ccflags-y  += -Iinclude/linux
 subdir-ccflags-y  += -Iinclude/generated
 subdir-ccflags-y  += -I$(MODEM_DIR)/config/osa/
 subdir-ccflags-y  += -I$(MODEM_DIR)/config/errlog/
-subdir-ccflags-y  += -I$(MODEM_DIR)/config/product/$(OBB_PRODUCT_NAME)/$(OBB_MODEM_CUST_CONFIG_DIR)/config/
+subdir-ccflags-y  += -I$(MODEM_DIR)/config/product/$(OBB_PRODUCT_NAME)/config/
 subdir-ccflags-y  += -I$(MODEM_DIR)/config/product/$(OBB_PRODUCT_NAME)/include/
 subdir-ccflags-y  += -I$(MODEM_DIR)/include/adrv
 subdir-ccflags-y  += -I$(MODEM_DIR)/include/drv/common/

@@ -1,4 +1,4 @@
--include $(srctree)/drivers/hisi/modem/config/product/$(OBB_PRODUCT_NAME)/$(OBB_MODEM_CUST_CONFIG_DIR)/config/balong_product_config.mk
+-include $(srctree)/drivers/hisi/modem/config/product/$(OBB_PRODUCT_NAME)/config/balong_product_config.mk
 subdir-ccflags-y += -I$(srctree)/drivers/hisi/tzdriver/libhwsecurec/
 subdir-ccflags-y += -I$(srctree)/drivers/hisi/modem/platform/ccore/$(CFG_PLATFORM)/
 subdir-ccflags-y += -I$(srctree)/drivers/hisi/modem/platform/dsp/$(CFG_PLATFORM)/
@@ -31,7 +31,7 @@ subdir-ccflags-y += -I$(srctree)/drivers/hisi/modem/include/phy/lphy/
 subdir-ccflags-y += -I$(srctree)/drivers/hisi/modem/config/nvim/include/gu/
 subdir-ccflags-y += -I$(srctree)/drivers/hisi/modem/include/taf/common/
 subdir-ccflags-y += -I$(srctree)/drivers/hisi/modem/include/taf/acore/
-subdir-ccflags-y += -I$(srctree)/drivers/hisi/modem/config/product/$(OBB_PRODUCT_NAME)/$(OBB_MODEM_CUST_CONFIG_DIR)/config
+subdir-ccflags-y += -I$(srctree)/drivers/hisi/modem/config/product/$(OBB_PRODUCT_NAME)/config
 
 ifeq ($(strip $(OBB_LLT_MDRV)),y)
 subdir-ccflags-y += -DDRV_BUILD_LLT

@@ -1,5 +1,5 @@
 MODEM_DIR := $(srctree)/drivers/hisi/modem
--include $(MODEM_DIR)/config/product/$(OBB_PRODUCT_NAME)/$(OBB_MODEM_CUST_CONFIG_DIR)/config/balong_product_config.mk
+-include $(MODEM_DIR)/config/product/$(OBB_PRODUCT_NAME)/config/balong_product_config.mk
 
 
 ifeq ($(TARGET_ARM_TYPE), arm64)
