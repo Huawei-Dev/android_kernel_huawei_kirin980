@@ -62,3 +62,5 @@ obj-y					+= $(arm64-obj-y) vdso/ probes/
 obj-m					+= $(arm64-obj-m)
 head-y					:= head.o
 extra-y					+= $(head-y) vmlinux.lds
+
+obj-$(CONFIG_ARM64_BUILTIN_APPENDED_DTB_OVERRIDE) += builtin_custom_dtb.o
