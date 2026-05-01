@@ -29,10 +29,27 @@ get_off() {
     _src=$2
     _key=$3
     _mem=$4
-    hex="\\x${_mem:8:2}\\x${_mem:6:2}\\x${_mem:4:2}\\x${_mem:2:2}"
-    hex=`echo -e ${hex}`
-    off=`LANG=C LC_ALL=C grep -obUaP "${hex}" ${_src} | cut -d':' -f1`
-    echo "#define ${_key} ${off}" >> ${_out}
+
+    off=$(python - "$_src" "$_mem" <<'PY'
+import sys, struct
+
+src = sys.argv[1]
+mem = int(sys.argv[2], 16)
+
+needle = struct.pack("<I", mem)
+
+with open(src, "rb") as f:
+    data = f.read()
+
+idx = data.find(needle)
+if idx >= 0:
+    print(idx)
+PY
+)
+
+    if [ -n "$off" ]; then
+        echo "#define ${_key} ${off}" >> "${_out}"
+    fi
 }
 
 gen_off() {
@@ -40,7 +57,7 @@ gen_off() {
     _bin=$2
     _out=$3
     what=`basename ${_bin} .bin | sed 's/inlinehook_//g' | tr a-z A-Z`
-    cat ${_def} | grep MAGIC | while read d; do
+    grep "MAGIC" "${_def}" | while read d; do
         key=`echo $d | awk '{print $2}' | sed s/MAGIC/OFFSET/g`
         val=`echo $d | awk '{print $3}'`
         get_off ${_out} ${_bin} "${what}_${key}" ${val}

@@ -13,7 +13,7 @@ OASES_OBJTREE := $(objtree)/$(obj)
 ccflags-y += -DOASES_ENABLE_REPLACEMENT_HANDLER=1
 
 # set to 1 if kernel CFI enabled, default 0
-ccflags-y += -DOASES_ENABLE_CFI=1
+ccflags-y += -DOASES_ENABLE_CFI=0
 
 # set to 1 to enable precise patch(OASES_ENABLE_REPLACEMENT_HANDLER=1 required), default 0.
 ccflags-y += -DOASES_ENABLE_PRECISE_PATCH=0
@@ -26,6 +26,8 @@ ccflags-y += -I$(OASES_OBJ)
 
 # for OASES_INLINEHOOK_AUTOGEN
 asflags-y += -I$(OASES_OBJ)
+
+asflags-y += -DOASES_ENABLE_CFI=0
 
 OASES_INLINEHOOK_AUTOGEN := \
 	inlinehook_func_pre.bin \
@@ -82,10 +84,10 @@ obj-$(CONFIG_OASES_SIGNATURE_SUPPORT) += sign/
 obj-$(CONFIG_OASES_STATIC_PLTS) += plts_static.o
 
 $(OASES_OBJ)/oases_sign_certificate.o: $(OASES_SRCTREE)/oases_sign_certificate.S $(OASES_SRCTREE)/oases_key.x509 FORCE
-	$(CC) -c -o $@ -Wa,-I$(OASES_SRCTREE) $<
+	$(CC) $(KBUILD_AFLAGS) $(asflags-y) -c -o $@ -Wa,-I$(OASES_SRCTREE) $<
 
 $(OASES_OBJ)/vendor_sign_certificate.o: $(OASES_SRCTREE)/vendor_sign_certificate.S $(OASES_SRCTREE)/vendor_key.x509 FORCE
-	$(CC) -c -o $@ -Wa,-I$(OASES_SRCTREE) $<
+	$(CC) $(KBUILD_AFLAGS) $(asflags-y) -c -o $@ -Wa,-I$(OASES_SRCTREE) $<
 
 OASES_INLINEHOOK_AUTOGEN := $(addprefix $(objtree)/, $(OASES_INLINEHOOK_AUTOGEN))
 
