@@ -536,7 +536,7 @@ static int npu_reset_proc(unsigned int coreid)
     do_gettimeofday(&tv1);
 
     /*1. soft reset*/
-    if (SOFT_RESET == p_common->feature.npu_reset_when_in_error) {
+    if (SOFT_RESET == p_common->feature.npu_reset_when_in_error) {
 
         npu_soft_reset(coreid);
 
