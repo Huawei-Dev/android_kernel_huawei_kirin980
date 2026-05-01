@@ -40,13 +40,13 @@ $(OASES_OBJ)/inlinehook_data.o: $(OASES_INLINEHOOK_AUTOGEN)
 
 # compatible with old toolchains with weird behavior on as/ld flags
 $(OASES_OBJ)/inlinehook_data.o: $(OASES_SRCTREE)/inlinehook_data.S
-	$(CC) -c -o $@ -Wa,-I$(OASES_OBJ) $<
+	$(CC) $(KBUILD_AFLAGS) $(asflags-y) -c -o $@ -Wa,-I$(OASES_OBJ) $<
 
 $(OASES_OBJ)/inlinehook_%.bin: $(OASES_OBJ)/inlinehook_%.oas
 	$(OBJCOPY) -O binary $< $@
 
 $(OASES_OBJ)/inlinehook_%.oas: $(OASES_SRCTREE)/inlinehook_%.S FORCE
-	$(CC) -c -o $@ $<
+	$(CC) $(KBUILD_AFLAGS) $(asflags-y) -c -o $@ $<
 
 $(OASES_OBJ)/inlinehook_offset.h: $(OASES_INLINEHOOK_AUTOGEN)
 	$(OASES_SRCTREE)/inlinehook_gen_off $@ $(OASES_SRCTREE)/inlinehook_const.h $^
