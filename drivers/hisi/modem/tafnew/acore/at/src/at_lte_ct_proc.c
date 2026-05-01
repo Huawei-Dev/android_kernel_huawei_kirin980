@@ -237,7 +237,7 @@ VOS_UINT32 atQryFPllStatusPara(VOS_UINT8 ucClientId)
     ulRst = atSendFtmDataMsg(I0_MSP_SYS_FTM_PID, ID_MSG_FTM_RD_FPLLSTATUS_REQ,ucClientId, (VOS_VOID*)(&stFPLLSTATUSQryReq), sizeof(stFPLLSTATUSQryReq));
     if(AT_SUCCESS == ulRst)
     {
-        gastAtClientTab[ucClientId].CmdCurrentOpt = AT_CMD_FPLLSTATUS_READ;
+        gastAtClientTab[ucClientId].CmdCurrentOpt = (AT_CMD_CURRENT_OPT_ENUM)AT_CMD_FPLLSTATUS_READ;
         return AT_WAIT_ASYNC_RETURN;
     }
 
