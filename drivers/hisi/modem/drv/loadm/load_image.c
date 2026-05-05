@@ -496,6 +496,24 @@ static int verify_soc_image(enum SVC_SECBOOT_IMG_TYPE  image,
      operation.params[1].value.a = (u32)(paddr & 0xFFFFFFFF);
      operation.params[1].value.b = (u32)((u64)paddr >> 32);/* ??????MBB ???? */
      
+     pr_err("EVEREST_LOG SIZEOF: TEEC_Operation=%zu TEEC_Parameter=%zu params_array=%zu\n",
+       sizeof(TEEC_Operation),
+       sizeof(operation.params[0]),
+       sizeof(operation.params));
+
+    pr_err("EVEREST_LOG PARAMTYPES: paramTypes=0x%x expected_value_value_none_none=0x%x\n",
+       operation.paramTypes,
+       (u32)TEEC_PARAM_TYPES(TEEC_VALUE_INPUT, TEEC_VALUE_INPUT, TEEC_NONE, TEEC_NONE));
+
+    pr_err("EVEREST_LOG PARAMS: image=%u run_addr=0x%x paddr=0x%lx p0.a=0x%x p0.b=0x%x p1.a=0x%x p1.b=0x%x\n",
+       image,
+       run_addr,
+       paddr,
+       operation.params[0].value.a,
+       operation.params[0].value.b,
+       operation.params[1].value.a,
+       operation.params[1].value.b);
+     
      pr_err("EVEREST_LOG LOADM_TEE: cmd_id=0x%x paramTypes=0x%x image=%u run_addr=0x%x paddr=0x%lx p0.a=0x%x p0.b=0x%x p1.a=0x%x p1.b=0x%x\n",
        SECBOOT_CMD_ID_VERIFY_DATA_TYPE,
        operation.paramTypes,
