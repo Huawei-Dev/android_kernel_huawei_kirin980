@@ -477,6 +477,9 @@ static int verify_soc_image(enum SVC_SECBOOT_IMG_TYPE  image,
     unsigned long paddr;
     int ret;
     paddr = MDDR_FAMA(run_addr);
+    
+    pr_err("EVEREST_LOG VERIFY_SOC_ENTER: proc=%s pid=%d image=%d run_addr=0x%x paddr=0x%x\n",
+       current->comm, current->pid, image, run_addr, paddr);
 
     ret = bsp_efuse_write_prepare();
     if(ret)
@@ -496,6 +499,8 @@ static int verify_soc_image(enum SVC_SECBOOT_IMG_TYPE  image,
                                    SECBOOT_CMD_ID_VERIFY_DATA_TYPE,
                                     &operation,
                                     &origin);
+     pr_err("EVEREST_LOG VERIFY_SOC_RET: proc=%s pid=%d image=%d run_addr=0x%x ret=0x%x origin=%u\n",
+       current->comm, current->pid, image, run_addr, ret, origin);
      if (result != TEEC_SUCCESS){
         /* cov_verified_start */
         sec_print_err("start  failed, result is 0x%x!\n", result);
@@ -752,6 +757,9 @@ s32 load_image(enum SVC_SECBOOT_IMG_TYPE ecoretype, u32 run_addr, u32 ddr_size)
         /* cov_verified_stop */
     }
     sec_print_err("load image %s to secos success\n", file_name);
+    
+    pr_err("EVEREST_LOG LOAD_IMAGE_VERIFY: file=%s ecoretype=%d run_addr=0x%x image_etype=%d image_run=0x%x is_sec=%d\n",
+       file_name, ecoretype, run_addr, image->etype, image->run_addr, is_sec);
 
     /*end of trans all data, start verify*/
     ret = verify_soc_image(ecoretype, run_addr);

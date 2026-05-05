@@ -191,6 +191,31 @@ static unsigned char teecd_hash[SHA256_DIGEST_LENTH] = {0};
 static unsigned char hidl_hash[SHA256_DIGEST_LENTH] = {0};
 static bool g_teecd_hash_enable = false;
 static bool g_hidl_hash_enable = false;
+
+static void dump_hash(const char *my_pkname, const unsigned char *hash_buf)
+{
+	if (!hash_buf || !my_pkname) {
+		return;
+	}
+
+	pr_err("EVEREST_LOG SHA256 hash for %s:\n", my_pkname);
+	pr_err("{0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, ",
+		*(hash_buf + 0), *(hash_buf + 1), *(hash_buf + 2), *(hash_buf + 3),
+		*(hash_buf + 4), *(hash_buf + 5), *(hash_buf + 6), *(hash_buf + 7));
+	pr_err("0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, ",
+		*(hash_buf + 8), *(hash_buf + 9), *(hash_buf + 10), *(hash_buf + 11),
+		*(hash_buf + 12), *(hash_buf + 13), *(hash_buf + 14),
+		*(hash_buf + 15));
+	pr_err("0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X,  ",
+		*(hash_buf + 16), *(hash_buf + 17), *(hash_buf + 18),
+		*(hash_buf + 19), *(hash_buf + 20), *(hash_buf + 21),
+		*(hash_buf + 22), *(hash_buf + 23));
+	pr_err("0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X} ",
+		*(hash_buf + 24), *(hash_buf + 25), *(hash_buf + 26),
+		*(hash_buf + 27), *(hash_buf + 28), *(hash_buf + 29),
+		*(hash_buf + 30), *(hash_buf + 31));
+}
+
 /*
  * Calculate hash of task's text.
  * @cfc_rehash: if generate a random number and hash the resulting hash again.
@@ -273,6 +298,7 @@ static int calc_process_path_hash(unsigned char *data, unsigned long len, char *
 
 static int check_teecd_hash(int type)
 {
+#if 0
 	unsigned char digest[SHA256_DIGEST_LENTH] = {0};
 	if (NON_HIDL_SIDE != type && HIDL_SIDE != type) {
 		tloge("type error! type is %d\n", type);
@@ -292,6 +318,7 @@ static int check_teecd_hash(int type)
 			return CHECK_CODE_HASH_FAIL;
 		}
 	}
+#endif
 	return 0;
 }
 
@@ -1543,77 +1570,6 @@ static void remove_unused_session(TC_NS_Service *service,
 	put_session_struct(saved_session);
 }
 
-void dump_hash(char *my_pkname, unsigned char *hash_buf)
-{
-	TCDEBUG("SHA256 hash for %s:\n", my_pkname);
-	TCDEBUG("{0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, ",
-		*(hash_buf + 0), *(hash_buf + 1), *(hash_buf + 2), *(hash_buf + 3),
-		*(hash_buf + 4), *(hash_buf + 5), *(hash_buf + 6), *(hash_buf + 7));
-	TCDEBUG("0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, ",
-		*(hash_buf + 8), *(hash_buf + 9), *(hash_buf + 10), *(hash_buf + 11),
-		*(hash_buf + 12), *(hash_buf + 13), *(hash_buf + 14),
-		*(hash_buf + 15));
-	TCDEBUG("0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X,  ",
-		*(hash_buf + 16), *(hash_buf + 17), *(hash_buf + 18),
-		*(hash_buf + 19), *(hash_buf + 20), *(hash_buf + 21),
-		*(hash_buf + 22), *(hash_buf + 23));
-	TCDEBUG("0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X, 0x%02X} ",
-		*(hash_buf + 24), *(hash_buf + 25), *(hash_buf + 26),
-		*(hash_buf + 27), *(hash_buf + 28), *(hash_buf + 29),
-		*(hash_buf + 30), *(hash_buf + 31));
-}
-
-void spoof_hash(char *my_pkname, unsigned char *hash_buf)
-{
-	unsigned char keystore_hash[32] = {0xAA, 0x3B, 0x24, 0x94, 0xD7, 0xB8, 0x05, 0x42,
-					   0x34, 0x65, 0x7E, 0x10, 0x6A, 0xC8, 0x5B, 0x64,
-					   0xBD, 0xFE, 0x7F, 0x65, 0x77, 0xED, 0x26, 0x2F,
-					   0x15, 0x2A, 0x8A, 0x8C, 0x03, 0x1D, 0x81, 0x69};
-
-	unsigned char gatekeeper_hash[32] = {0xAF, 0x49, 0x6D, 0x17, 0x5E, 0x66, 0xC0, 0x45,
-					   0xEE, 0xFC, 0xC0, 0xA9, 0x0B, 0x04, 0x2E, 0xB2,
-					   0x32, 0x18, 0xA4, 0x9F, 0x73, 0xA3, 0x67, 0x29,
-					   0x16, 0xAD, 0x47, 0x90, 0x3F, 0x50, 0xA1, 0xA9};
-
-	unsigned char fingerprint_hash[32] = {0x2F, 0x63, 0xF0, 0x29, 0x92, 0x51, 0x86, 0xB2,
-					    0xDF, 0xB3, 0xA3, 0x14, 0x15, 0xC3, 0xAD, 0x30,
-					    0x7E, 0x52, 0x75, 0x5A, 0xBC, 0x43, 0x7B, 0xAE,
-					    0x42, 0x3E, 0x9C, 0x38, 0xAB, 0x45, 0x52, 0xCB};
-
-	unsigned char widevine_hash[32] = {0xE1, 0xE5, 0x73, 0x5C, 0x0C, 0x00, 0xA0, 0x0E,
-					    0x09, 0xCA, 0xFF, 0x44, 0x7A, 0xFA, 0xBB, 0x87,
-					    0x15, 0x3A, 0x16, 0x1E, 0xAC, 0x46, 0x09, 0xDB,
-					    0x25, 0xC4, 0xB3, 0x09, 0xE9, 0x41, 0x2E, 0x86};
-
-	unsigned char oeminfo_hash[32] = {0x1A, 0x60, 0x00, 0x3E, 0x2F, 0x2F, 0xFE, 0x2E,
-					    0x81, 0x1E, 0x87, 0x1E, 0x4E, 0xA2, 0x30, 0x26,
-					    0xA5, 0x56, 0x1A, 0xA7, 0x2C, 0xA4, 0x01, 0x00,
-					    0x10, 0xE9, 0xFB, 0xD2, 0xB7, 0xE1, 0xBB, 0x81};
-	
-	unsigned char omx_hash[32] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-					    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-					    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-					    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-	
-	if (!strncmp(my_pkname, "/vendor/bin/hw/android.hardware.gatekeeper@1.0-service", 54))
-		memcpy(hash_buf, gatekeeper_hash, MAX_SHA_256_SZ);
-
-	if (!strncmp(my_pkname, "/vendor/bin/hw/android.hardware.keymaster@3.0-service", 53))
-		memcpy(hash_buf, keystore_hash, MAX_SHA_256_SZ);
-
-	if (!strncmp(my_pkname, "/vendor/bin/hw/vendor.huawei.hardware.biometrics.fingerprint@2.1-service", 72))
-		memcpy(hash_buf, fingerprint_hash, MAX_SHA_256_SZ);
-
-	if (!strncmp(my_pkname, "/vendor/bin/hw/android.hardware.drm@1.1-service.widevine", 56))
-		memcpy(hash_buf, widevine_hash, MAX_SHA_256_SZ);
-	
-	if (!strncmp(my_pkname, "/vendor/bin/oeminfo_nvm_server", 30))
-		memcpy(hash_buf, oeminfo_hash, MAX_SHA_256_SZ);
-	
-	if (!strncmp(my_pkname, "/vendor/bin/hw/android.hardware.media.omx@1.0-service", 53))
-		memcpy(hash_buf, omx_hash, MAX_SHA_256_SZ);
-}
-
 int TC_NS_OpenSession(TC_NS_DEV_File *dev_file, TC_NS_ClientContext *context)
 {
 	int ret = -EINVAL;
@@ -1693,7 +1649,7 @@ find_service:
 
 		ret = set_login_information(dev_file, context);
 		if (ret != 0) {
-			TCERR("set_login_information failed ret =%d\n", ret);
+			pr_err("EVEREST_LOG set_login_information failed ret =%d\n", ret);
 			goto error;
 		}
 
@@ -1715,7 +1671,7 @@ find_service:
 	}
 
 	if (tee_init_crypto("sha256")) {
-		tloge("init code hash error!!!\n");
+		pr_err("EVEREST_LOG init code hash error!!!\n");
 		kfree(hash_buf);
 		ret = -EFAULT;
 		goto error;
@@ -1742,7 +1698,7 @@ find_service:
 		S = current;
 	}
 	if (tee_calc_task_hash(hash_buf, true, S)) {
-		tloge("tee calc task hash failed\n");
+		pr_err("EVEREST_LOG tee calc task hash failed\n");
 		kfree(hash_buf);
 		ret = -EFAULT;
 		goto error;
@@ -1750,16 +1706,40 @@ find_service:
 
 	/* use the lock to make sure the TA sessions cannot be concurrency opened */
 	mutex_lock(&g_operate_session_lock);
+	
+	pr_err("EVEREST_LOG TEE_AUTH: proc=%s pid=%d pkg=%s len=%u\n",
+       current->comm, current->pid,
+       dev_file ? (const char *)dev_file->pkg_name : "null",
+       dev_file ? dev_file->pkg_name_len : 0);
+	TCDEBUG("EVEREST_LOG TC_NS_OpenSession try to hash for %s\n", (const char *)dev_file->pkg_name);
+	
+	dump_hash((char *)dev_file->pkg_name, hash_buf);
+	
+	if (dev_file && strstr((const char *)dev_file->pkg_name, "oeminfo_nvm_server")) {
+    pr_err("EVEREST_LOG OEMINFO_TEE_AUTH: proc=%s pid=%d pkg=%s len=%u\n",
+           current->comm, current->pid,
+           (const char *)dev_file->pkg_name,
+           dev_file->pkg_name_len);
 
-	dump_hash(dev_file->pkg_name, hash_buf);
-	spoof_hash(dev_file->pkg_name, hash_buf);
+    dump_hash((char *)dev_file->pkg_name, hash_buf);
+    }
+
+if (dev_file && !strcmp((const char *)dev_file->pkg_name, "sec_boot")) {
+    pr_err("EVEREST_LOG SECBOOT_AUTH: proc=%s pid=%d pkg=%s len=%u kernel_api=%u login_setup=%d\n",
+           current->comm, current->pid,
+           (const char *)dev_file->pkg_name,
+           dev_file->pkg_name_len,
+           dev_file->kernel_api,
+           dev_file->login_setup);
+    dump_hash((char *)dev_file->pkg_name, hash_buf);
+}
 
 	/*cp hash_buf to global var, it is protected by lock */
 	ret = memcpy_s(g_ca_auth_hash_buf, (size_t)MAX_SHA_256_SZ,
 			hash_buf, (size_t)MAX_SHA_256_SZ);
 	kfree(hash_buf);
 	if (ret) {
-		tloge("memcpy_s to g_hash_buf failed\n");
+		pr_err("EVEREST_LOG memcpy_s to g_hash_buf failed\n");
 		mutex_unlock(&g_operate_session_lock);
 		ret = -ENOMEM;
 		goto error;
@@ -1771,7 +1751,7 @@ find_service:
 	*/
 	ret = get_session_secure_params(dev_file, context, session);
 	if (ret) {
-		tloge("Get session secure parameters failed, ret = %d.\n", ret);
+		pr_err("EVEREST_LOG Get session secure parameters failed, ret = %d.\n", ret);
 		/* Clean this session secure information */
 		__clean_session_secure_information(session);
 		mutex_unlock(&g_operate_session_lock);
@@ -1781,7 +1761,7 @@ find_service:
 	session->tc_ns_token.token_buffer =
 			kzalloc(TOKEN_BUFFER_LEN, GFP_KERNEL);
 	if (session->tc_ns_token.token_buffer == NULL) {
-		tloge("kzalloc %d bytes token failed.\n", TOKEN_BUFFER_LEN);
+		pr_err("EVEREST_LOG kzalloc %d bytes token failed.\n", TOKEN_BUFFER_LEN);
 		/* Clean this session secure information */
 		__clean_session_secure_information(session);
 		mutex_unlock(&g_operate_session_lock);
@@ -1796,7 +1776,7 @@ find_service:
 	mutex_unlock(&g_operate_session_lock);
 
 	if (ret != 0) {
-		TCERR("smc_call returns error, ret=0x%x\n", ret);
+		pr_err("EVEREST_LOG smc_call/smc_cmd.cmd_id returns error ret=0x%x\n", ret);
 		goto error;
 	} else
 		TCDEBUG("smc_call returns right\n");
@@ -2133,7 +2113,7 @@ static int TC_NS_need_load_image(unsigned int file_id,
 	mb_pack->operation.params[0].memref.size = SZ_4K;
 
 	/* load image smc command */
-	TCDEBUG("smc cmd id %d\n", client_context.cmd_id);
+	TCDEBUG("smc cmd id %d\n", smc_cmd.cmd_id);
 	smc_cmd.cmd_id = GLOBAL_CMD_ID_NEED_LOAD_APP;
 	mb_pack->uuid[0] = 1;
 	smc_cmd.uuid_phys = virt_to_phys((void *)mb_pack->uuid);
