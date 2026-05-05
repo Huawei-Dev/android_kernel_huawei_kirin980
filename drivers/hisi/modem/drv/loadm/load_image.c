@@ -495,12 +495,24 @@ static int verify_soc_image(enum SVC_SECBOOT_IMG_TYPE  image,
      operation.params[0].value.b = 0;/*SECBOOT_LOCKSTATE , not used currently*/
      operation.params[1].value.a = (u32)(paddr & 0xFFFFFFFF);
      operation.params[1].value.b = (u32)((u64)paddr >> 32);/* ??????MBB ???? */
+     
+     pr_err("EVEREST_LOG LOADM_TEE: cmd_id=0x%x paramTypes=0x%x image=%u run_addr=0x%x paddr=0x%lx p0.a=0x%x p0.b=0x%x p1.a=0x%x p1.b=0x%x\n",
+       SECBOOT_CMD_ID_VERIFY_DATA_TYPE,
+       operation.paramTypes,
+       image,
+       run_addr,
+       paddr,
+       operation.params[0].value.a,
+       operation.params[0].value.b,
+       operation.params[1].value.a,
+       operation.params[1].value.b);
+     
      result = TEEK_InvokeCommand(session,
                                    SECBOOT_CMD_ID_VERIFY_DATA_TYPE,
                                     &operation,
                                     &origin);
-     pr_err("EVEREST_LOG VERIFY_SOC_RET: proc=%s pid=%d image=%d run_addr=0x%x ret=0x%x origin=%u\n",
-       current->comm, current->pid, image, run_addr, ret, origin);
+     pr_err("EVEREST_LOG VERIFY_SOC_RET: proc=%s pid=%d image=%d run_addr=0x%x result=0x%x origin=%u\n",
+       current->comm, current->pid, image, run_addr, result, origin);
      if (result != TEEC_SUCCESS){
         /* cov_verified_start */
         sec_print_err("start  failed, result is 0x%x!\n", result);
