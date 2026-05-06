@@ -82,7 +82,7 @@ u32 dump_get_mdm_voice_status(void)
     return flag;
 }
 s32 bsp_dump_mem_init(void)
-{
+{
     return BSP_OK;
 }
 EXPORT_SYMBOL_GPL(bsp_dump_register_field);
