@@ -94,14 +94,14 @@ enum
     HWCAM_DATA_TABLE_ENTRY_USED                         =   1, //ints
 };
 
-typedef struct _tag_hwcam_buf_info
+struct _tag_hwcam_buf_info
 {
     hwcam_buf_kind_t                                    kind;
     int                                                 fd;
     uint32_t                                            size;
     uint32_t                                            frame;
     int                                                 plane;
-} hwcam_buf_info_t;
+};
 
 typedef struct _tag_hwcam_stream_info
 {
@@ -138,7 +138,7 @@ enum
     HWCAM_DATA_ALIGNMENT                                =   sizeof(uint32_t),
 };
 
-typedef struct _tag_hwcam_data_entry
+struct _tag_hwcam_data_entry
 {
     int32_t                                             prev;
     int32_t                                             next;
@@ -148,12 +148,12 @@ typedef struct _tag_hwcam_data_entry
     uint32_t const                                      dim;
     uint32_t const                                      offset;
     uint32_t                                            used;
-} hwcam_data_entry_t;
+};
 
 /**
  * @brief a self-sufficient data table, ALL VARIABLES IN IT MUST BE SCALAR TYPE.
  */
-typedef struct _tag_hwcam_data_table
+struct _tag_hwcam_data_table
 {
     char const                                          name[HWCAM_DATA_TABLE_NAME_SIZE];
     uint32_t const                                      total_size;
@@ -162,7 +162,7 @@ typedef struct _tag_hwcam_data_table
     hwcam_data_entry_t                                  used_list;
     hwcam_data_entry_t                                  unused_list;
     hwcam_data_entry_t                                  entries[0];
-} hwcam_data_table_t;
+};
 
 /* cdphy-CSI2 info */
 typedef enum _phy_id_e
@@ -254,7 +254,7 @@ hwcam_data_table_entry_index(hwcam_data_table_t* tbl,
 {
     return tbl->entries <= cur
         && cur < tbl->entries + tbl->entry_count
-        ? cur - tbl->entries : -1ul;
+        ? cur - tbl->entries : (uint32_t)-1;
 }
 
 static inline bool
@@ -541,7 +541,7 @@ typedef enum _tag_hwcam_cfgreq2dev_kind
 
 /* add for 32+64 */
 #if 1
-typedef struct _tag_hwcam_cfgreq
+struct _tag_hwcam_cfgreq
 {
     union {
 		hwcam_user_intf_t*                              user;
@@ -554,19 +554,19 @@ typedef struct _tag_hwcam_cfgreq
     uint32_t                                       		seq;
     int                                                 rc;
     uint32_t                                       		one_way : 1;
-} hwcam_cfgreq_t; 
+}; 
 #else
-typedef struct _tag_hwcam_cfgreq
+struct _tag_hwcam_cfgreq
 {
     hwcam_user_intf_t*                                  user;
     hwcam_cfgreq_intf_t*                                intf;
     unsigned long                                       seq;
     int                                                 rc;
     unsigned long                                       one_way : 1;
-} hwcam_cfgreq_t;
+};
 #endif
 
-typedef struct _tag_hwcam_cfgreq2dev
+struct _tag_hwcam_cfgreq2dev
 {
     hwcam_cfgreq_t                                      req;
     hwcam_cfgreq2dev_kind_t                             kind;
@@ -578,7 +578,7 @@ typedef struct _tag_hwcam_cfgreq2dev
             int                                         moduleID;
         }                                               pipeline;
     };
-} hwcam_cfgreq2dev_t;
+};
 
 typedef enum _tag_hwcam_cfgreq2pipeline_kind
 {
@@ -598,7 +598,7 @@ typedef enum _tag_hwcam_cfgreq2pipeline_kind
     HWCAM_CFGPIPELINE_REQ_MAX,
 } hwcam_cfgreq2pipeline_kind_t;
 
-typedef struct _tag_hwcam_cfgreq2pipeline
+struct _tag_hwcam_cfgreq2pipeline
 {
     hwcam_cfgreq_t                                      req;
     hwcam_cfgreq2pipeline_kind_t                        kind;
@@ -615,7 +615,7 @@ typedef struct _tag_hwcam_cfgreq2pipeline
         }                                               stream;
         hwcam_buf_info_t                                buf;
     };
-} hwcam_cfgreq2pipeline_t;
+};
 
 typedef enum _tag_hwcam_cfgreq2stream_kind
 {
@@ -638,7 +638,7 @@ typedef enum _tag_hwcam_cfgreq2stream_kind
     HWCAM_CFGSTREAM_REQ_MAX,
 } hwcam_cfgreq2stream_kind_t;
 
-typedef struct _tag_hwcam_cfgreq2stream
+struct _tag_hwcam_cfgreq2stream
 {
     hwcam_cfgreq_t                                      req;
     hwcam_cfgreq2stream_kind_t                          kind;
@@ -649,7 +649,7 @@ typedef struct _tag_hwcam_cfgreq2stream
             int                                         index;
         }                                               unmount_graphic_buf;
     };
-} hwcam_cfgreq2stream_t;
+};
 
 #endif // __HW_ALAN_MEDIA_CAMERA_H__
 
