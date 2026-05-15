@@ -1,6 +1,5 @@
 
 
-
 #ifndef _TEEK_CLIENT_CONSTANTS_H_
 #define _TEEK_CLIENT_CONSTANTS_H_
 
@@ -10,26 +9,26 @@ enum global_service_cmd_id {
 	GLOBAL_CMD_ID_OPEN_SESSION = 0x2,
 	GLOBAL_CMD_ID_CLOSE_SESSION = 0x3,
 	GLOBAL_CMD_ID_LOAD_SECURE_APP = 0x4,
-	/* < Global Task ????????????????*/
-	GLOBAL_CMD_ID_NEED_LOAD_APP = 0x5,/* < Global Task ?????????????????????????? */
+	/**< Global Task ????????????????*/
+	GLOBAL_CMD_ID_NEED_LOAD_APP = 0x5,/**< Global Task ??????????????????????????*/
 	GLOBAL_CMD_ID_REGISTER_AGENT = 0x6,
 	GLOBAL_CMD_ID_UNREGISTER_AGENT = 0x7,
 	GLOBAL_CMD_ID_REGISTER_NOTIFY_MEMORY = 0x8,
 	GLOBAL_CMD_ID_UNREGISTER_NOTIFY_MEMORY = 0x9,
-	GLOBAL_CMD_ID_INIT_CONTENT_PATH = 0xa,	/* < Global Task??????content path */
+	GLOBAL_CMD_ID_INIT_CONTENT_PATH = 0xa,    /**< Global Task??????content path*/
 	GLOBAL_CMD_ID_TERMINATE_CONTENT_PATH = 0xb,
-	/* < Global Task????content path */
+	/**< Global Task????content path*/
 	GLOBAL_CMD_ID_ALLOC_EXCEPTION_MEM = 0xc,
 	GLOBAL_CMD_ID_TEE_TIME = 0xd,
 	GLOBAL_CMD_ID_TEE_INFO = 0xe,
 	GLOBAL_CMD_ID_REGISTER_RDR_MEM = 0xf,
-	GLOBAL_CMD_ID_KILL_TASK = 0x10,		 /* Global Task Kill session */
-	GLOBAL_CMD_ID_TUI_EXCEPTION = 0x11,	 /* TUI???????????? */
-	GLOBAL_CMD_ID_ADJUST_TIME = 0x12,	   /* TIME???????????? */
-	GLOBAL_CMD_ID_SET_CA_HASH = 0x13,	   /* set ca hash info????????????CA??????ha sh*/
+	GLOBAL_CMD_ID_KILL_TASK = 0x10,   /** Global Task Kill session */
+	GLOBAL_CMD_ID_TUI_EXCEPTION = 0x11,   /** TUI???????????? */
+	GLOBAL_CMD_ID_ADJUST_TIME = 0x12,   /** TIME???????????? */
+	GLOBAL_CMD_ID_SET_CA_HASH = 0x13,   /*set ca hash info????????????CA??????hash*/
 	GLOBAL_CMD_ID_SET_BUILD_VERSION = 0x14, /* set the Android's build version */
 	GLOBAL_CMD_ID_REGISTER_TTF_MEM = 0x15,
-	/* get session key for encrypting dialog */
+	/** get session key for encrypting dialog */
 	GLOBAL_CMD_ID_GET_SESSION_SECURE_PARAMS = 0x16,
 	GLOBAL_CMD_ID_REGISTER_MAILBOX = 0x17,
 	GLOBAL_CMD_ID_REGISTER_UNUSUAL_TTF_MEM = 0x18,
@@ -44,28 +43,27 @@ enum global_service_cmd_id {
 	GLOBAL_CMD_ID_LOAD_SECURE_APP_ION = 0x1e,
 	/* this cmd for tui to get notch_size */
 	GLOBAL_CMD_ID_TUI_NOTCH = 0x1f,
-	GLOBAL_CMD_ID_LATE_INIT = 0x20,
-	/* this cmd for tui to get information of foldable screen */
-	GLOBAL_CMD_ID_TUI_FOLD = 0x21,
 	GLOBAL_CMD_ID_UNKNOWN = 0x7FFFFFFE,
 	GLOBAL_CMD_ID_MAX = 0x7FFFFFFF
 };
 
-// Return Codes
-enum teec_result {
+/****************************************************
+ *		Return Codes
+ ****************************************************/
+enum TEEC_Result {
 	TEEC_SUCCESS = 0x0,
 	TEEC_ERROR_INVALID_CMD = 0x1,
 	TEEC_ERROR_SERVICE_NOT_EXIST = 0x2,
 	TEEC_ERROR_SESSION_NOT_EXIST = 0x3,
-	TEEC_ERROR_SESSION_MAXIMUM,	  /* < ???????????????????? */
-	TEEC_ERROR_REGISTER_EXIST_SERVICE,   /* < ?????????????????????? */
-	TEEC_ERROR_TAGET_DEAD_FATAL,		 /* < ????????Global???? ??(????????Global????????????????????) */
-	TEEC_ERROR_READ_DATA,			/* < ????????????  */
-	TEEC_ERROR_WRITE_DATA,		   /* < ????????????  */
-	TEEC_ERROR_TRUNCATE_OBJECT,	  /* < ????????????  */
-	TEEC_ERROR_SEEK_DATA,			/* < ????????????  */
-	TEEC_ERROR_RENAME_OBJECT,		/* < ??????????????  */
-	TEEC_ERROR_TRUSTED_APP_LOAD_ERROR,   /* < ????????????????????????????*/
+	TEEC_ERROR_SESSION_MAXIMUM,		 /**< ???????????????????? */
+	TEEC_ERROR_REGISTER_EXIST_SERVICE,	 /**< ?????????????????????? */
+	TEEC_ERROR_TAGET_DEAD_FATAL,		 /**< ????????Global???? ??(????????Global????????????????????) */
+	TEEC_ERROR_READ_DATA,			 /**< ????????????	*/
+	TEEC_ERROR_WRITE_DATA,			 /**< ????????????	*/
+	TEEC_ERROR_TRUNCATE_OBJECT,		 /**< ????????????	*/
+	TEEC_ERROR_SEEK_DATA,			 /**< ????????????	*/
+	TEEC_ERROR_RENAME_OBJECT,		 /**< ??????????????  */
+	TEEC_ERROR_TRUSTED_APP_LOAD_ERROR,	 /**< ????????????????????????????*/
 	TEEC_ERROR_GENERIC = 0xFFFF0000,
 	TEEC_ERROR_ACCESS_DENIED = 0xFFFF0001,
 	TEEC_ERROR_CANCEL = 0xFFFF0002,
@@ -93,8 +91,9 @@ enum teec_result {
 	TEE_ERROR_AUDIT_FAIL = 0xFFFF9112,
 };
 
-// Return Code Origins
-
+/****************************************************
+ *		Return Code Origins
+ ****************************************************/
 enum TEEC_ReturnCodeOrigin {
 	TEEC_ORIGIN_API = 0x1,
 	TEEC_ORIGIN_COMMS = 0x2,
@@ -103,16 +102,18 @@ enum TEEC_ReturnCodeOrigin {
 	TEEC_ORIGIN_TRUSTED_APP_TUI = 0x5,
 };
 
-// Shared Memory Control
-
+/****************************************************
+ *		Shared Memory Control
+ ****************************************************/
 enum TEEC_SharedMemCtl {
 	TEEC_MEM_INPUT = 0x1,
 	TEEC_MEM_OUTPUT = 0x2,
 	TEEC_MEM_INOUT = 0x3,
 };
 
-// API Parameter Types
-
+/****************************************************
+ *		API Parameter Types
+ ****************************************************/
 enum TEEC_ParamType {
 	TEEC_NONE = 0x0,
 	TEEC_VALUE_INPUT = 0x01,
@@ -138,8 +139,9 @@ enum TEE_ParamType {
 	TEE_PARAM_TYPE_ION_INPUT = 0x8,
 };
 
-// Session Login Methods
-
+/****************************************************
+ *		Session Login Methods
+ ****************************************************/
 enum TEEC_LoginMethod {
 	TEEC_LOGIN_PUBLIC = 0x0,
 	TEEC_LOGIN_USER,
@@ -153,23 +155,23 @@ enum TEEC_LoginMethod {
 /* dir: 0-inclue input, 1-include output, 2-both */
 static inline bool teec_value_type(unsigned int type, int dir)
 {
-	return (((dir == 0 || dir == 2) && type == TEEC_VALUE_INPUT) ||
-		((dir == 1 || dir == 2) && type == TEEC_VALUE_OUTPUT) ||
-		type == TEEC_VALUE_INOUT) ? true : false;
+	return (((0 == dir || 2 == dir) && TEEC_VALUE_INPUT == type) ||
+		((1 == dir || 2 == dir) && TEEC_VALUE_OUTPUT == type) ||
+		TEEC_VALUE_INOUT == type) ? true : false;
 }
 
 static inline bool teec_tmpmem_type(unsigned int type, int dir)
 {
-	return (((dir == 0 || dir == 2) && type == TEEC_MEMREF_TEMP_INPUT) ||
-		((dir == 1 || dir == 2) && type == TEEC_MEMREF_TEMP_OUTPUT) ||
-		type == TEEC_MEMREF_TEMP_INOUT) ? true : false;
+	return (((0 == dir || 2 == dir) && TEEC_MEMREF_TEMP_INPUT == type) ||
+		((1 == dir || 2 == dir) && TEEC_MEMREF_TEMP_OUTPUT == type) ||
+		TEEC_MEMREF_TEMP_INOUT == type) ? true : false;
 }
 
 static inline bool teec_memref_type(unsigned int type, int dir)
 {
-	return (((dir == 0 || dir == 2) && type == TEEC_MEMREF_PARTIAL_INPUT) ||
-		((dir == 1 || dir == 2) && type == TEEC_MEMREF_PARTIAL_OUTPUT) ||
-		type == TEEC_MEMREF_PARTIAL_INOUT) ? true : false;
+	return (((0 == dir || 2 == dir) && TEEC_MEMREF_PARTIAL_INPUT == type) ||
+		((1 == dir || 2 == dir) && TEEC_MEMREF_PARTIAL_OUTPUT == type) ||
+		TEEC_MEMREF_PARTIAL_INOUT == type) ? true : false;
 }
 
 #endif

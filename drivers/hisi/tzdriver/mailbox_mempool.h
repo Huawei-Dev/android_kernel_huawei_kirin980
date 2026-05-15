@@ -1,10 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2016-2019. All rights reserved.
- * Description: Mailbox memory managing for sharing memory with TEE.
- * Author: qiqingchao  q00XXXXXX
- * Create: 2016-06-21
- */
-
 #ifndef _MAILBOX_MEMPOOOL_H
 #define _MAILBOX_MEMPOOOL_H
 
@@ -15,11 +8,10 @@
 
 /* alloc options */
 #define MB_FLAG_ZERO 0x1 /* set 0 after alloc page */
-#define GLOBAL_UUID_LEN 17 /* first char represent global cmd */
 
 struct mb_cmd_pack {
-	unsigned char uuid[GLOBAL_UUID_LEN];
-	tc_ns_operation operation;
+	unsigned char uuid[17];
+	TC_NS_Operation operation;
 #ifdef SECURITY_AUTH_ENHANCE
 	unsigned char login_data[HASH_PLAINTEXT_ALIGNED_SIZE + IV_BYTESIZE];
 	unsigned char token[TOKEN_BUFFER_LEN];
@@ -30,7 +22,7 @@ struct mb_cmd_pack {
 #endif
 };
 
-void *mailbox_alloc(size_t size, unsigned int flag);
+void *mailbox_alloc(size_t size, int flag);
 void mailbox_free(const void *ptr);
 int mailbox_mempool_init(void);
 void mailbox_mempool_destroy(void);

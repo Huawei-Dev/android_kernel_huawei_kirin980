@@ -1,9 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2016-2019. All rights reserved.
- * Description: Funciton Declaration: Memory init, register for mailbox pool.
- * Author: qiqingchao  q00XXXXXX
- * Create: 2016-06-21
- */
 
 
 #ifndef _MEM_H_
@@ -19,16 +13,16 @@
 int tc_mem_init(void);
 void tc_mem_destroy(void);
 
-tc_ns_shared_mem *tc_mem_allocate(size_t len, bool from_mailbox);
-void tc_mem_free(tc_ns_shared_mem *shared_mem);
+TC_NS_Shared_MEM *tc_mem_allocate(size_t len, bool from_mailbox);
+void tc_mem_free(TC_NS_Shared_MEM *shared_mem);
 
-static inline void get_sharemem_struct(struct tag_tc_ns_shared_mem *sharemem)
+static inline void get_sharemem_struct(struct tag_TC_NS_Shared_MEM *sharemem)
 {
 	if (sharemem)
 		atomic_inc(&sharemem->usage);
 }
 
-static inline void put_sharemem_struct(struct tag_tc_ns_shared_mem *sharemem)
+static inline void put_sharemem_struct(struct tag_TC_NS_Shared_MEM *sharemem)
 {
 	if (sharemem) {
 		if (atomic_dec_and_test(&sharemem->usage))
@@ -36,6 +30,6 @@ static inline void put_sharemem_struct(struct tag_tc_ns_shared_mem *sharemem)
 	}
 }
 
-int tc_ns_register_ion_mem(void);
+int TC_NS_register_ion_mem(void);
 
 #endif

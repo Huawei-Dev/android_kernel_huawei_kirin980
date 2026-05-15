@@ -1,9 +1,4 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2016-2019. All rights reserved.
- * Description: Struct declaration for data for nonsecure world 
- * Author: qiqingchao  q00XXXXXX
- * Create: 2016-06-21
- */
+
 
 #ifndef _TC_NS_CLIENT_H_
 #define _TC_NS_CLIENT_H_
@@ -11,19 +6,16 @@
 #include "teek_client_type.h"
 
 #ifdef SECURITY_AUTH_ENHANCE
-#define SCRAMBLING_KEY_LEN	4
-#define TOKEN_BUFFER_LEN	42   /* token(32byte) + timestamp(8byte) + kernal_api(1byte) + sync(1byte) */
-#define TIMESTAMP_BUFFER_INDEX	32
-#define KERNAL_API_INDEX	40
-#define SYNC_INDEX	41
-#define UUID_LEN 16
-#define PARAM_NUM 4
-
+#define SCRAMBLING_KEY_LEN    4
+#define TOKEN_BUFFER_LEN    42   /* token(32byte) + timestamp(8byte) + kernal_api(1byte) + sync(1byte)*/
+#define TIMESTAMP_BUFFER_INDEX    32
+#define KERNAL_API_INDEX    40
+#define SYNC_INDEX    41
 #define TIMESTAMP_LEN_DEFAULT \
 	((KERNAL_API_INDEX) - (TIMESTAMP_BUFFER_INDEX))
 #define KERNAL_API_LEN \
 	((TOKEN_BUFFER_LEN) - (KERNAL_API_INDEX))
-#define TIMESTAMP_SAVE_INDEX	16
+#define TIMESTAMP_SAVE_INDEX    16
 #endif
 
 #ifndef ZERO_SIZE_PTR
@@ -34,7 +26,7 @@
 typedef struct {
 	__u32 method;
 	__u32 mdata;
-} tc_ns_client_login;
+} TC_NS_ClientLogin;
 
 typedef union {
 	struct {
@@ -46,43 +38,47 @@ typedef union {
 		__u64 *a_addr;
 		__u64 *b_addr;
 	} value;
-} tc_ns_client_param;
+} TC_NS_ClientParam;
 
 typedef struct {
-	int code;
+	__u32 code;
 	__u32 origin;
-} tc_ns_client_return;
+} TC_NS_ClientReturn;
 
 typedef struct {
-	unsigned char uuid[UUID_LEN];
+	unsigned char uuid[16];
 	__u32 session_id;
 	__u32 cmd_id;
-	tc_ns_client_return returns;
-	tc_ns_client_login login;
-	tc_ns_client_param params[PARAM_NUM];
-	__u32 param_types;
+	TC_NS_ClientReturn returns;
+	TC_NS_ClientLogin login;
+	TC_NS_ClientParam params[4];
+	__u32 paramTypes;
 	__u8 started;
 #ifdef SECURITY_AUTH_ENHANCE
 	void* teec_token;
 #endif
-	__u32 callingPid;
-	unsigned int file_size;
-	union {
-		char *file_buffer;
-		unsigned long long file_addr;
-	};
-} tc_ns_client_context;
+  	__u32 callingPid;
+} TC_NS_ClientContext;
 
 typedef struct {
 	uint32_t seconds;
 	uint32_t millis;
-} tc_ns_client_time;
+} TC_NS_Time;
 
-#define vmalloc_addr_valid(kaddr) \
+struct load_app_ioctl_struct {
+	TEEC_UUID uuid;
+	uint32_t file_size;
+	union {
+		char *file_buffer;
+		unsigned long long file_addr;
+	};
+};
+
+#define	vmalloc_addr_valid(kaddr) \
 	(((void *)(kaddr) >= (void *)VMALLOC_START) && \
 	((void *)(kaddr) < (void *)VMALLOC_END))
 
-#define modules_addr_valid(kaddr) \
+#define	modules_addr_valid(kaddr) \
 	(((void *)(kaddr) >= (void *)MODULES_VADDR) && \
 	((void *)(kaddr) < (void *)MODULES_END))
 
@@ -95,11 +91,11 @@ typedef struct {
 #define MAX_SHA_256_SZ 32
 
 #define TC_NS_CLIENT_IOCTL_SES_OPEN_REQ \
-	 _IOW(TC_NS_CLIENT_IOC_MAGIC, 1, tc_ns_client_context)
+	 _IOW(TC_NS_CLIENT_IOC_MAGIC, 1, TC_NS_ClientContext)
 #define TC_NS_CLIENT_IOCTL_SES_CLOSE_REQ \
-	_IOWR(TC_NS_CLIENT_IOC_MAGIC, 2, tc_ns_client_context)
+	_IOWR(TC_NS_CLIENT_IOC_MAGIC, 2, TC_NS_ClientContext)
 #define TC_NS_CLIENT_IOCTL_SEND_CMD_REQ \
-	_IOWR(TC_NS_CLIENT_IOC_MAGIC, 3, tc_ns_client_context)
+	_IOWR(TC_NS_CLIENT_IOC_MAGIC, 3, TC_NS_ClientContext)
 #define TC_NS_CLIENT_IOCTL_SHRD_MEM_RELEASE \
 	_IOWR(TC_NS_CLIENT_IOC_MAGIC, 4, unsigned int)
 #define TC_NS_CLIENT_IOCTL_WAIT_EVENT \
@@ -110,12 +106,14 @@ typedef struct {
 	_IOWR(TC_NS_CLIENT_IOC_MAGIC, 7, unsigned int)
 #define TC_NS_CLIENT_IOCTL_UNREGISTER_AGENT \
 	_IOWR(TC_NS_CLIENT_IOC_MAGIC, 8, unsigned int)
+#define TC_NS_CLIENT_IOCTL_LOAD_APP_REQ \
+	_IOWR(TC_NS_CLIENT_IOC_MAGIC, 9, struct load_app_ioctl_struct)
 #define TC_NS_CLIENT_IOCTL_NEED_LOAD_APP \
-	_IOWR(TC_NS_CLIENT_IOC_MAGIC, 10, tc_ns_client_context)
+	_IOWR(TC_NS_CLIENT_IOC_MAGIC, 10, TC_NS_ClientContext)
 #define TC_NS_CLIENT_IOCTL_ALLOC_EXCEPTING_MEM \
 	_IOWR(TC_NS_CLIENT_IOC_MAGIC, 12, unsigned int)
 #define TC_NS_CLIENT_IOCTL_CANCEL_CMD_REQ \
-	_IOWR(TC_NS_CLIENT_IOC_MAGIC, 13, tc_ns_client_context)
+	_IOWR(TC_NS_CLIENT_IOC_MAGIC, 13, TC_NS_ClientContext)
 #define TC_NS_CLIENT_IOCTL_LOGIN \
 	_IOWR(TC_NS_CLIENT_IOC_MAGIC, 14, int)
 #define TC_NS_CLIENT_IOCTL_TST_CMD_REQ \
@@ -123,17 +121,12 @@ typedef struct {
 #define TC_NS_CLIENT_IOCTL_TUI_EVENT \
 	_IOWR(TC_NS_CLIENT_IOC_MAGIC, 16, int)
 #define TC_NS_CLIENT_IOCTL_SYC_SYS_TIME \
-	_IOWR(TC_NS_CLIENT_IOC_MAGIC, 17, tc_ns_client_time)
+	_IOWR(TC_NS_CLIENT_IOC_MAGIC, 17, TC_NS_Time)
 #define TC_NS_CLIENT_IOCTL_SET_NATIVE_IDENTITY \
 	_IOWR(TC_NS_CLIENT_IOC_MAGIC, 18, int)
 #define TC_NS_CLIENT_IOCTL_LOAD_TTF_FILE_AND_NOTCH_HEIGHT \
 	_IOWR(TC_NS_CLIENT_IOC_MAGIC, 19, unsigned int)
 #define TC_NS_CLIENT_IOCTL_LOW_TEMPERATURE_MODE\
 	_IOWR(TC_NS_CLIENT_IOC_MAGIC, 20, unsigned int)
-#define TC_NS_CLIENT_IOCTL_LATEINIT\
-	_IOWR(TC_NS_CLIENT_IOC_MAGIC, 21, unsigned int)
 
-#ifdef CONFIG_HISI_CLANG
-#define TZ_CRYPTO_SHASH_DESCSIZE	128
-#endif
 #endif

@@ -1,22 +1,33 @@
+/**
+ * @file tee_client_list.h
+ *
+ * Copyright(C), 2008-2013, Huawei Tech. Co., Ltd. ALL RIGHTS RESERVED. \n
+ *
+ * ????????????????????????????????\n
+*/
 
-
+/** @defgroup TEEC_List ??????????????????????
+ *@ingroup TEEC_API
+ */
 
 #ifndef _TEE_CLIENT_LIST_H_
 #define _TEE_CLIENT_LIST_H_
-/*
+
+/**
  * @ingroup TEEC_List
  * ????????????
  */
 struct list_node {
 	struct list_node *next;
-	/* < ????next????   */
+	/**< ????next????	*/
 	struct list_node *prev;
-	/* < ????prev????   */
+	/**< ????prev????	*/
 };
 
-/*
+/**
  * @ingroup TEEC_List
  * @brief ????????????????
+ *
  * @par ????:
  * ??????????????????????????????????????
  * @param name [IN] ??????????????
@@ -27,19 +38,19 @@ struct list_node {
 		.prev = &name, \
 	}
 
-/*
+/**
  * @ingroup TEEC_List
  * ????????list??prev????
  */
 #define LIST_TAIL(list) ((list)->prev)
 
-/*
+/**
  * @ingroup TEEC_List
  * ????????list????????
  */
 #define LIST_EMPTY(list) ((list) == (list)->next)
 
-/*
+/**
  * @ingroup  TEEC_List
  * @brief ????????????????????
  *
@@ -59,7 +70,7 @@ struct list_node {
  * @since V100R002C00B301
  */
 static inline void list_insert_head(struct list_node *list,
-	struct list_node *entry)
+				    struct list_node *entry)
 {
 	list->next->prev = entry;
 	entry->next = list->next;
@@ -67,7 +78,7 @@ static inline void list_insert_head(struct list_node *list,
 	list->next = entry;
 }
 
-/*
+/**
  * @ingroup  TEEC_List
  * @brief ????????????????????
  *
@@ -87,7 +98,7 @@ static inline void list_insert_head(struct list_node *list,
  * @since V100R002C00B301
  */
 static inline void list_insert_tail(struct list_node *list,
-	struct list_node *entry)
+				    struct list_node *entry)
 {
 	entry->next = list;
 	entry->prev = list->prev;
@@ -95,7 +106,7 @@ static inline void list_insert_tail(struct list_node *list,
 	list->prev = entry;
 }
 
-/*
+/**
  * @ingroup  TEEC_List
  * @brief ????????
  *
@@ -119,7 +130,7 @@ static inline void list_remove(struct list_node *entry)
 	entry->next->prev = entry->prev;
 }
 
-/*
+/**
  * @ingroup  TEEC_List
  * @brief ??????????????
  *
@@ -141,6 +152,7 @@ static inline void list_remove(struct list_node *entry)
 static inline struct list_node *list_remove_head(struct list_node *list)
 {
 	struct list_node *entry = NULL;
+
 	if (!LIST_EMPTY(list)) {
 		entry = list->next;
 		list_remove(entry);
@@ -148,7 +160,7 @@ static inline struct list_node *list_remove_head(struct list_node *list)
 	return entry;
 }
 
-/*
+/**
  * @ingroup  TEEC_List
  * @brief ??????????????
  *
@@ -170,6 +182,7 @@ static inline struct list_node *list_remove_head(struct list_node *list)
 static inline struct list_node *list_remove_tail(struct list_node *list)
 {
 	struct list_node *entry = NULL;
+
 	if (!LIST_EMPTY(list)) {
 		entry = list->prev;
 		list_remove(entry);
@@ -177,3 +190,4 @@ static inline struct list_node *list_remove_tail(struct list_node *list)
 	return entry;
 }
 #endif
+
