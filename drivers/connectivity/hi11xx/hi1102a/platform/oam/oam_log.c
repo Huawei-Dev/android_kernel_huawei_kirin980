@@ -1,7 +1,7 @@
 
 
 /*****************************************************************************
-  1 头文件包含
+  1 ??????????
 *****************************************************************************/
 #include "oam_log.h"
 #include "securec.h"
@@ -15,7 +15,7 @@
 #define THIS_FILE_ID OAM_FILE_ID_OAM_LOG_C
 
 /*****************************************************************************
-  2 全局变量定义
+  2 ????????????
 *****************************************************************************/
 #ifdef _PRE_DEBUG_MODE
 oam_tx_complete_stat_stru g_ast_tx_complete_stat[WLAN_DEVICE_SUPPORT_MAX_NUM_SPEC];
@@ -28,19 +28,19 @@ static char *loglevel_string[OAM_LOG_LEVEL_BUTT];
 #endif
 
 #ifdef _PRE_WLAN_REPORT_PRODUCT_LOG
-oal_bool_enum_uint8 en_report_product_log_flag = OAL_TRUE;                     // ont log的默认开关，此时默认打开
-oal_uint8 vapid_to_chipid[WLAN_VAP_MAX_NUM_PER_DEVICE_LIMIT * 2] = {0};  // mac vap id到chip id的映射关系
-oal_uint8 featureid_to_eventid[OAM_SOFTWARE_FEATURE_BUTT];      // 软件的feature id 到 ont log event的映射关系
+oal_bool_enum_uint8 en_report_product_log_flag = OAL_TRUE;                     // ont log????????????????????????
+oal_uint8 vapid_to_chipid[WLAN_VAP_MAX_NUM_PER_DEVICE_LIMIT * 2] = {0};  // mac vap id??chip id??????????
+oal_uint8 featureid_to_eventid[OAM_SOFTWARE_FEATURE_BUTT];      // ??????feature id ?? ont log event??????????
 oam_pdt_log_stru oam_product_log;
 #endif
 
 /*****************************************************************************
-  3 函数实现
+  3 ????????
 *****************************************************************************/
 
 /*
- * 函 数 名  : OAL_PRINT2KERNEL
- * 功能描述  : 把打印信息保存一份到内核中
+ * ?? ?? ??  : OAL_PRINT2KERNEL
+ * ????????  : ??????????????????????????
  */
 oal_int32 OAL_PRINT2KERNEL(oal_uint32 ul_para,
                            oal_uint16 us_line_no,
@@ -52,7 +52,7 @@ oal_int32 OAL_PRINT2KERNEL(oal_uint32 ul_para,
     oal_int32 l_ret;
     oal_int8 pc_buf[OAM_LOG_PRINT_DATA_LENGTH];
 
-    /* 将压缩参数解析成单个参数 */
+    /* ???????????????????????? */
     oal_uint8 uc_vap_id = (ul_para >> 24) & 0xf;
     oal_uint16 us_file_no = ul_para & 0xffff;
     oam_log_level_enum_uint8 clog_level = (ul_para >> 28) & 0xf;
@@ -93,8 +93,8 @@ oal_uint32 oam_log_set_global_switch(oal_switch_enum_uint8 en_log_switch)
 }
 
 /*
- * 函 数 名  : oam_log_set_ratelimit_switch
- * 功能描述  : 设置日志的流控开关
+ * ?? ?? ??  : oam_log_set_ratelimit_switch
+ * ????????  : ??????????????????
  */
 OAL_STATIC oal_uint32 oam_log_set_ratelimit_switch(oam_ratelimit_type_enum_uint8 en_ratelimit_type,
                                                    oal_switch_enum_uint8 en_log_switch)
@@ -115,8 +115,8 @@ OAL_STATIC oal_uint32 oam_log_set_ratelimit_switch(oam_ratelimit_type_enum_uint8
 }
 
 /*
- * 函 数 名  : oam_log_get_ratelimit_switch
- * 功能描述  : 获取日志的流控开关
+ * ?? ?? ??  : oam_log_get_ratelimit_switch
+ * ????????  : ??????????????????
  */
 oal_uint32 oam_log_get_ratelimit_switch(oam_ratelimit_type_enum_uint8 en_ratelimit_type,
                                         oal_switch_enum_uint8 *pen_log_switch)
@@ -137,8 +137,8 @@ oal_uint32 oam_log_get_ratelimit_switch(oam_ratelimit_type_enum_uint8 en_ratelim
 }
 
 /*
- * 函 数 名  : oam_log_set_ratelimit_intervel
- * 功能描述  : 设置printk流控时间间隔，以秒为单位
+ * ?? ?? ??  : oam_log_set_ratelimit_intervel
+ * ????????  : ????printk????????????????????????
  */
 OAL_STATIC oal_uint32 oam_log_set_ratelimit_intervel(oam_ratelimit_type_enum_uint8 en_ratelimit_type,
                                                      oal_uint32 ul_interval)
@@ -162,8 +162,8 @@ OAL_STATIC oal_uint32 oam_log_set_ratelimit_intervel(oam_ratelimit_type_enum_uin
 }
 
 /*
- * 函 数 名  : oam_log_set_ratelimit_burst
- * 功能描述  : 设置printk流控的阈值
+ * ?? ?? ??  : oam_log_set_ratelimit_burst
+ * ????????  : ????printk??????????
  */
 OAL_STATIC oal_uint32 oam_log_set_ratelimit_burst(oam_ratelimit_type_enum_uint8 en_ratelimit_type,
                                                   oal_uint32 ul_burst)
@@ -187,8 +187,8 @@ OAL_STATIC oal_uint32 oam_log_set_ratelimit_burst(oam_ratelimit_type_enum_uint8 
 }
 
 /*
- * 函 数 名  : oam_log_set_ratelimit_param
- * 功能描述  : 设置日志流控参数
+ * ?? ?? ??  : oam_log_set_ratelimit_param
+ * ????????  : ????????????????
  */
 oal_uint32 oam_log_set_ratelimit_param(oam_ratelimit_type_enum_uint8 en_ratelimit_type,
                                        oam_ratelimit_stru *pst_printk_ratelimit)
@@ -215,8 +215,8 @@ oal_uint32 oam_log_set_ratelimit_param(oam_ratelimit_type_enum_uint8 en_ratelimi
 }
 
 /*
- * 函 数 名  : oam_log_get_ratelimit_param
- * 功能描述  : 获取日志流控参数
+ * ?? ?? ??  : oam_log_get_ratelimit_param
+ * ????????  : ????????????????
  */
 oal_uint32 oam_log_get_ratelimit_param(oam_ratelimit_type_enum_uint8 en_ratelimit_type,
                                        oam_ratelimit_stru *pst_printk_ratelimit)
@@ -241,11 +241,11 @@ oal_uint32 oam_log_get_ratelimit_param(oam_ratelimit_type_enum_uint8 en_ratelimi
 }
 
 /*
- * 函 数 名  : oam_log_ratelimit
- * 功能描述  : 检测相应的流控类型是否满足输出条件
- *             在ul_interval时间范围内只允许ul_burst条记录输出；
- *             在ul_interval内，若输出日志已经超过设定值，不再输出；
- *             等待ul_interval之后再重新输出，ul_begin重新赋当前值
+ * ?? ?? ??  : oam_log_ratelimit
+ * ????????  : ??????????????????????????????????
+ *             ??ul_interval????????????????ul_burst????????????
+ *             ??ul_interval????????????????????????????????????????
+ *             ????ul_interval????????????????ul_begin????????????
  */
 oam_ratelimit_output_enum_uint8 oam_log_ratelimit(oam_ratelimit_type_enum_uint8 en_ratelimit_type)
 {
@@ -255,37 +255,37 @@ oam_ratelimit_output_enum_uint8 oam_log_ratelimit(oam_ratelimit_type_enum_uint8 
 
     pst_ratelimit = &oam_mng_ctx.st_log_ctx.st_ratelimit[en_ratelimit_type];
 
-    // 判断流控开关状态
+    // ????????????????
     if (pst_ratelimit->en_ratelimit_switch == OAL_SWITCH_OFF) {
         return OAM_RATELIMIT_OUTPUT;
     }
 
-    // 若间隔为0 表明不流控
+    // ????????0 ??????????
     if (pst_ratelimit->ul_interval == 0) {
         return OAM_RATELIMIT_OUTPUT;
     }
 
     oal_spin_lock_irq_save(&pst_ratelimit->spin_lock, &ui_flags);
 
-    // 记录第一条日志的当前时间
+    // ????????????????????????
     if (pst_ratelimit->ul_begin == 0) {
         pst_ratelimit->ul_begin = OAL_TIME_JIFFY;
     }
 
-    // 起时时间+间隔在当前时间之前，表明间隔时间已经超时，需要重新计数了
+    // ????????+????????????????????????????????????????????????????????
     if (oal_time_is_before(pst_ratelimit->ul_begin + pst_ratelimit->ul_interval)) {
         pst_ratelimit->ul_begin = 0;
         pst_ratelimit->ul_printed = 0;
         pst_ratelimit->ul_missed = 0;
     }
 
-    /* 若未超时，判断当前时间周期内已输出日志计数是否达到限制输出数 */
-    /* 未达到限制的输出日志个数，继续输出 */
+    /* ???????????????????????????????????????????????????????????? */
+    /* ?????????????????????????????????? */
     if (pst_ratelimit->ul_burst && (pst_ratelimit->ul_burst > pst_ratelimit->ul_printed)) {
         pst_ratelimit->ul_printed++;
         en_ret = OAM_RATELIMIT_OUTPUT;
     }
-    /* 达到限制的输出日志个数，不输出；待下一个周期再输出 */
+    /* ?????????????????????????????????????????????????? */
     else {
         pst_ratelimit->ul_missed++;
         en_ret = OAM_RATELIMIT_NOT_OUTPUT;
@@ -297,8 +297,8 @@ oam_ratelimit_output_enum_uint8 oam_log_ratelimit(oam_ratelimit_type_enum_uint8 
 }
 
 /*
- * 函 数 名  : oam_log_set_vap_switch
- * 功能描述  : 设置VAP日志开关
+ * ?? ?? ??  : oam_log_set_vap_switch
+ * ????????  : ????VAP????????
  */
 oal_uint32 oam_log_set_vap_switch(oal_uint8 uc_vap_id,
                                   oal_switch_enum_uint8 en_log_switch)
@@ -319,9 +319,9 @@ oal_uint32 oam_log_set_vap_switch(oal_uint8 uc_vap_id,
 }
 
 /*
- * 函 数 名  : oam_log_set_vap_level
- * 功能描述  : 设置VAP下所有特性日志级别为en_log_level
- *             不允许设置成OAM_LOG_LEVEL_INFO级别,在命令行里进行限制，本函数不处理
+ * ?? ?? ??  : oam_log_set_vap_level
+ * ????????  : ????VAP????????????????????en_log_level
+ *             ????????????OAM_LOG_LEVEL_INFO????,????????????????????????????????
  */
 oal_uint32 oam_log_set_vap_level(oal_uint8 uc_vap_id, oam_log_level_enum_uint8 en_log_level)
 {
@@ -332,10 +332,10 @@ oal_uint32 oam_log_set_vap_level(oal_uint8 uc_vap_id, oam_log_level_enum_uint8 e
         return OAL_ERR_CODE_CONFIG_EXCEED_SPEC;
     }
 
-    /* 设置当前VAP的日志级别 */
+    /* ????????VAP?????????? */
     oam_mng_ctx.st_log_ctx.st_vap_log_info.aen_vap_log_level[uc_vap_id] = en_log_level;
 
-    /* 同时设置当前VAP下所有特性日志级别 */
+    /* ????????????VAP?????????????????? */
     for (en_feature_idx = 0; en_feature_idx < OAM_SOFTWARE_FEATURE_BUTT; en_feature_idx++) {
         oam_log_set_feature_level(uc_vap_id, en_feature_idx, en_log_level);
     }
@@ -384,10 +384,10 @@ oal_uint32 oam_log_set_feature_level(oal_uint8 uc_vap_id,
 }
 
 /*
- * 函 数 名  : oam_get_feature_id
- * 功能描述  : 由特性名称获取特性ID
- * 输入参数  : oal_uint8 *puc_feature_name
- * 输出参数  : puc_feature_id  对应特性名称的ID号
+ * ?? ?? ??  : oam_get_feature_id
+ * ????????  : ??????????????????ID
+ * ????????  : oal_uint8 *puc_feature_name
+ * ????????  : puc_feature_id  ??????????????ID??
  */
 oal_uint32 oam_get_feature_id(oal_uint8 *puc_feature_name,
                               oam_feature_enum_uint8 *puc_feature_id)
@@ -411,8 +411,8 @@ oal_uint32 oam_get_feature_id(oal_uint8 *puc_feature_name,
 }
 
 /*
- * 函 数 名  : oam_get_feature_name
- * 功能描述  : 获取指定特性ID的特性名称
+ * ?? ?? ??  : oam_get_feature_name
+ * ????????  : ????????????ID??????????
  */
 oal_uint32 oam_get_feature_name(oam_feature_enum_uint8 en_feature_id,
                                 oal_uint8 *puc_feature_name,
@@ -445,8 +445,8 @@ oal_uint32 oam_get_feature_name(oam_feature_enum_uint8 en_feature_id,
 }
 
 /*
- * 函 数 名  : oam_show_feature_list
- * 功能描述  : 显示特性缩写与全称的帮助信息
+ * ?? ?? ??  : oam_show_feature_list
+ * ????????  : ????????????????????????????
  */
 oal_uint32 oam_show_feature_list(oal_void)
 {
@@ -461,8 +461,8 @@ oal_uint32 oam_show_feature_list(oal_void)
 }
 
 /*
- * 函 数 名  : oam_log_format_string
- * 功能描述  : 根据格式,将日志信息写入到指定的文件中
+ * ?? ?? ??  : oam_log_format_string
+ * ????????  : ????????,????????????????????????????
  */
 OAL_STATIC oal_uint32 oam_log_format_string(oal_int8 *pac_output_data,
                                             oal_uint16 us_data_len,
@@ -490,12 +490,12 @@ OAL_STATIC oal_uint32 oam_log_format_string(oal_int8 *pac_output_data,
     };
     oal_int32 ret;
 
-    /* 获取系统TICK值 */
+    /* ????????TICK?? */
     ul_tick = (oal_uint32)OAL_TIME_GET_STAMP_MS();
 
     oam_get_feature_name(en_feature_id, auc_feature_name, OAL_SIZEOF(auc_feature_name));
 
-    /* 根据参数个数,将LOG信息保存到ac_file_data中 */
+    /* ????????????,??LOG??????????ac_file_data?? */
     switch (uc_param_cnt) {
         case 0:
             ret = snprintf_s(pac_output_data, us_data_len, us_data_len - 1, pac_print_format[uc_param_cnt],
@@ -555,10 +555,10 @@ OAL_STATIC oal_void oam_set_log_info_stru(oam_log_info_stru *pst_log_info,
 {
     oal_uint32 ul_tick;
 
-    /* 获取系统TICK值 */
+    /* ????????TICK?? */
     ul_tick = (oal_uint32)OAL_TIME_GET_STAMP_MS();
 
-    /* 为日志结构体整数成员赋值 */
+    /* ???????????????????????? */
     pst_log_info->st_vap_log_level.bit_vap_id = uc_vap_id;
     pst_log_info->st_vap_log_level.bit_log_level = en_log_level;
     pst_log_info->us_file_id = us_file_id;
@@ -571,29 +571,29 @@ OAL_STATIC oal_void oam_set_log_info_stru(oam_log_info_stru *pst_log_info,
     pst_log_info->al_param[3] = l_param4;
 }
 
-/* UT需要部分接口进行测试 */
+/* UT???????????????????? */
 #if ((_PRE_OS_VERSION_WIN32 == _PRE_OS_VERSION) || (_PRE_OS_VERSION_WIN32_RAW == _PRE_OS_VERSION))
 /*
- * 函 数 名  : oam_log_check_param
- * 功能描述  : 检查VAP编号、模块ID和打印级别的有效性
+ * ?? ?? ??  : oam_log_check_param
+ * ????????  : ????VAP??????????ID??????????????????
  */
 OAL_STATIC oal_uint32 oam_log_check_param(oal_uint8 uc_vap_id,
                                           oam_feature_enum_uint8 en_feature_id,
                                           oam_log_level_enum_uint8 en_log_level)
 {
-    /* 判断VAP是否合理 */
+    /* ????VAP???????? */
     if (OAL_UNLIKELY(uc_vap_id >= WLAN_VAP_SUPPORT_MAX_NUM_LIMIT)) {
         OAM_IO_PRINTK("invalid uc_vap_id[%d]. \r\n", uc_vap_id);
         return OAL_ERR_CODE_CONFIG_EXCEED_SPEC;
     }
 
-    /* 判断特性ID的合理性 */
+    /* ????????ID???????? */
     if (OAL_UNLIKELY(en_feature_id >= OAM_SOFTWARE_FEATURE_BUTT)) {
         OAM_IO_PRINTK("invalid en_feature_id[%d]. \r\n", en_feature_id);
         return OAL_ERR_CODE_CONFIG_EXCEED_SPEC;
     }
 
-    /* 判断打印级别的合理性 */
+    /* ???????????????????? */
     if (OAL_UNLIKELY(en_log_level >= OAM_LOG_LEVEL_BUTT)) {
         OAM_IO_PRINTK("invalid en_log_level[%d]. \r\n", en_log_level);
         return OAL_ERR_CODE_CONFIG_EXCEED_SPEC;
@@ -603,8 +603,8 @@ OAL_STATIC oal_uint32 oam_log_check_param(oal_uint8 uc_vap_id,
 }
 
 /*
- * 函 数 名  : oam_log_get_feature_level
- * 功能描述  : 获取VAP特性日志级别
+ * ?? ?? ??  : oam_log_get_feature_level
+ * ????????  : ????VAP????????????
  */
 OAL_STATIC oal_uint32 oam_log_get_feature_level(oal_uint8 uc_vap_id,
                                                 oam_feature_enum_uint8 en_feature_id,
@@ -631,8 +631,8 @@ OAL_STATIC oal_uint32 oam_log_get_feature_level(oal_uint8 uc_vap_id,
 }
 
 /*
- * 函 数 名  : oam_log_get_global_switch
- * 功能描述  : 获取全局开关状态
+ * ?? ?? ??  : oam_log_get_global_switch
+ * ????????  : ????????????????
  */
 OAL_STATIC oal_uint32 oam_log_get_global_switch(oal_switch_enum_uint8 *pen_log_switch)
 {
@@ -646,8 +646,8 @@ OAL_STATIC oal_uint32 oam_log_get_global_switch(oal_switch_enum_uint8 *pen_log_s
 }
 
 /*
- * 函 数 名  : oam_log_get_vap_switch
- * 功能描述  : 获取VAP日志开关
+ * ?? ?? ??  : oam_log_get_vap_switch
+ * ????????  : ????VAP????????
  */
 OAL_STATIC oal_uint32 oam_log_get_vap_switch(oal_uint8 uc_vap_id,
                                              oal_switch_enum_uint8 *pen_log_switch)
@@ -669,8 +669,8 @@ OAL_STATIC oal_uint32 oam_log_get_vap_switch(oal_uint8 uc_vap_id,
 #endif
 
 /*
- * 函 数 名  : oam_log_print_to_console
- * 功能描述  : 日志输出至串口终端
+ * ?? ?? ??  : oam_log_print_to_console
+ * ????????  : ??????????????????
  */
 OAL_STATIC oal_uint32 oam_log_print_to_console(oal_uint8 uc_vap_id,
                                                oam_feature_enum_uint8 en_feature_id,
@@ -684,7 +684,7 @@ OAL_STATIC oal_uint32 oam_log_print_to_console(oal_uint8 uc_vap_id,
                                                oal_int32 l_param3,
                                                oal_int32 l_param4)
 {
-    oal_int8 ac_print_buff[OAM_PRINT_FORMAT_LENGTH]; /* 用于保存写入到文件中的格式 */
+    oal_int8 ac_print_buff[OAM_PRINT_FORMAT_LENGTH]; /* ?????????????????????????? */
 
     oam_log_format_string(ac_print_buff,
                           OAM_PRINT_FORMAT_LENGTH,
@@ -706,20 +706,20 @@ OAL_STATIC oal_uint32 oam_log_print_to_console(oal_uint8 uc_vap_id,
 }
 
 /*
- * 函 数 名  : oam_log_print_to_file
- * 功能描述  : 将日志信息打印到文件中
- * 输入参数  : 1) VAP编号
- *             2) 文件ID
- *             3) 行号
- *             4) 模块ID
- *             5) 打印级别
- *             6) 要打印的字符串
- *             7) 打印的参数个数
- *             8) 需要打印的第一个参数
- *             9) 需要打印的第二个参数
- *             10)需要打印的第三个参数
- *             11)需要打印的第四个参数
- * 输出参数  : 无
+ * ?? ?? ??  : oam_log_print_to_file
+ * ????????  : ??????????????????????
+ * ????????  : 1) VAP????
+ *             2) ????ID
+ *             3) ????
+ *             4) ????ID
+ *             5) ????????
+ *             6) ??????????????
+ *             7) ??????????????
+ *             8) ????????????????????
+ *             9) ????????????????????
+ *             10)????????????????????
+ *             11)????????????????????
+ * ????????  : ??
  */
 oal_uint32 oam_log_print_to_file(oal_uint8 uc_vap_id,
                                  oam_feature_enum_uint8 en_feature_id,
@@ -734,7 +734,7 @@ oal_uint32 oam_log_print_to_file(oal_uint8 uc_vap_id,
                                  oal_int32 l_param4)
 {
 #ifdef _PRE_WIFI_DMT
-    oal_int8 ac_output_data[OAM_PRINT_FORMAT_LENGTH]; /* 用于保存写入到文件中的格式 */
+    oal_int8 ac_output_data[OAM_PRINT_FORMAT_LENGTH]; /* ?????????????????????????? */
     oal_uint32 ul_ret;
 
     oam_log_format_string(ac_output_data,
@@ -761,20 +761,20 @@ oal_uint32 oam_log_print_to_file(oal_uint8 uc_vap_id,
 }
 
 /*
- * 函 数 名  : oam_log_print_to_sdt
- * 功能描述  : 日志的标准输出函数
- * 输入参数  : 1) VAP编号
- *             2) 文件ID
- *             3) 行号
- *             4) 模块ID
- *             5) 打印级别
- *             6) 要打印的字符串
- *             7) 打印的参数个数
- *             8) 需要打印的第一个参数
- *             9) 需要打印的第二个参数
- *             10)需要打印的第三个参数
- *             11)需要打印的第四个参数
- * 输出参数  : 无
+ * ?? ?? ??  : oam_log_print_to_sdt
+ * ????????  : ??????????????????
+ * ????????  : 1) VAP????
+ *             2) ????ID
+ *             3) ????
+ *             4) ????ID
+ *             5) ????????
+ *             6) ??????????????
+ *             7) ??????????????
+ *             8) ????????????????????
+ *             9) ????????????????????
+ *             10)????????????????????
+ *             11)????????????????????
+ * ????????  : ??
  */
 OAL_STATIC oal_uint32 oam_log_print_to_sdt(oal_uint8 uc_vap_id,
                                            oam_feature_enum_uint8 en_feature_id,
@@ -803,7 +803,7 @@ OAL_STATIC oal_uint32 oam_log_print_to_sdt(oal_uint8 uc_vap_id,
                           l_param3,
                           l_param4);
 
-    /* WARNING和ERROR级别流控 */
+    /* WARNING??ERROR???????? */
     if ((en_log_level != OAM_LOG_LEVEL_INFO)
         && (OAM_RATELIMIT_NOT_OUTPUT == oam_log_ratelimit(OAM_RATELIMIT_TYPE_LOG))) {
         return OAL_SUCC;
@@ -819,8 +819,8 @@ OAL_STATIC oal_uint32 oam_log_print_to_sdt(oal_uint8 uc_vap_id,
 }
 
 /*
- * 函 数 名  : oam_log_print_n_param
- * 功能描述  : LOG模块提供的LOG打印函数总入口(N个参数)
+ * ?? ?? ??  : oam_log_print_n_param
+ * ????????  : LOG??????????LOG??????????????(N??????)
  */
 OAL_STATIC oal_uint32 oam_log_print_n_param(oal_uint32 ul_para,
                                             oal_uint16 us_line_num,
@@ -843,10 +843,10 @@ OAL_STATIC oal_uint32 oam_log_print_n_param(oal_uint32 ul_para,
         return OAL_ERR_CODE_PTR_NULL;
     }
 
-    /* 若输出条件满足，判断输出方向 */
+    /* ???????????????????????????? */
     oam_get_output_type(&en_output_type);
     switch (en_output_type) {
-        /* 输出至控制台 */
+        /* ???????????? */
         case OAM_OUTPUT_TYPE_CONSOLE:
             ul_ret = oam_log_print_to_console(uc_vap_id,
                                               en_feature_id,
@@ -861,7 +861,7 @@ OAL_STATIC oal_uint32 oam_log_print_n_param(oal_uint32 ul_para,
                                               l_param4);
             break;
 
-        /* 输出至文件系统中 */
+        /* ???????????????? */
         case OAM_OUTPUT_TYPE_FS:
             ul_ret = oam_log_print_to_file(uc_vap_id,
                                            en_feature_id,
@@ -876,7 +876,7 @@ OAL_STATIC oal_uint32 oam_log_print_n_param(oal_uint32 ul_para,
                                            l_param4);
             break;
 
-        /* 输出至PC侧调测工具平台 */
+        /* ??????PC?????????????? */
         case OAM_OUTPUT_TYPE_SDT:
             ul_ret = oam_log_print_to_sdt(uc_vap_id,
                                           en_feature_id,
@@ -891,7 +891,7 @@ OAL_STATIC oal_uint32 oam_log_print_n_param(oal_uint32 ul_para,
 
             break;
 
-        /* 无效配置 */
+        /* ???????? */
         default:
             ul_ret = OAL_ERR_CODE_INVALID_CONFIG;
             break;
@@ -935,8 +935,8 @@ oal_void oam_pdt_log_free(oam_pdt_log_rpt_stru *pst_log)
 }
 
 /*
- * 函 数 名  : oam_pdt_log_add
- * 功能描述  : 将log节点添加到used链表
+ * ?? ?? ??  : oam_pdt_log_add
+ * ????????  : ??log??????????used????
  */
 oal_uint32 oam_pdt_log_add(oam_pdt_log_rpt_stru *pst_log)
 {
@@ -956,8 +956,8 @@ oal_uint32 oam_pdt_log_add(oam_pdt_log_rpt_stru *pst_log)
 }
 
 /*
- * 函 数 名  : oam_pdt_log_wq
- * 功能描述  : workqueue的入口函数，调用产品日志接口
+ * ?? ?? ??  : oam_pdt_log_wq
+ * ????????  : workqueue????????????????????????????
  */
 oal_void oam_pdt_log_wq(oal_work_stru *pst_work)
 {
@@ -979,10 +979,10 @@ oal_void oam_pdt_log_wq(oal_work_stru *pst_work)
     }
     oal_spin_unlock_irq_restore(&pst_mgr->st_spin_lock, &ul_irq_save);
 
-    // 从链表头部取一个节点
+    // ????????????????????
     OAL_DLIST_SEARCH_FOR_EACH(pst_entry, &st_used)
     {
-        // 获取节点指向的内容
+        // ??????????????????
         pst_log_rpt = OAL_DLIST_GET_ENTRY(pst_entry, oam_pdt_log_rpt_stru, st_list_entry);
 
         OAM_REPORT_PRODUCT_LOG_FUN(pst_log_rpt->uc_chip_id, pst_log_rpt->uc_event_id, 0,
@@ -1012,7 +1012,7 @@ oal_void oam_pdt_log_init(oal_void)
         return;
     }
 
-    /* 初始化工作队列 */
+    /* ?????????????? */
     oal_dlist_init_head(&pst_mgr->st_pdt_used_list);
     oal_dlist_init_head(&pst_mgr->st_pdt_free_list);
     OAL_INIT_WORK(&pst_mgr->st_pdt_log_work, oam_pdt_log_wq);
@@ -1040,8 +1040,8 @@ oal_void oam_pdt_log_exit(oal_void)
 }
 
 /*
- * 函 数 名  : __oam_report_product_log
- * 功能描述  : 日志打印函数：无参数日志输出
+ * ?? ?? ??  : __oam_report_product_log
+ * ????????  : ????????????????????????????
  */
 oal_void __oam_report_product_log(oal_uint32 ul_para,
                                   oal_int8 *pc_string,
@@ -1053,7 +1053,7 @@ oal_void __oam_report_product_log(oal_uint32 ul_para,
     oal_uint8 uc_vap_id = (ul_para >> 24) & 0xf;
     oam_feature_enum_uint8 en_feature_id = (ul_para >> 16) & 0xff;
     oal_int32 l_ret_len;
-    oal_int32 l_sum = 0;  // 实际长度
+    oal_int32 l_sum = 0;  // ????????
     oal_uint8 uc_chip_id;
     oal_time_stru st_time;
     oam_pdt_log_rpt_stru *pst_log_rpt = oam_pdt_log_new();
@@ -1063,10 +1063,10 @@ oal_void __oam_report_product_log(oal_uint32 ul_para,
         return;
     }
 
-    // ont产品chip0对应5g，chip1对应2g;
+    // ont????chip0????5g??chip1????2g;
     uc_chip_id = vapid_to_chipid[uc_vap_id];
 
-    // uc_chip_id为1时，对应2g; 转换后0对应2g，1对应5g;
+    // uc_chip_id??1????????2g; ??????0????2g??1????5g;
     uc_chip_id = (uc_chip_id + 1) % 2;
 
     memset_s(&st_time, OAL_SIZEOF(oal_time_stru), 0, OAL_SIZEOF(oal_time_stru));
@@ -1081,7 +1081,7 @@ oal_void __oam_report_product_log(oal_uint32 ul_para,
     if (l_ret_len < 0) {
         oam_pdt_log_free(pst_log_rpt);
         return;
-    } else if (l_ret_len < (oal_int32)OAL_SIZEOF(pst_log_rpt->auc_log_string) - 1) { // 还有空间
+    } else if (l_ret_len < (oal_int32)OAL_SIZEOF(pst_log_rpt->auc_log_string) - 1) { // ????????
         l_sum += l_ret_len;
         l_ret_len = snprintf_s(pst_log_rpt->auc_log_string + l_sum,
                                OAL_SIZEOF(pst_log_rpt->auc_log_string) - (oal_uint32)l_sum,
@@ -1101,7 +1101,7 @@ oal_void __oam_report_product_log(oal_uint32 ul_para,
     l_ret_len = (oal_int32)OAL_STRLEN(pc_string);
 
     if ((l_ret_len > 0 && pc_string[l_ret_len - 1] != '\n') || (l_ret_len == 0)) {
-        /* 需要留下两个字节存放'\n'、'\0' */
+        /* ????????????????????'\n'??'\0' */
         if (l_sum > (oal_int32)OAL_SIZEOF(pst_log_rpt->auc_log_string) - 2) {
             l_sum = (oal_int32)OAL_SIZEOF(pst_log_rpt->auc_log_string) - 2;
         }
@@ -1112,7 +1112,7 @@ oal_void __oam_report_product_log(oal_uint32 ul_para,
     pst_log_rpt->uc_chip_id = uc_chip_id;
     pst_log_rpt->uc_event_id = featureid_to_eventid[en_feature_id];
 
-    // 添加节点
+    // ????????
     oam_pdt_log_add(pst_log_rpt);
 }
 oal_void oam_report_product_log(oal_uint32 ul_para,
@@ -1128,12 +1128,12 @@ oal_void oam_report_product_log(oal_uint32 ul_para,
     if (en_report_product_log_flag == OAL_FALSE) {
         return;
     }
-    // info的打印太多，暂时不打印到ont日志中；只打印warning和error日志
+    // info????????????????????????ont??????????????warning??error????
     if (en_log_level >= OAM_LOG_LEVEL_INFO) {
         return;
     }
 
-    // 如果是HW_KER_WIFI_LOG_BUTT，则直接返回
+    // ??????HW_KER_WIFI_LOG_BUTT????????????
     if (featureid_to_eventid[en_feature_id] == HW_KER_WIFI_LOG_BUTT) {
         return;
     }
@@ -1144,8 +1144,8 @@ oal_void oam_report_product_log(oal_uint32 ul_para,
 #endif
 
 /*
- * 函 数 名  : oam_log_print0
- * 功能描述  : 日志打印函数：无参数日志输出
+ * ?? ?? ??  : oam_log_print0
+ * ????????  : ????????????????????????????
  */
 oal_uint32 oam_log_print0(oal_uint32 ul_para,
                           oal_uint16 us_line_num,
@@ -1167,8 +1167,8 @@ oal_uint32 oam_log_print0(oal_uint32 ul_para,
 }
 
 /*
- * 函 数 名  : oam_log_print1
- * 功能描述  : 日志打印函数：一个参数
+ * ?? ?? ??  : oam_log_print1
+ * ????????  : ??????????????????????
  */
 oal_uint32 oam_log_print1(oal_uint32 ul_para,
                           oal_uint16 us_line_num,
@@ -1192,8 +1192,8 @@ oal_uint32 oam_log_print1(oal_uint32 ul_para,
 }
 
 /*
- * 函 数 名  : oam_log_print2
- * 功能描述  : 日志打印函数：两个参数
+ * ?? ?? ??  : oam_log_print2
+ * ????????  : ??????????????????????
  */
 oal_uint32 oam_log_print2(oal_uint32 ul_para,
                           oal_uint16 us_line_num,
@@ -1206,7 +1206,7 @@ oal_uint32 oam_log_print2(oal_uint32 ul_para,
 #ifdef _PRE_WLAN_DFT_LOG
         OAL_PRINT2KERNEL(ul_para, us_line_num, pc_string, l_param1, l_param2, 0, 0);
 #endif
-        /* 参数个数为2 */
+        /* ??????????2 */
         ul_ret = oam_log_print_n_param(ul_para, us_line_num,
                                        pc_string, 2, (oal_int32)l_param1, (oal_int32)l_param2, 0, 0);
     }
@@ -1219,8 +1219,8 @@ oal_uint32 oam_log_print2(oal_uint32 ul_para,
 }
 
 /*
- * 函 数 名  : oam_log_print3
- * 功能描述  : 日志打印函数：三个参数
+ * ?? ?? ??  : oam_log_print3
+ * ????????  : ??????????????????????
  */
 oal_uint32 oam_log_print3(oal_uint32 ul_para,
                           oal_uint16 us_line_num,
@@ -1234,7 +1234,7 @@ oal_uint32 oam_log_print3(oal_uint32 ul_para,
 #ifdef _PRE_WLAN_DFT_LOG
         OAL_PRINT2KERNEL(ul_para, us_line_num, pc_string, l_param1, l_param2, l_param3, 0);
 #endif
-        /* 参数个数为3 */
+        /* ??????????3 */
         ul_ret = oam_log_print_n_param(ul_para, us_line_num,
                                        pc_string, 3, (oal_int32)l_param1, (oal_int32)l_param2, (oal_int32)l_param3, 0);
     }
@@ -1247,8 +1247,8 @@ oal_uint32 oam_log_print3(oal_uint32 ul_para,
 }
 
 /*
- * 函 数 名  : oam_log_print4
- * 功能描述  : 日志打印函数：四个参数
+ * ?? ?? ??  : oam_log_print4
+ * ????????  : ??????????????????????
  */
 oal_uint32 oam_log_print4(oal_uint32 ul_para,
                           oal_uint16 us_line_num,
@@ -1263,7 +1263,7 @@ oal_uint32 oam_log_print4(oal_uint32 ul_para,
 #ifdef _PRE_WLAN_DFT_LOG
         OAL_PRINT2KERNEL(ul_para, us_line_num, pc_string, l_param1, l_param2, l_param3, l_param4);
 #endif
-        /* 参数个数为4 */
+        /* ??????????4 */
         ul_ret = oam_log_print_n_param(ul_para, us_line_num, pc_string, 4, (oal_int32)l_param1,
                                        (oal_int32)l_param2, (oal_int32)l_param3, (oal_int32)l_param4);
     }
@@ -1276,15 +1276,15 @@ oal_uint32 oam_log_print4(oal_uint32 ul_para,
 }
 
 /*
- * 函 数 名  : oam_log_printk
- * 功能描述  : 串口输出日志
+ * ?? ?? ??  : oam_log_printk
+ * ????????  : ????????????
  */
 OAL_STATIC oal_uint32 oam_log_printk(oal_uint16 us_file_no,
                                      oal_uint16 us_line_num,
                                      const oal_int8 *pc_func_name,
                                      oal_int8 *pc_args_buf)
 {
-    oal_int8 ac_output_data[OAM_PRINT_FORMAT_LENGTH]; /* 用于保存写入到文件中的格式 */
+    oal_int8 ac_output_data[OAM_PRINT_FORMAT_LENGTH]; /* ?????????????????????????? */
     oal_int8 *pac_printk_format = (oal_int8 *)"Tick=%lu, FileId=%d, LineNo=%d, FuncName::%s, \"%s\"\r\n";
     oal_uint32 ul_tick;
     oal_int32 ret;
@@ -1304,9 +1304,9 @@ OAL_STATIC oal_uint32 oam_log_printk(oal_uint16 us_file_no,
 }
 
 /*
- * 函 数 名  : oam_log_console_printk
- * 功能描述  : 输出串口日志函数
- *             防止串口频繁打印，该串口使用了流控
+ * ?? ?? ??  : oam_log_console_printk
+ * ????????  : ????????????????
+ *             ??????????????????????????????????
  */
 oal_uint32 oam_log_console_printk(oal_uint16 us_file_no,
                                   oal_uint16 us_line_num,
@@ -1322,7 +1322,7 @@ oal_uint32 oam_log_console_printk(oal_uint16 us_file_no,
         return OAL_ERR_CODE_PTR_NULL;
     }
 
-    /* 流控判断 */
+    /* ???????? */
     if (OAM_RATELIMIT_NOT_OUTPUT == oam_log_ratelimit(OAM_RATELIMIT_TYPE_PRINTK)) {
         return OAL_SUCC;
     }
@@ -1341,8 +1341,8 @@ oal_uint32 oam_log_console_printk(oal_uint16 us_file_no,
 }
 
 /*
- * 函 数 名  : oam_log_ratelimit_init
- * 功能描述  : printk日志流控初始化
+ * ?? ?? ??  : oam_log_ratelimit_init
+ * ????????  : printk??????????????
  */
 oal_uint32 oam_log_ratelimit_init(oal_void)
 {
@@ -1377,9 +1377,9 @@ oal_void oam_log_param_init(oal_void)
 }
 
 /*
- * 函 数 名  : oam_log_init
- * 功能描述  : 对LOG模块进行初始化操作
- *             (系统上电和系统复位调用，在oam_init函数执行完后调用)
+ * ?? ?? ??  : oam_log_init
+ * ????????  : ??LOG??????????????????
+ *             (??????????????????????????oam_init????????????????)
  */
 oal_uint32 oam_log_init(oal_void)
 {
@@ -1396,23 +1396,23 @@ oal_uint32 oam_log_init(oal_void)
 
     oam_log_param_init();
 
-    /* 日志全局开关默认为开 */
+    /* ???????????????????? */
     ul_ret = oam_log_set_global_switch(OAL_SWITCH_ON);
 
     if (ul_ret != OAL_SUCC) {
         return ul_ret;
     }
 
-    /* VAP级别日志设置 */
+    /* VAP???????????? */
     for (uc_vap_idx = 0; uc_vap_idx < WLAN_VAP_SUPPORT_MAX_NUM_LIMIT; uc_vap_idx++) {
-        /* 设置VAP日志开关 */
+        /* ????VAP???????? */
         ul_ret += oam_log_set_vap_switch(uc_vap_idx, OAL_SWITCH_ON);
 
-        /* 设置VAP日志级别 */
+        /* ????VAP???????? */
         ul_ret += oam_log_set_vap_level(uc_vap_idx, OAM_LOG_DEFAULT_LEVEL);
 
 #if defined(_PRE_PRODUCT_ID_HI110X_DEV)
-        /* 设置feature打印级别 */
+        /* ????feature???????? */
         ul_ret += oam_log_set_feature_level(uc_vap_idx, OAM_SF_WPA, OAM_LOG_LEVEL_INFO);
 #endif
         if (ul_ret != OAL_SUCC) {
@@ -1420,36 +1420,36 @@ oal_uint32 oam_log_init(oal_void)
         }
     }
 
-    /* printk日志流控初始化 */
+    /* printk?????????????? */
     ul_ret = oam_log_ratelimit_init();
 
 #ifdef _PRE_WLAN_REPORT_PRODUCT_LOG
-    // ont log 初始化，默认为OAM_ONT_LOG_DEFAULT_EVENT
+    // ont log ??????????????OAM_ONT_LOG_DEFAULT_EVENT
     for (uc_feature_idx = 0; uc_feature_idx < OAM_SOFTWARE_FEATURE_BUTT; uc_feature_idx++) {
         featureid_to_eventid[uc_feature_idx] = OAM_ONT_LOG_DEFAULT_EVENT;
     }
 
-    // 初始化 cfg
+    // ?????? cfg
     for (uc_feature_idx = 0; uc_feature_idx < OAL_SIZEOF(auc_feature_ont_cfg) / OAL_SIZEOF(oal_uint8);
          uc_feature_idx++) {
         featureid_to_eventid[auc_feature_ont_cfg[uc_feature_idx]] = HW_KER_WIFI_LOG_CONFIG;
     }
-    // 初始化 connect
+    // ?????? connect
     for (uc_feature_idx = 0; uc_feature_idx < OAL_SIZEOF(auc_feature_ont_conn) / OAL_SIZEOF(oal_uint8);
          uc_feature_idx++) {
         featureid_to_eventid[auc_feature_ont_conn[uc_feature_idx]] = HW_KER_WIFI_LOG_CONNECT;
     }
-    // 初始化 cmdout
+    // ?????? cmdout
     for (uc_feature_idx = 0; uc_feature_idx < OAL_SIZEOF(auc_feature_ont_cmdout) / OAL_SIZEOF(oal_uint8);
          uc_feature_idx++) {
         featureid_to_eventid[auc_feature_ont_cmdout[uc_feature_idx]] = HW_KER_WIFI_LOG_CMDOUT;
     }
-    // 初始化 channel
+    // ?????? channel
     for (uc_feature_idx = 0; uc_feature_idx < OAL_SIZEOF(auc_feature_ont_channel) / OAL_SIZEOF(oal_uint8);
          uc_feature_idx++) {
         featureid_to_eventid[auc_feature_ont_channel[uc_feature_idx]] = HW_KER_WIFI_LOG_CHANNEL;
     }
-    // 初始化 collision
+    // ?????? collision
     for (uc_feature_idx = 0; uc_feature_idx < OAL_SIZEOF(auc_feature_ont_collision) / OAL_SIZEOF(oal_uint8);
          uc_feature_idx++) {
         featureid_to_eventid[auc_feature_ont_collision[uc_feature_idx]] = HW_KER_WIFI_LOG_COLLISION;
@@ -1460,8 +1460,8 @@ oal_uint32 oam_log_init(oal_void)
 }
 
 /*
- * 函 数 名  : oam_exception_record
- * 功能描述  : 异常统计记录更新
+ * ?? ?? ??  : oam_exception_record
+ * ????????  : ????????????????
  */
 oal_uint32 oam_exception_record(oal_uint8 uc_vap_id, oam_excp_type_enum_uint8 en_excp_id)
 {
@@ -1477,7 +1477,7 @@ oal_uint32 oam_exception_record(oal_uint8 uc_vap_id, oam_excp_type_enum_uint8 en
 
     oam_mng_ctx.st_exception_ctx[uc_vap_id].ast_excp_record_tbl[en_excp_id].ul_record_cnt++;
 
-    /* 已刷新，可上报 */
+    /* ?????????????? */
     oam_mng_ctx.st_exception_ctx[uc_vap_id].en_status = OAM_EXCP_STATUS_REFRESHED;
 
     oam_mng_ctx.st_exception_ctx[uc_vap_id].ast_excp_record_tbl[en_excp_id].en_status = OAM_EXCP_STATUS_REFRESHED;
@@ -1486,8 +1486,8 @@ oal_uint32 oam_exception_record(oal_uint8 uc_vap_id, oam_excp_type_enum_uint8 en
 }
 
 /*
- * 函 数 名  : oam_exception_stat_report
- * 功能描述  : 异常统计上报函数入口
+ * ?? ?? ??  : oam_exception_stat_report
+ * ????????  : ????????????????????
  */
 oal_uint32 oam_exception_stat_report(oal_uint8 uc_vap_id,
                                      oam_excp_type_enum_uint8 en_excp_id,
@@ -1735,8 +1735,8 @@ oal_uint32 oam_exception_stat_report(oal_uint8 uc_vap_id,
 }
 
 /*
- * 函 数 名  : oam_exception_stat_handler
- * 功能描述  : 针对异常的处理函数
+ * ?? ?? ??  : oam_exception_stat_handler
+ * ????????  : ??????????????????
  */
 oal_void oam_exception_stat_handler(oal_uint8 en_moduleid, oal_uint8 uc_vap_idx)
 {
@@ -1745,20 +1745,20 @@ oal_void oam_exception_stat_handler(oal_uint8 en_moduleid, oal_uint8 uc_vap_idx)
 
     switch (en_moduleid) {
         case OM_WIFI: {
-            /* 当前VAP异常统计为0 */
+            /* ????VAP??????????0 */
             if (oam_mng_ctx.st_exception_ctx[uc_vap_idx].en_status != OAM_EXCP_STATUS_REFRESHED) {
             } else {
                 pst_excp_record = oam_mng_ctx.st_exception_ctx[uc_vap_idx].ast_excp_record_tbl;
 
                 for (en_excp_idx = 0; en_excp_idx < OAM_EXCP_TYPE_BUTT; en_excp_idx++) {
-                    /* 记录数已刷新 */
+                    /* ???????????? */
                     if (pst_excp_record[en_excp_idx].en_status == OAM_EXCP_STATUS_REFRESHED) {
                         oam_exception_stat_report(uc_vap_idx, en_excp_idx, pst_excp_record[en_excp_idx].ul_record_cnt);
                         oam_mng_ctx.st_exception_ctx[uc_vap_idx].ast_excp_record_tbl[en_excp_idx].en_status = OAM_EXCP_STATUS_INIT;
                     }
                 }
 
-                /* 已上报，置初始状态 */
+                /* ?????????????????? */
                 oam_mng_ctx.st_exception_ctx[uc_vap_idx].en_status = OAM_EXCP_STATUS_INIT;
             }
         }

@@ -4,7 +4,7 @@
 #define __PLATFORM_COMMON_CLK_H__
 
 /*****************************************************************************
-  1 其他头文件包含
+  1 ??????????????
 *****************************************************************************/
 #include "oal_types.h"
 #include "plat_type.h"
@@ -12,7 +12,7 @@
 #define THIS_FILE_ID OAM_FILE_ID_PLATFORM_COMMON_CLK_H
 
 /*****************************************************************************
-  2 宏定义
+  2 ??????
 *****************************************************************************/
 
 #define HI_STATIC_ASSERT(cond_, name_) typedef char assert_failed_##name_[(cond_) ? 1 : -1]
@@ -20,7 +20,7 @@
 #define DCXO_DEVICE_MAX_BUF_LEN 64
 #define DCXO_CALI_DATA_BUF_LEN  (sizeof(dcxo_dl_para_stru))
 
-/* 以下是DCXO 读取的NV中的参数 */
+/* ??????DCXO ??????NV???????? */
 
 #define MALLOC_LEN            104
 #define NV_GNSS_ID            236
@@ -44,13 +44,13 @@
 #define PLAT_MAX_REPORT_CNT       10
 #define PLAT_CHR_ERRNO_DCXO_NV_RD 910800034
 
-/** 参数配置 **/
+/** ???????? **/
 #define INI_BUF_SIZE   16
 #define INI_TCXO_STR   "tcxo"
 #define INI_DCXO_STR   "dcxo"
 #define TCXO_DCXO_MODE "tcxo_dcxo_mode"
 
-// 默认下发给device的参数
+// ??????????device??????
 #define DEFAULT_T0       0x1D0000    // 29*2^16
 #define DEFAULT_A0       0
 #define DEFAULT_A1       0xFFFc0000  // -0.25*2^20
@@ -59,7 +59,7 @@
 #define DEFAULT_MODE     0
 #define DCXO_CHECK_MAGIC 0xA0A0A0A0
 
-// 默认a0~t0的min max参数
+// ????a0~t0??min max????
 #define DEF_A0_MIN (-3145728)  // -12*2^18
 #define DEF_A0_MAX 3145728     // 12*2^18
 #define DEF_A1_MIN (-419430)   // -0.4*2^20
@@ -71,7 +71,7 @@
 #define DEF_T0_MIN 1638400     // 25*2^16
 #define DEF_T0_MAX 2293760     // 35*2^16
 
-// a0~t0 min max 异常范围检测参数
+// a0~t0 min max ????????????????
 #define A0_EXCEP_PROT_MIN (-13107200)   // -50*2^18
 #define A0_EXCEP_PROT_MAX 13107200      // 50*2^18
 #define A1_EXCEP_PROT_MIN (-1048576)    // -1*2^20
@@ -83,7 +83,7 @@
 #define T0_EXCEP_PROT_MIN 1310720       // 20*2^16
 #define T0_EXCEP_PROT_MAX 2621440       // 40*2^16
 
-/* PMU 参数配置 */
+/* PMU ???????? */
 #define INI_PMU_CHIP_TYPE "pmu_version"
 #define INI_6555V300_STR  "Hi6555V300"
 #define INI_6421V700_STR  "Hi6421V700"
@@ -111,23 +111,23 @@
 #define PMU_6421V700_HIGH_BYTE 0x3AE
 
 /*****************************************************************************
-  3 枚举定义
+  3 ????????
 *****************************************************************************/
 
 /*****************************************************************************
-  4 全局变量声明
+  4 ????????????
 *****************************************************************************/
 
 /*****************************************************************************
-  5 消息头定义
+  5 ??????????
 *****************************************************************************/
 
 /*****************************************************************************
-  6 消息定义
+  6 ????????
 *****************************************************************************/
 
 /*****************************************************************************
-  7 STRUCT定义
+  7 STRUCT????
 *****************************************************************************/
 enum coeff_index_enum {
     COEFF_A0 = 0,
@@ -157,15 +157,15 @@ enum dcxo_tcxo_enum {
 };
 
 typedef struct {
-    oal_int32 valid;                            // 判断当期nv是否有效， 1:有效 0:无效
-    oal_int32 coeff_para[COEFF_NUM];            // 存放a0, a1, a2, a3, t0
-    oal_uint32 coeff_time;                      // gnss相关参数，平台未使用
-    oal_int32 reserve0;                         // 保留
-    oal_int32 coeff_th[COEFF_NUM][NV_CHK_PAIR]; // a0~t0阈值范围放到ini文件中配置，此处已经不再使用
-    oal_int32 t0_bit_width_fix;                 // 0: t0存储的是10位，需要乘以2^6修正, 1:t0存储的是16位，不需要修正
-    oal_int32 tempr_expand;                     // gnss相关参数，平台未使用
-    oal_int32 reserve1;                         // 保留
-    oal_uint32 crc_relt;                        // crc校验结果
+    oal_int32 valid;                            // ????????nv?????????? 1:???? 0:????
+    oal_int32 coeff_para[COEFF_NUM];            // ????a0, a1, a2, a3, t0
+    oal_uint32 coeff_time;                      // gnss????????????????????
+    oal_int32 reserve0;                         // ????
+    oal_int32 coeff_th[COEFF_NUM][NV_CHK_PAIR]; // a0~t0????????????ini????????????????????????????
+    oal_int32 t0_bit_width_fix;                 // 0: t0????????10????????????2^6????, 1:t0????????16??????????????
+    oal_int32 tempr_expand;                     // gnss????????????????????
+    oal_int32 reserve1;                         // ????
+    oal_uint32 crc_relt;                        // crc????????
 } dcxo_nv_info_stru;
 
 typedef struct {
@@ -182,20 +182,20 @@ typedef struct {
 } dcxo_pmu_addr_stru;
 
 typedef struct {
-    oal_int32 coeff_para[COEFF_NUM]; // 存放a0, a1, a2, a3, t0
-    oal_int32 reserve2[RSV_NUM];     // 未使用
-    oal_uint32 tcxo_dcxo_flag;       // 1:共时钟 0:非共时钟
+    oal_int32 coeff_para[COEFF_NUM]; // ????a0, a1, a2, a3, t0
+    oal_int32 reserve2[RSV_NUM];     // ??????
+    oal_uint32 tcxo_dcxo_flag;       // 1:?????? 0:????????
     dcxo_pmu_addr_stru pmu_addr;
     oal_uint32 check_data;
 } dcxo_dl_para_stru;
 
-// 从nv中读取的参数异常
+// ??nv????????????????
 typedef struct {
-    oal_int32 l_struct_len;       // 结构体的大小
-    oal_int32 l_para[COEFF_NUM];  // 存储依次为 a0, a1, a2, a3, t0
+    oal_int32 l_struct_len;       // ????????????
+    oal_int32 l_para[COEFF_NUM];  // ?????????? a0, a1, a2, a3, t0
 } plat_chr_nv_rd_excep_stru;
 
-// 由于devcie划定的存储空间限制，这里需要做判断
+// ????devcie??????????????????????????????????
 HI_STATIC_ASSERT((DCXO_DEVICE_MAX_BUF_LEN > (sizeof(dcxo_dl_para_stru))), device_mem_must_big_than_host);
 
 typedef struct {
@@ -204,21 +204,21 @@ typedef struct {
     int64 nv_init_flag;
     oal_uint32 dcxo_tcxo_mode;
     oal_uint32 pmu_chip_type;
-    oal_int32 check_value[COEFF_NUM][NV_CHK_PAIR];  // 最大值/最小值判断
+    oal_int32 check_value[COEFF_NUM][NV_CHK_PAIR];  // ??????/??????????
 } dcxo_manage_stru;
 
 /*****************************************************************************
-  8 UNION定义
+  8 UNION????
 *****************************************************************************/
 
 /*****************************************************************************
-  9 OTHERS定义
+  9 OTHERS????
 *****************************************************************************/
 extern oal_uint8 *pucDcxoDataBuf;
 extern dcxo_manage_stru dcxo_info;
 
 /*****************************************************************************
-  10 函数声明
+  10 ????????
 *****************************************************************************/
 extern oal_int32 dcxo_data_buf_malloc(oal_void);
 extern void dcxo_data_buf_free(void);

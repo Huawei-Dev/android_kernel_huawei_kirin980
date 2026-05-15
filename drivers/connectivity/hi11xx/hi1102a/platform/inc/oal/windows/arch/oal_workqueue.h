@@ -4,11 +4,11 @@
 #define __OAL_WINDOWS_WORKQUEUE_H__
 
 /*****************************************************************************
-  1 其他头文件包含
+  1 ??????????????
 *****************************************************************************/
 
 /*****************************************************************************
-  2 STRUCT定义
+  2 STRUCT????
 *****************************************************************************/
 typedef struct {
     oal_uint32 ul_resv;
@@ -23,23 +23,23 @@ typedef struct {
 } oal_delayed_work;
 
 /*****************************************************************************
-  3 枚举定义
+  3 ????????
 *****************************************************************************/
 
 /*****************************************************************************
-  4 全局变量声明
+  4 ????????????
 *****************************************************************************/
 
 /*****************************************************************************
-  5 消息头定义
+  5 ??????????
 *****************************************************************************/
 
 /*****************************************************************************
-  6 消息定义
+  6 ????????
 *****************************************************************************/
 
 /*****************************************************************************
-  7 宏定义
+  7 ??????
 *****************************************************************************/
 #define OAL_INIT_WORK(_p_work, _p_func)
 #define OAL_INIT_DELAYED_WORK(_work, _func)
@@ -50,22 +50,22 @@ static oal_workqueue_stru workqueue;
 #define oal_create_workqueue(name)               &workqueue
 
 /*****************************************************************************
-  8 UNION定义
+  8 UNION????
 *****************************************************************************/
 
 /*****************************************************************************
-  9 OTHERS定义
+  9 OTHERS????
 *****************************************************************************/
 
 /*****************************************************************************
-  10 函数声明
+  10 ????????
 *****************************************************************************/
 /*
- * 函 数 名  : oal_create_singlethread_workqueue
- * 功能描述  : 创建一个单线程的工作队列
- * 输入参数  : 无
- * 输出参数  : 无
- * 返 回 值  : 无
+ * ?? ?? ??  : oal_create_singlethread_workqueue
+ * ????????  : ????????????????????????
+ * ????????  : ??
+ * ????????  : ??
+ * ?? ?? ??  : ??
  */
 OAL_STATIC OAL_INLINE oal_workqueue_stru *oal_create_singlethread_workqueue(const oal_int8 *pc_workqueue_name)
 {
@@ -73,11 +73,11 @@ OAL_STATIC OAL_INLINE oal_workqueue_stru *oal_create_singlethread_workqueue(cons
 }
 
 /*
- * 函 数 名  : oal_destroy_workqueue
- * 功能描述  : 销毁工作队列
- * 输入参数  : 无
- * 输出参数  : 无
- * 返 回 值  : 无
+ * ?? ?? ??  : oal_destroy_workqueue
+ * ????????  : ????????????
+ * ????????  : ??
+ * ????????  : ??
+ * ?? ?? ??  : ??
  */
 OAL_STATIC OAL_INLINE oal_void oal_destroy_workqueue(oal_workqueue_stru *pst_workqueue)
 {
@@ -85,11 +85,11 @@ OAL_STATIC OAL_INLINE oal_void oal_destroy_workqueue(oal_workqueue_stru *pst_wor
 }
 
 /*
- * 函 数 名  : oal_queue_work
- * 功能描述  : 添加一个任务到工作队列
- * 输入参数  : 无
- * 输出参数  : 无
- * 返 回 值  : 无
+ * ?? ?? ??  : oal_queue_work
+ * ????????  : ??????????????????????
+ * ????????  : ??
+ * ????????  : ??
+ * ?? ?? ??  : ??
  */
 OAL_STATIC OAL_INLINE oal_int32 oal_queue_work(oal_workqueue_stru *pst_workqueue, oal_work_stru *pst_work)
 {
@@ -127,12 +127,12 @@ OAL_STATIC OAL_INLINE oal_int32 oal_queue_delayed_work_on(oal_int32 cpu, oal_wor
 }
 
 /*
- * 函 数 名  : oal_queue_delayed_system_work
- * 功能描述  : queue work on system wq after delay
- * 输入参数  : @dwork: delayable work to queue
+ * ?? ?? ??  : oal_queue_delayed_system_work
+ * ????????  : queue work on system wq after delay
+ * ????????  : @dwork: delayable work to queue
  *             @delay: number of jiffies to wait before queueing
- * 输出参数  : 无
- * 返 回 值  : 无
+ * ????????  : ??
+ * ?? ?? ??  : ??
  */
 OAL_STATIC OAL_INLINE oal_int32 oal_queue_delayed_system_work(oal_delayed_work *pst_work, oal_ulong delay)
 {

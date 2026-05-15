@@ -1,7 +1,7 @@
 
 
 /*****************************************************************************
-  1 Í·ÎÄ¼ş°üº¬
+  1 ??????????
 *****************************************************************************/
 #include "frw_task.h"
 
@@ -18,25 +18,25 @@
 #define THIS_FILE_ID OAM_FILE_ID_FRW_TASK_C
 
 /*****************************************************************************
-  2 È«¾Ö±äÁ¿¶¨Òå
+  2 ????????????
 *****************************************************************************/
 /******************************************************************************
-    ÊÂ¼ş´¦ÀíÈ«¾Ö±äÁ¿
+    ????????????????
 *******************************************************************************/
 frw_task_stru event_task[WLAN_FRW_MAX_NUM_CORES];
 
 /*****************************************************************************
-  3 º¯ÊıÊµÏÖ
+  3 ????????
 *****************************************************************************/
 
 #if (_PRE_FRW_FEATURE_PROCCESS_ENTITY_TYPE == _PRE_FRW_FEATURE_PROCCESS_ENTITY_THREAD)
 
 /*
- * º¯ Êı Ãû  : frw_set_thread_property
- * ¹¦ÄÜÃèÊö  : ÉèÖÃÏß³Ì²ÎÊıº¯Êı
- * ÊäÈë²ÎÊı  : p: µ±Ç°Ïß³Ì; policy: µ÷¶È²ßÂÔ; param:
- * Êä³ö²ÎÊı  : ÎŞ
- * ·µ »Ø Öµ  : ÎŞ
+ * ?? ?? ??  : frw_set_thread_property
+ * ????????  : ????????????????
+ * ????????  : p: ????????; policy: ????????; param:
+ * ????????  : ??
+ * ?? ?? ??  : ??
  */
 OAL_STATIC void frw_set_thread_property(oal_task_stru *p, int policy, struct sched_param *param, long nice)
 {
@@ -61,11 +61,11 @@ OAL_STATIC void frw_set_thread_property(oal_task_stru *p, int policy, struct sch
 }
 
 /*
- * º¯ Êı Ãû  : frw_task_thread
- * ¹¦ÄÜÃèÊö  : frw ÄÚºËÏß³ÌÖ÷³ÌĞò
- * ÊäÈë²ÎÊı  : ºËid
- * Êä³ö²ÎÊı  : ÎŞ
- * ·µ »Ø Öµ  : ÎŞ
+ * ?? ?? ??  : frw_task_thread
+ * ????????  : frw ??????????????
+ * ????????  : ??id
+ * ????????  : ??
+ * ?? ?? ??  : ??
  */
 OAL_STATIC oal_int32 frw_task_thread(oal_void *arg)
 {
@@ -86,7 +86,7 @@ OAL_STATIC oal_int32 frw_task_thread(oal_void *arg)
             break;
         }
 
-        /* stateÎªTASK_INTERRUPTIBLE£¬condition²»³ÉÁ¢ÔòÏß³Ì×èÈû£¬Ö±µ½±»»½ĞÑ½øÈëwaitqueue */
+        /* state??TASK_INTERRUPTIBLE??condition????????????????????????????????waitqueue */
         /*lint -e730*/
 #ifdef _PRE_FRW_EVENT_PROCESS_TRACE_DEBUG
         frw_event_last_pc_trace(__FUNCTION__, __LINE__, ul_bind_cpu);
@@ -106,7 +106,7 @@ OAL_STATIC oal_int32 frw_task_thread(oal_void *arg)
         frw_event_process_all_event((oal_uint)ul_bind_cpu);
 #if (_PRE_FRW_FEATURE_PROCCESS_ENTITY_TYPE == _PRE_FRW_FEATURE_PROCCESS_ENTITY_THREAD)
         if (ul_event_count == event_task[ul_bind_cpu].ul_total_event_cnt) {
-            /* ¿Õ×ª */
+            /* ???? */
             ul_empty_count++;
             if (ul_empty_count == ul_count_loop_time) {
                 DECLARE_DFT_TRACE_KEY_INFO("frw_sched_too_much", OAL_DFT_TRACE_EXCEP);
@@ -127,8 +127,8 @@ OAL_STATIC oal_int32 frw_task_thread(oal_void *arg)
 }
 
 /*
- * º¯ Êı Ãû  : frw_task_init
- * ¹¦ÄÜÃèÊö  : frw task³õÊ¼»¯½Ó¿Ú
+ * ?? ?? ??  : frw_task_init
+ * ????????  : frw task??????????
  */
 oal_uint32 frw_task_init(oal_void)
 {
@@ -161,8 +161,8 @@ oal_uint32 frw_task_init(oal_void)
 }
 
 /*
- * º¯ Êı Ãû  : frw_task_exit
- * ¹¦ÄÜÃèÊö  : frw taskÍË³öº¯Êı
+ * ?? ?? ??  : frw_task_exit
+ * ????????  : frw task????????
  */
 oal_void frw_task_exit(oal_void)
 {
@@ -177,16 +177,16 @@ oal_void frw_task_exit(oal_void)
 }
 
 /*
- * º¯ Êı Ãû  : frw_task_event_handler_register
- * ¹¦ÄÜÃèÊö  : ¹©Íâ²¿Ä£¿é×¢²átasklet´¦Àíº¯ÊıÖĞÖ´ĞĞµÄº¯ÊıŞ
+ * ?? ?? ??  : frw_task_event_handler_register
+ * ????????  : ??????????????tasklet?????????????????????
  */
 oal_void frw_task_event_handler_register(oal_void (*p_func)(oal_uint))
 {
 }
 
 /*
- * º¯ Êı Ãû  : frw_task_sched
- * ¹¦ÄÜÃèÊö  : »½ĞÑeventÊ±¼ä´¦ÀíÏß³Ì£¬Óëwake_event_interruptible¶ÔÓ¦
+ * ?? ?? ??  : frw_task_sched
+ * ????????  : ????event????????????????wake_event_interruptible????
  */
 oal_void frw_task_sched(oal_uint32 ul_core_id)
 {
@@ -194,8 +194,8 @@ oal_void frw_task_sched(oal_uint32 ul_core_id)
 }
 
 /*
- * º¯ Êı Ãû  : frw_task_set_state
- * ¹¦ÄÜÃèÊö  : ÉèÖÃÄÚºËÏß³ÌµÄ°ó¶¨×´Ì¬
+ * ?? ?? ??  : frw_task_set_state
+ * ????????  : ??????????????????????
  */
 oal_void frw_task_set_state(oal_uint32 ul_core_id, oal_uint8 uc_task_state)
 {
@@ -203,8 +203,8 @@ oal_void frw_task_set_state(oal_uint32 ul_core_id, oal_uint8 uc_task_state)
 }
 
 /*
- * º¯ Êı Ãû  : frw_task_get_state
- * ¹¦ÄÜÃèÊö  : »ñÈ¡ÄÚºËÏß³ÌµÄ°ó¶¨×´Ì¬
+ * ?? ?? ??  : frw_task_get_state
+ * ????????  : ??????????????????????
  */
 oal_uint8 frw_task_get_state(oal_uint32 ul_core_id)
 {
@@ -213,7 +213,7 @@ oal_uint8 frw_task_get_state(oal_uint32 ul_core_id)
 
 #elif (_PRE_FRW_FEATURE_PROCCESS_ENTITY_TYPE == _PRE_FRW_FEATURE_PROCCESS_ENTITY_TASKLET)
 
-// Ê¹ÓÃtasklet½øĞĞºË¼äÍ¨ĞÅ£¬tasklet³õÊ¼»¯Ê±Ö¸¶¨ºË¼äÍ¨ĞÅ·½Ïò
+// ????tasklet??????????????tasklet????????????????????????
 #if WLAN_FRW_MAX_NUM_CORES == 1
 #define FRW_DST_CORE(this_core) 0
 #elif WLAN_FRW_MAX_NUM_CORES == 2
@@ -226,8 +226,8 @@ oal_uint8 frw_task_get_state(oal_uint32 ul_core_id)
 OAL_STATIC oal_void frw_task_ipi_handler(oal_uint ui_arg);
 
 /*
- * º¯ Êı Ãû  : frw_task_init
- * ¹¦ÄÜÃèÊö  : tasklet³õÊ¼»¯½Ó¿Ú
+ * ?? ?? ??  : frw_task_init
+ * ????????  : tasklet??????????
  */
 oal_uint32 frw_task_init(oal_void)
 {
@@ -243,8 +243,8 @@ oal_uint32 frw_task_init(oal_void)
 }
 
 /*
- * º¯ Êı Ãû  : frw_task_exit
- * ¹¦ÄÜÃèÊö  : task ÍË³öº¯Êı
+ * ?? ?? ??  : frw_task_exit
+ * ????????  : task ????????
  */
 oal_void frw_task_exit(oal_void)
 {
@@ -257,8 +257,8 @@ oal_void frw_task_exit(oal_void)
 }
 
 /*
- * º¯ Êı Ãû  : frw_task_event_handler_register
- * ¹¦ÄÜÃèÊö  : ¹©Íâ²¿Ä£¿é×¢²átasklet´¦Àíº¯ÊıÖĞÖ´ĞĞµÄº¯Êı
+ * ?? ?? ??  : frw_task_event_handler_register
+ * ????????  : ??????????????tasklet????????????????????
  */
 oal_void frw_task_event_handler_register(oal_void (*p_func)(oal_uint))
 {
@@ -275,8 +275,8 @@ oal_void frw_task_event_handler_register(oal_void (*p_func)(oal_uint))
 }
 
 /*
- * º¯ Êı Ãû  : frw_remote_task_receive
- * ¹¦ÄÜÃèÊö  : ½«taskletµ÷¶ÈÖ´ĞĞ£¬±»IPIÖĞ¶Ïµ÷¶ÈÖ´ĞĞ
+ * ?? ?? ??  : frw_remote_task_receive
+ * ????????  : ??tasklet????????????IPI????????????
  */
 OAL_STATIC oal_void frw_remote_task_receive(void *info)
 {
@@ -285,8 +285,8 @@ OAL_STATIC oal_void frw_remote_task_receive(void *info)
 }
 
 /*
- * º¯ Êı Ãû  : frw_task_ipi_handler
- * ¹¦ÄÜÃèÊö  : Ê¹ÓÃIPIÖĞ¶Ï£¬µ÷¶ÈÄ¿±êcoreÉÏµÄtaskletÖ´ĞĞ´¦ÀíÊÂ¼ş
+ * ?? ?? ??  : frw_task_ipi_handler
+ * ????????  : ????IPI??????????????core????tasklet????????????
  */
 OAL_STATIC oal_void frw_task_ipi_handler(oal_uint ui_arg)
 {
@@ -303,8 +303,8 @@ OAL_STATIC oal_void frw_task_ipi_handler(oal_uint ui_arg)
 }
 
 /*
- * º¯ Êı Ãû  : frw_task_sched
- * ¹¦ÄÜÃèÊö  : taskµ÷¶È½Ó¿Ú
+ * ?? ?? ??  : frw_task_sched
+ * ????????  : task????????
  */
 oal_void frw_task_sched(oal_uint32 ul_core_id)
 {
@@ -325,16 +325,16 @@ oal_void frw_task_sched(oal_uint32 ul_core_id)
 }
 
 /*
- * º¯ Êı Ãû  : frw_task_set_state
- * ¹¦ÄÜÃèÊö  : ÉèÖÃtaskletµÄ×´Ì¬
+ * ?? ?? ??  : frw_task_set_state
+ * ????????  : ????tasklet??????
  */
 oal_void frw_task_set_state(oal_uint32 ul_core_id, oal_uint8 uc_task_state)
 {
 }
 
 /*
- * º¯ Êı Ãû  : frw_task_get_state
- * ¹¦ÄÜÃèÊö  : »ñÈ¡taskletµÄ×´Ì¬£¬taskletÒ»Ö±ÓëºË°ó¶¨
+ * ?? ?? ??  : frw_task_get_state
+ * ????????  : ????tasklet????????tasklet????????????
  */
 oal_uint8 frw_task_get_state(oal_uint32 ul_core_id)
 {

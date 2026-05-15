@@ -4,7 +4,7 @@
 #define __PLAT_CALI_H__
 
 /*****************************************************************************
-  1 头文件包含
+  1 ??????????
 *****************************************************************************/
 
 #include "oal_types.h"
@@ -12,7 +12,7 @@
 #include "plat_type.h"
 
 /*****************************************************************************
-  2 宏定义
+  2 ??????
 *****************************************************************************/
 
 #define OAL_2G_CHANNEL_NUM        13
@@ -40,37 +40,37 @@
 #define OAL_5G_IQ_CALI_TONE_NUM     8
 #define CHECK_5G_ENABLE             "band_5g_enable"
 #ifdef _PRE_WLAN_NEW_RXDC
-#define HI1102_CALI_RXDC_GAIN_LVL_NUM   (8)  /* rx dc补偿值档位数目 */
-#define HI1102_CALI_RXDC_COMP_SHIFT_NUM (16) /* rx dc补偿寄存器移位 */
+#define HI1102_CALI_RXDC_GAIN_LVL_NUM   (8)  /* rx dc?????????????? */
+#define HI1102_CALI_RXDC_COMP_SHIFT_NUM (16) /* rx dc?????????????? */
 #endif
 
 #ifdef _PRE_WLAN_NEW_TXDC
-#define HI1102_CALI_TXDC_GAIN_LVL_NUM (4) /* Tx dc补偿值档位数目 */
+#define HI1102_CALI_TXDC_GAIN_LVL_NUM (4) /* Tx dc?????????????? */
 #endif
 
-#define HI1102_CALI_TXIQ_LS_FILTER_TAP_NUM 11 /* Tx ls filter 抽头数 */
-#define HI1102_CALI_RXIQ_LS_FILTER_TAP_NUM 11 /* Rx ls filter 抽头数  */
+#define HI1102_CALI_TXIQ_LS_FILTER_TAP_NUM 11 /* Tx ls filter ?????? */
+#define HI1102_CALI_RXIQ_LS_FILTER_TAP_NUM 11 /* Rx ls filter ??????  */
 #define HI1102_CALI_IQ_TONE_NUM            8
 
 /*****************************************************************************
-  3 枚举定义
+  3 ????????
 *****************************************************************************/
 
 /*****************************************************************************
-  4 全局变量定义
+  4 ????????????
 *****************************************************************************/
 
 /*****************************************************************************
-  5 消息头定义
+  5 ??????????
 *****************************************************************************/
 
 /*****************************************************************************
-  6 消息定义
+  6 ????????
 *****************************************************************************/
 extern oal_uint8 g_uc_netdev_is_open;
 
 /*****************************************************************************
-  7 STRUCT定义
+  7 STRUCT????
 *****************************************************************************/
 
 typedef struct {
@@ -308,17 +308,17 @@ typedef struct {
 } oal_cali_param_stru;
 
 /*****************************************************************************
-  8 UNION定义
+  8 UNION????
 *****************************************************************************/
 #define OAL_WIFI_CALI_DATA_DOWNLOAD_LEN (OAL_SIZEOF(oal_cali_param_stru) - 4 - OAL_SIZEOF(oal_bfgn_cali_param_stru) + 4)
 #define OAL_WIFI_CALI_DATA_UPLOAD_LEN   (OAL_SIZEOF(oal_cali_param_stru) - 4)
 
 /*****************************************************************************
-  9 OTHERS定义
+  9 OTHERS????
 *****************************************************************************/
 
 /*****************************************************************************
-  10 函数声明
+  10 ????????
 *****************************************************************************/
 extern oal_int32 get_cali_count(oal_uint32 *count);
 extern oal_int32 get_bfgx_cali_data(oal_uint8 *buf, oal_uint32 *len, oal_uint32 buf_len);
@@ -329,7 +329,7 @@ extern void cali_data_buf_free(void);
 /*****************************************************************************
   11 add for hi1102a bfgx
 *****************************************************************************/
-/* enum定义不能超过BFGX_BT_CUST_INI_SIZE/4 (128) */
+/* enum????????????BFGX_BT_CUST_INI_SIZE/4 (128) */
 typedef enum {
     BFGX_CFG_INI_BT_MAXPOWER = 0,
     BFGX_CFG_INI_BT_EDRPOW_OFFSET,
@@ -357,7 +357,7 @@ typedef struct {
     int32 init_value;
 } bfgx_ini_cmd;
 
-/* 以下4个宏定义，如果要修改长度，需要同步修改device的宏定义 */
+/* ????4??????????????????????????????????????device???????? */
 #define BFGX_BT_CALI_DATA_SIZE             876
 #define WIFI_CALI_DATA_FOR_FM_RC_CODE_SIZE 20
 #define BFGX_NV_DATA_SIZE                  128
@@ -367,7 +367,7 @@ typedef struct {
 #define OAL_BT_NVRAM_NAME        "BTCALNV"
 #define OAL_BT_NVRAM_NUMBER      352
 
-/* 考虑结构体总体长度考虑SDIO下载长度512对齐特性，这里长度为1536 */
+/* ??????????????????????SDIO????????512????????????????????1536 */
 typedef struct {
     oal_uint8 auc_bfgx_data[BFGX_BT_CALI_DATA_SIZE];
     oal_uint8 auc_wifi_rc_code_data[WIFI_CALI_DATA_FOR_FM_RC_CODE_SIZE];

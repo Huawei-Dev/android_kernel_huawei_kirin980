@@ -40,7 +40,7 @@
 /*
  * 2 Global Variable Definition
  */
-#define CUST_PATH_INI_CONN             "/data/vendor/cust_conn/ini_cfg"     /*某运营商在不同产品的差异配置*/
+#define CUST_PATH_INI_CONN             "/data/vendor/cust_conn/ini_cfg"     /*????????????????????????????*/
 /* mutex for open ini file */
 struct mutex        file_mutex_etc;
 #if (_PRE_TARGET_PRODUCT_TYPE_E5 == _PRE_CONFIG_TARGET_PRODUCT)
@@ -96,7 +96,7 @@ static int32 ko_read_line(INI_FILE *fp, char *addr)
 
     cnt = 0;
 
-    // -2为预留换行符和结束符
+    // -2????????????????????
     while ((cnt < MAX_READ_LINE_NUM - 2) && ('\n' != auc_tmp[cnt]))
     {
         *addr++ = auc_tmp[cnt++];
@@ -816,12 +816,12 @@ int8 *get_str_from_file(int8 *pc_file_path, const int8 *pc_mask_str, const int8 
     }
     INI_INFO("open file %s success to find str \"%s\"!", pc_file_path, pc_mask_str);
     uc_str_check_len = OAL_STRLEN(pc_mask_str);
-    /* 由于每次比较都会留uc_str_check_len不比较所以不是0 */
+    /* ??????????????????uc_str_check_len??????????????0 */
     while (uc_str_check_len != (ret =oal_file_read_ext(fp, fp->f_pos, ac_read_buf, INI_KERNEL_READ_LEN)))
     {
         for (loop = 0; loop < INI_KERNEL_READ_LEN-uc_str_check_len; loop++)
         {
-            /* 判断首尾减少bin_mem_check调用次数 */
+            /* ????????????bin_mem_check???????? */
             if (pc_mask_str[0] == ac_read_buf[loop]
                     && pc_mask_str[uc_str_check_len-1] == ac_read_buf[loop+uc_str_check_len-1]
                     && !(bin_mem_check(&ac_read_buf[loop], (int8 *)pc_mask_str, uc_str_check_len)))
@@ -829,9 +829,9 @@ int8 *get_str_from_file(int8 *pc_file_path, const int8 *pc_mask_str, const int8 
                 fp->f_pos += loop;
                 INI_INFO("find device sw version file local = %ld ",(long)fp->f_pos);
                 oal_memset(ac_read_buf, 0, INI_KERNEL_READ_LEN);
-                /* 读取到‘\n’或者最大192B数据到ac_read_buf */
+                /* ????????\n??????????192B??????ac_read_buf */
                 ko_read_line(fp, ac_read_buf);
-                /* 定位所需字符串位置 */
+                /* ?????????????????? */
                 pc_find_str = OAL_STRSTR(ac_read_buf, pc_target_str);
                 if (NULL == pc_find_str)
                 {
