@@ -384,7 +384,7 @@ static int tee_calc_task_hash(unsigned char *digest, bool cfc_rehash,
 	desc = kmalloc(sizeof(struct shash_desc)
 			+ crypto_shash_descsize(g_tee_shash_tfm), GFP_KERNEL);
 	if (!desc) {
-		TCERR("alloc desc failed\n");
+		tloge("alloc desc failed\n");
 		return -ENOMEM;
 	}
 	
