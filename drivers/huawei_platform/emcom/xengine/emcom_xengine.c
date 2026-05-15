@@ -82,7 +82,7 @@ struct emcom_xengine_ccalg_config g_ccalg_uids[EMCOM_MAX_CCALG_APP];
 void Emcom_Xengine_Mpip_Init(void);
 void emcom_xengine_ccalg_init(void);
 /******************************************************************************
-   6 º¯ÊýÊµÏÖ
+   6 ????????
 ******************************************************************************/
 static inline bool invalid_uid(uid_t uid)
 {

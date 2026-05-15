@@ -47,7 +47,7 @@
 */
 
 /*****************************************************************************
-  1 头文件包含
+  1 ??????????
 *****************************************************************************/
 #include "AtMtInterface.h"
 #include "TafDrvAgent.h"
@@ -59,13 +59,13 @@
 
 
 /*****************************************************************************
-    协议栈打印打点方式下的.C文件宏定义
+    ??????????????????????.C??????????
 *****************************************************************************/
 #define    THIS_FILE_ID        PS_FILE_ID_AT_MT_COMM_FUN_C
 
 
 /*****************************************************************************
-  2 全局变量定义
+  2 ????????????
 *****************************************************************************/
 AT_DEVICE_CMD_CTRL_STRU                 g_stAtDevCmdCtrl        = {0};
 
@@ -73,7 +73,7 @@ AT_DEVICE_CMD_CTRL_STRU                 g_stAtDevCmdCtrl        = {0};
 
 
 /*****************************************************************************
-  3 旧设置函数实现
+  3 ??????????????
 *****************************************************************************/
 
 VOS_UINT32  At_CheckSupportFChanRat(VOS_VOID)
@@ -109,7 +109,7 @@ VOS_UINT32  At_SetFChanPara(VOS_UINT8 ucIndex )
 {
     DRV_AGENT_FCHAN_SET_REQ_STRU         stFchanSetReq;
 
-    /* 调用 LTE 模的接口分支 */
+    /* ???? LTE ???????????? */
 
     if ( (AT_RAT_MODE_FDD_LTE == gastAtParaList[0].ulParaValue)
        ||(AT_RAT_MODE_TDD_LTE == gastAtParaList[0].ulParaValue))
@@ -128,30 +128,30 @@ VOS_UINT32  At_SetFChanPara(VOS_UINT8 ucIndex )
     }
 
 
-    /* 参数检查 */
+    /* ???????? */
     if(AT_CMD_OPT_SET_PARA_CMD != g_stATParseCmd.ucCmdOptType)
     {
         return AT_FCHAN_OTHER_ERR;
     }
-        /* 参数不符合要求 */
+        /* ?????????????? */
     if (gucAtParaIndex != 3)
     {
         return AT_FCHAN_OTHER_ERR;
     }
 
-    /* 清除WIFI模式 */
-    /* WIFI的第一个参数必须为8，第二个参数必须为15*/
+    /* ????WIFI???? */
+    /* WIFI??????????????????8??????????????????15*/
     if (VOS_FALSE == At_CheckWifiFChanPara())
     {
         return AT_CHANNEL_NOT_SET;
     }
 
-    /* WIFI 分支 */
+    /* WIFI ???? */
     if (BSP_MODULE_SUPPORT == mdrv_misc_support_check(BSP_MODULE_TYPE_WIFI))
     {
         if (AT_RAT_MODE_WIFI == gastAtParaList[0].ulParaValue)
         {
-            /*WIFI未Enable直接返回失败*/
+            /*WIFI??Enable????????????*/
             if(VOS_FALSE == (VOS_UINT32)WIFI_GET_STATUS())
             {
                 return AT_FCHAN_OTHER_ERR;
@@ -167,7 +167,7 @@ VOS_UINT32  At_SetFChanPara(VOS_UINT8 ucIndex )
         return AT_DEVICE_MODE_ERROR;
     }
 
-    /* 检查FCHAN 的接入模式是否支持*/
+    /* ????FCHAN ??????????????????*/
     if (VOS_FALSE == At_CheckSupportFChanRat())
     {
         return AT_DEVICE_MODE_ERROR;
@@ -181,7 +181,7 @@ VOS_UINT32  At_SetFChanPara(VOS_UINT8 ucIndex )
     TAF_MEM_SET_S(&stFchanSetReq, sizeof(stFchanSetReq), 0x00, sizeof(DRV_AGENT_FCHAN_SET_REQ_STRU));
 
     stFchanSetReq.ucLoadDspMode       = At_GetDspLoadMode (gastAtParaList[0].ulParaValue);
-    stFchanSetReq.ucCurrentDspMode    = At_GetDspLoadMode (g_stAtDevCmdCtrl.ucDeviceRatMode);  /*当前接入模式 */
+    stFchanSetReq.ucCurrentDspMode    = At_GetDspLoadMode (g_stAtDevCmdCtrl.ucDeviceRatMode);  /*???????????? */
     stFchanSetReq.bDspLoadFlag        = g_stAtDevCmdCtrl.bDspLoadFlag;
     stFchanSetReq.ucDeviceRatMode     = (VOS_UINT8)gastAtParaList[0].ulParaValue;
     stFchanSetReq.ucDeviceAtBand      = (VOS_UINT8)gastAtParaList[1].ulParaValue;
@@ -194,8 +194,8 @@ VOS_UINT32  At_SetFChanPara(VOS_UINT8 ucIndex )
                                               sizeof(stFchanSetReq),
                                               I0_WUEPS_PID_DRV_AGENT))
     {
-        gastAtClientTab[ucIndex].CmdCurrentOpt = AT_CMD_FCHAN_SET;             /*设置当前操作模式 */
-        return AT_WAIT_ASYNC_RETURN;                                           /* 等待异步事件返回 */
+        gastAtClientTab[ucIndex].CmdCurrentOpt = AT_CMD_FCHAN_SET;             /*???????????????? */
+        return AT_WAIT_ASYNC_RETURN;                                           /* ???????????????? */
     }
     else
     {
@@ -208,13 +208,13 @@ VOS_UINT32 AT_SetWifiFwavePara(VOS_VOID)
 {
     VOS_CHAR                        acCmd[200] = {0};
     
-    /*WIFI未Enable直接返回失败*/
+    /*WIFI??Enable????????????*/
     if(VOS_FALSE == (VOS_UINT32)WIFI_GET_STATUS())
     {
         return AT_ERROR;
     }
 
-    /*向WIFI发送单音波形信号请求*/
+    /*??WIFI????????????????????*/
     VOS_sprintf_s(acCmd, sizeof(acCmd), "athtestcmd -ieth0 --tx sine --txpwr %d", gastAtParaList[1].ulParaValue/100);
 
     WIFI_TEST_CMD(acCmd);
@@ -236,25 +236,25 @@ VOS_UINT32 AT_SetFwavePara(VOS_UINT8 ucIndex)
         return atSetFWAVEPara(ucIndex);
     }
 
-    /* 参数检查 */
+    /* ???????? */
     if (AT_CMD_OPT_SET_PARA_CMD != g_stATParseCmd.ucCmdOptType)
     {
         return AT_ERROR;
     }
 
-    /* 参数个数不正确，必须包括波形类型和波形功率 */
+    /* ?????????????????????????????????????????? */
     if (gucAtParaIndex != 2)
     {
         return AT_ERROR;
     }
 
-    /* 目前波形类型只支持设置单音*/
+    /* ??????????????????????????*/
     if (gastAtParaList[0].ulParaValue > 7)
     {
         return AT_ERROR;
     }
 
-    /* 该命令需在非信令模式下使用 */
+    /* ?????????????????????????? */
     if (AT_TMODE_FTM != g_stAtDevCmdCtrl.ucCurrentTMode)
     {
         return AT_ERROR;
@@ -267,13 +267,13 @@ VOS_UINT32 AT_SetFwavePara(VOS_UINT8 ucIndex)
     }
 
 
-    /* 把设置保存在本地变量
-       AT^FDAC设置的FDAC值和AT^FWAVE设置的power值表示的含义相同，取后设置的值
-       功率值以0.01为单位，传给DSP的值会除10，所以AT还需要将该值再除10*/
+    /* ????????????????????
+       AT^FDAC??????FDAC????AT^FWAVE??????power??????????????????????????????
+       ????????0.01????????????DSP????????10??????AT????????????????10*/
     g_stAtDevCmdCtrl.usPower    = (VOS_UINT16)(gastAtParaList[1].ulParaValue/10);
     g_stAtDevCmdCtrl.bPowerFlag = VOS_TRUE;
     g_stAtDevCmdCtrl.bFdacFlag  = VOS_FALSE;
-    /* 记录下type信息，并转换为G物理层使用的TxMode，在向物理层发送ID_AT_GHPA_RF_TX_CFG_REQ时携带 */
+    /* ??????type??????????????G????????????TxMode????????????????ID_AT_GHPA_RF_TX_CFG_REQ?????? */
     if (0 == gastAtParaList[0].ulParaValue)
     {
         g_stAtDevCmdCtrl.usTxMode = 8;
@@ -287,32 +287,32 @@ VOS_UINT32 AT_SetFwavePara(VOS_UINT8 ucIndex)
     /* WCDMA */
     if (AT_RAT_MODE_WCDMA == g_stAtDevCmdCtrl.ucDeviceRatMode)
     {
-        /* 向WDSP发送开关单音信号的原语请求 */
+        /* ??WDSP?????????????????????????? */
         if (AT_FAILURE == At_SendContinuesWaveOnToHPA(g_stAtDevCmdCtrl.usPower, ucIndex))
         {
             return AT_ERROR;
         }
 
-        /* 设置当前操作类型 */
+        /* ???????????????? */
         gastAtClientTab[ucIndex].CmdCurrentOpt = AT_CMD_SET_FWAVE;
         g_stAtDevCmdCtrl.ucIndex = ucIndex;
 
-        return AT_WAIT_ASYNC_RETURN;    /* 返回命令处理挂起状态 */
+        return AT_WAIT_ASYNC_RETURN;    /* ???????????????????? */
     }
 
     if (AT_RAT_MODE_CDMA == g_stAtDevCmdCtrl.ucDeviceRatMode)
     {
-        /* 向X DSP发送开关单音信号的原语请求 */
+        /* ??X DSP?????????????????????????? */
         if (AT_FAILURE == At_SendContinuesWaveOnToCHPA(WDSP_CTRL_TX_ONE_TONE, g_stAtDevCmdCtrl.usPower))
         {
             return AT_ERROR;
         }
 
-        /* 设置当前操作类型 */
+        /* ???????????????? */
         gastAtClientTab[ucIndex].CmdCurrentOpt = AT_CMD_SET_FWAVE;
         g_stAtDevCmdCtrl.ucIndex = ucIndex;
 
-        return AT_WAIT_ASYNC_RETURN;    /* 返回命令处理挂起状态 */
+        return AT_WAIT_ASYNC_RETURN;    /* ???????????????????? */
     }
 
     return AT_OK;
@@ -347,7 +347,7 @@ VOS_UINT32  At_SetFTxonPara(VOS_UINT8 ucIndex )
     TAF_UINT8                           ucSwitch;
     VOS_UINT32                          ulResult;
 
-    /* 添加 LTE 模的接口分支 */
+    /* ???? LTE ???????????? */
     if ((AT_RAT_MODE_FDD_LTE == g_stAtDevCmdCtrl.ucDeviceRatMode)
       ||(AT_RAT_MODE_TDD_LTE == g_stAtDevCmdCtrl.ucDeviceRatMode))
     {
@@ -359,12 +359,12 @@ VOS_UINT32  At_SetFTxonPara(VOS_UINT8 ucIndex )
         return atSetFTXONPara(ucIndex);
     }
 
-    /* 参数检查 */
+    /* ???????? */
     if(AT_CMD_OPT_SET_PARA_CMD != g_stATParseCmd.ucCmdOptType)
     {
         return AT_FTXON_OTHER_ERR;
     }
-    /* 参数不符合要求 */
+    /* ?????????????? */
     if (1 != gucAtParaIndex)
     {
         return AT_FTXON_OTHER_ERR;
@@ -400,11 +400,11 @@ VOS_UINT32  At_SetFTxonPara(VOS_UINT8 ucIndex )
             return AT_FTXON_SET_FAIL;
         }
     }
-    /* 设置当前操作类型 */
+    /* ???????????????? */
     gastAtClientTab[ucIndex].CmdCurrentOpt = AT_CMD_SET_FTXON;
     g_stAtDevCmdCtrl.ucIndex = ucIndex;
 
-    return AT_WAIT_ASYNC_RETURN;    /* 返回命令处理挂起状态 */
+    return AT_WAIT_ASYNC_RETURN;    /* ???????????????????? */
 
 }
 
@@ -413,7 +413,7 @@ VOS_UINT32  At_SetFRxonPara(VOS_UINT8 ucIndex)
 {
     VOS_UINT32                           ulSwitch;
 
-     /* 调用 LTE 模的接口分支 */
+     /* ???? LTE ???????????? */
     if ((AT_RAT_MODE_FDD_LTE == g_stAtDevCmdCtrl.ucDeviceRatMode)
       ||(AT_RAT_MODE_TDD_LTE == g_stAtDevCmdCtrl.ucDeviceRatMode))
     {
@@ -426,25 +426,25 @@ VOS_UINT32  At_SetFRxonPara(VOS_UINT8 ucIndex)
     }
 
 
-    /* 命令状态检查 */
+    /* ???????????? */
     if (AT_CMD_OPT_SET_PARA_CMD != g_stATParseCmd.ucCmdOptType)
     {
         return AT_FRXON_OTHER_ERR;
     }
 
-    /* 参数不符合要求 */
+    /* ?????????????? */
     if (gucAtParaIndex != 1)
     {
         return AT_FRXON_OTHER_ERR;
     }
 
-    /* 该AT命令在AT^TMODE=1非信令模式下使用 */
+    /* ??AT??????AT^TMODE=1???????????????? */
     if (AT_TMODE_FTM != g_stAtDevCmdCtrl.ucCurrentTMode)
     {
         return AT_DEVICE_MODE_ERROR;
     }
 
-    /* 该AT命令需要在AT^FCHAN设置非信令信道命令执行成功后使用 */
+    /* ??AT??????????AT^FCHAN???????????????????????????????? */
     if (VOS_FALSE == g_stAtDevCmdCtrl.bDspLoadFlag)
     {
         return AT_CHANNEL_NOT_SET;
@@ -453,7 +453,7 @@ VOS_UINT32  At_SetFRxonPara(VOS_UINT8 ucIndex)
     ulSwitch = gastAtParaList[0].ulParaValue;
     g_stAtDevCmdCtrl.ucTempRxorTxOnOff = (AT_DSP_RF_ON_OFF_ENUM_UINT8)ulSwitch;
 
-    /* 把开关接收机请求发给W物理层 */
+    /* ????????????????????W?????? */
     if ((AT_RAT_MODE_WCDMA == g_stAtDevCmdCtrl.ucDeviceRatMode)
      || (AT_RAT_MODE_AWS   == g_stAtDevCmdCtrl.ucDeviceRatMode))
     {
@@ -471,18 +471,18 @@ VOS_UINT32  At_SetFRxonPara(VOS_UINT8 ucIndex)
     }
     else
     {
-        /* 把开关接收机请求发给G物理层 */
+        /* ????????????????????G?????? */
         if (AT_FAILURE == At_SendRxOnOffToGHPA(ucIndex, ulSwitch))
         {
             return AT_FRXON_SET_FAIL;
         }
     }
 
-    /* 设置当前操作类型 */
+    /* ???????????????? */
     gastAtClientTab[ucIndex].CmdCurrentOpt = AT_CMD_SET_FRXON;
     g_stAtDevCmdCtrl.ucIndex               = ucIndex;
 
-    /* 返回命令处理挂起状态 */
+    /* ???????????????????? */
     return AT_WAIT_ASYNC_RETURN;
 
 }
@@ -490,10 +490,10 @@ VOS_UINT32  At_SetFRxonPara(VOS_UINT8 ucIndex)
 
 VOS_UINT32  AT_ProcTSelRfWifiPara(VOS_VOID)
 {
-    /* Modified by s62952 for BalongV300R002 Build优化项目 2012-02-28, begin */
+    /* Modified by s62952 for BalongV300R002 Build???????? 2012-02-28, begin */
     if ( BSP_MODULE_SUPPORT == mdrv_misc_support_check(BSP_MODULE_TYPE_WIFI) )
     {
-        /*WIFI未Enable直接返回失败*/
+        /*WIFI??Enable????????????*/
         if(VOS_FALSE == (VOS_UINT32)WIFI_GET_STATUS())
         {
             return AT_ERROR;
@@ -507,7 +507,7 @@ VOS_UINT32  AT_ProcTSelRfWifiPara(VOS_VOID)
     {
         return AT_ERROR;
     }
-    /* Modified by s62952 for BalongV300R002 Build优化项目 2012-02-28, end */
+    /* Modified by s62952 for BalongV300R002 Build???????? 2012-02-28, end */
 }
 
 
@@ -526,7 +526,7 @@ VOS_UINT32  AT_ProcTSelRfWDivPara(VOS_UINT8 ucIndex)
     gastAtClientTab[ucIndex].CmdCurrentOpt = AT_CMD_TSELRF_SET;
     g_stAtDevCmdCtrl.ucIndex               = ucIndex;
 
-    /* 返回命令处理挂起状态 */
+    /* ???????????????????? */
     return AT_WAIT_ASYNC_RETURN;
 }
 
@@ -562,7 +562,7 @@ VOS_UINT32 AT_SetTSelRfPara(VOS_UINT8 ucIndex)
         return AT_ERROR;
     }
 
-    /* 参数不符合要求 */
+    /* ?????????????? */
     if ((2 < gucAtParaIndex)
      || (0 == gastAtParaList[0].usParaLen))
     {
@@ -592,7 +592,7 @@ VOS_UINT32 AT_SetTSelRfPara(VOS_UINT8 ucIndex)
         return AT_ERROR;
     }
 
-    /* 打开分集必须在FRXON之后，参考RXDIV实现 */
+    /* ??????????????FRXON??????????RXDIV???? */
     if (AT_TSELRF_PATH_WCDMA_DIV == gastAtParaList[0].ulParaValue)
     {
         return AT_ProcTSelRfWDivPara(ucIndex);
@@ -603,7 +603,7 @@ VOS_UINT32 AT_SetTSelRfPara(VOS_UINT8 ucIndex)
         return AT_ProcTSelRfWPriPara(ucIndex);
     }
 
-    /* 此处判断是否需要重新加载DSP: 需要则发请求到C核加载DSP，否则，直接返回OK */
+    /* ????????????????????????DSP: ??????????????C??????DSP????????????????OK */
     AT_GetTseLrfLoadDspInfo(gastAtParaList[0].ulParaValue, &bLoadDsp, &stTseLrf);
     if (VOS_TRUE == bLoadDsp)
     {
@@ -614,8 +614,8 @@ VOS_UINT32 AT_SetTSelRfPara(VOS_UINT8 ucIndex)
                                                    sizeof(stTseLrf),
                                                    I0_WUEPS_PID_DRV_AGENT))
         {
-            gastAtClientTab[ucIndex].CmdCurrentOpt = AT_CMD_TSELRF_SET;             /*设置当前操作模式 */
-            return AT_WAIT_ASYNC_RETURN;                                           /* 等待异步事件返回 */
+            gastAtClientTab[ucIndex].CmdCurrentOpt = AT_CMD_TSELRF_SET;             /*???????????????? */
+            return AT_WAIT_ASYNC_RETURN;                                           /* ???????????????? */
         }
         else
         {
@@ -629,7 +629,7 @@ VOS_UINT32 AT_SetTSelRfPara(VOS_UINT8 ucIndex)
 
 VOS_UINT32 At_SetFpaPara(VOS_UINT8 ucIndex)
 {
-    /* 调用LTE 模的接口分支 */
+    /* ????LTE ???????????? */
     if ((AT_RAT_MODE_FDD_LTE == g_stAtDevCmdCtrl.ucDeviceRatMode)
       ||(AT_RAT_MODE_TDD_LTE == g_stAtDevCmdCtrl.ucDeviceRatMode))
     {
@@ -639,31 +639,31 @@ VOS_UINT32 At_SetFpaPara(VOS_UINT8 ucIndex)
     {
         return AT_CMD_NOT_SUPPORT;
     }
-    /* 命令状态检查 */
+    /* ???????????? */
     if (AT_CMD_OPT_SET_PARA_CMD != g_stATParseCmd.ucCmdOptType)
     {
         return AT_FPA_OTHER_ERR;
     }
 
-    /* 参数过多 */
+    /* ???????? */
     if (gucAtParaIndex > 1)
     {
         return AT_FPA_OTHER_ERR;
     }
 
-    /* 该命令需在非信令模式下使用 */
+    /* ?????????????????????????? */
     if (AT_TMODE_FTM != g_stAtDevCmdCtrl.ucCurrentTMode)
     {
         return AT_DEVICE_MODE_ERROR;
     }
 
-    /* 该命令需在设置非信令信道后使用,即^FCHAN成功执行后 */
+    /* ??????????????????????????????,??^FCHAN?????????? */
     if (VOS_FALSE == g_stAtDevCmdCtrl.bDspLoadFlag)
     {
         return AT_CHANNEL_NOT_SET;
     }
 
-    /* 把设置保存在本地变量 */
+    /* ???????????????????? */
     g_stAtDevCmdCtrl.ucPaLevel = (VOS_UINT8)gastAtParaList[0].ulParaValue;
 
     return AT_OK;
@@ -674,7 +674,7 @@ VOS_UINT32 At_SetFpaPara(VOS_UINT8 ucIndex)
 VOS_UINT32 At_SetFlnaPara(VOS_UINT8 ucIndex)
 {
 
-    /* 调用 LTE 模的接口分支 */
+    /* ???? LTE ???????????? */
     if ((AT_RAT_MODE_FDD_LTE == g_stAtDevCmdCtrl.ucDeviceRatMode)
       ||(AT_RAT_MODE_TDD_LTE == g_stAtDevCmdCtrl.ucDeviceRatMode))
     {
@@ -686,42 +686,42 @@ VOS_UINT32 At_SetFlnaPara(VOS_UINT8 ucIndex)
         return atSetFLNAPara(ucIndex);
     }
 
-    /* 命令状态检查 */
+    /* ???????????? */
     if (AT_CMD_OPT_SET_PARA_CMD != g_stATParseCmd.ucCmdOptType)
     {
         return AT_FLNA_OTHER_ERR;
     }
 
-    /* 参数过多 */
+    /* ???????? */
     if (gucAtParaIndex > 1)
     {
         return AT_FLNA_OTHER_ERR;
     }
 
-    /* 该命令需在非信令模式下使用 */
+    /* ?????????????????????????? */
     if (AT_TMODE_FTM != g_stAtDevCmdCtrl.ucCurrentTMode)
     {
         return AT_DEVICE_MODE_ERROR;
     }
 
-    /* 该命令需在设置非信令信道后使用 */
+    /* ?????????????????????????????? */
     if (VOS_FALSE == g_stAtDevCmdCtrl.bDspLoadFlag)
     {
         return AT_CHANNEL_NOT_SET;
     }
 
-    /* 参数LNA等级取值范围检查 */
+    /* ????LNA???????????????? */
     if ((AT_RAT_MODE_WCDMA == g_stAtDevCmdCtrl.ucDeviceRatMode)
      || (AT_RAT_MODE_AWS == g_stAtDevCmdCtrl.ucDeviceRatMode))
     {
-        /* WDSP LNA等级取值为0-2 */
+        /* WDSP LNA??????????0-2 */
         if (gastAtParaList[0].ulParaValue > DSP_LNA_HIGH_GAIN_MODE)
         {
             return AT_FLNA_OTHER_ERR;
         }
     }
 
-    /* 把设置保存在本地变量 */
+    /* ???????????????????? */
     g_stAtDevCmdCtrl.ucLnaLevel = (VOS_UINT8)gastAtParaList[0].ulParaValue;
 
     return AT_OK;
@@ -734,18 +734,18 @@ VOS_UINT32 At_SetDpdtPara(VOS_UINT8 ucIndex)
     AT_MTA_SET_DPDT_VALUE_REQ_STRU      stAtCmd;
     VOS_UINT32                          ulRst;
 
-    /* 参数检查 */
+    /* ???????? */
     if (2 != gucAtParaIndex)
     {
         return AT_CME_INCORRECT_PARAMETERS;
     }
 
-    /* AT发送至MTA的消息结构赋值 */
+    /* AT??????MTA?????????????? */
     TAF_MEM_SET_S(&stAtCmd, sizeof(stAtCmd), 0x00, sizeof(AT_MTA_SET_DPDT_VALUE_REQ_STRU));
     stAtCmd.enRatMode   = (AT_MTA_CMD_RATMODE_ENUM_UINT8)gastAtParaList[0].ulParaValue;
     stAtCmd.ulDpdtValue = gastAtParaList[1].ulParaValue;
 
-    /* 发送消息给C核处理 */
+    /* ??????????C?????? */
     ulRst = AT_FillAndSndAppReqMsg(gastAtClientTab[ucIndex].usClientId,
                                    0,
                                    ID_AT_MTA_SET_DPDT_VALUE_REQ,
@@ -771,17 +771,17 @@ VOS_UINT32 At_SetQryDpdtPara(VOS_UINT8 ucIndex)
     AT_MTA_QRY_DPDT_VALUE_REQ_STRU      stAtCmd;
     VOS_UINT32                          ulRst;
 
-    /* 参数检查 */
+    /* ???????? */
     if (1 != gucAtParaIndex)
     {
         return AT_CME_INCORRECT_PARAMETERS;
     }
 
-    /* AT发送至MTA的消息结构赋值 */
+    /* AT??????MTA?????????????? */
     TAF_MEM_SET_S(&stAtCmd, sizeof(stAtCmd), 0x00, sizeof(AT_MTA_QRY_DPDT_VALUE_REQ_STRU));
     stAtCmd.enRatMode = (AT_MTA_CMD_RATMODE_ENUM_UINT8)gastAtParaList[0].ulParaValue;
 
-    /* 发送消息给C核处理 */
+    /* ??????????C?????? */
     ulRst = AT_FillAndSndAppReqMsg(gastAtClientTab[ucIndex].usClientId,
                                    0,
                                    ID_AT_MTA_QRY_DPDT_VALUE_REQ,
@@ -801,28 +801,28 @@ VOS_UINT32 At_SetQryDpdtPara(VOS_UINT8 ucIndex)
 }
 
 /*****************************************************************************
- 函 数 名  : AT_SetDcxotempcompPara
- 功能描述  : ^DCXOTEMPCOMP设置命令处理函数
- 输入参数  : VOS_UINT8 ucIndex
- 输出参数  : 无
- 返 回 值  : VOS_UINT32
- 调用函数  :
- 被调函数  :
+ ?? ?? ??  : AT_SetDcxotempcompPara
+ ????????  : ^DCXOTEMPCOMP????????????????
+ ????????  : VOS_UINT8 ucIndex
+ ????????  : ??
+ ?? ?? ??  : VOS_UINT32
+ ????????  :
+ ????????  :
 *****************************************************************************/
 VOS_UINT32 AT_SetDcxotempcompPara(VOS_UINT8 ucIndex)
 {
-    /* 参数检查 */
+    /* ???????? */
     if (AT_CMD_OPT_SET_PARA_CMD != g_stATParseCmd.ucCmdOptType)
     {
         return AT_CME_INCORRECT_PARAMETERS;
     }
 
-    /* 参数个数检查 */
+    /* ???????????? */
     if (1 != gucAtParaIndex)
     {
         return AT_CME_INCORRECT_PARAMETERS;
     }
-    /*  不是非信令模式下发返回错误 */
+    /*  ?????????????????????????? */
     if (AT_TMODE_FTM != g_stAtDevCmdCtrl.ucCurrentTMode)
     {
         return AT_DEVICE_MODE_ERROR;
@@ -839,7 +839,7 @@ VOS_UINT32  AT_SetFDac(VOS_UINT8 ucIndex )
 
     TAF_UINT16                           usDAC;
 
-    /*调用 LTE 模的接口分支*/
+    /*???? LTE ????????????*/
     if ((AT_RAT_MODE_FDD_LTE == g_stAtDevCmdCtrl.ucDeviceRatMode)
       ||(AT_RAT_MODE_TDD_LTE == g_stAtDevCmdCtrl.ucDeviceRatMode))
     {
@@ -849,12 +849,12 @@ VOS_UINT32  AT_SetFDac(VOS_UINT8 ucIndex )
     {
         return AT_CMD_NOT_SUPPORT;
     }
-    /* 参数检查 */
+    /* ???????? */
     if(AT_CMD_OPT_SET_PARA_CMD != g_stATParseCmd.ucCmdOptType)
     {
         return AT_FDAC_SET_FAIL;
     }
-    /* 参数不符合要求 */
+    /* ?????????????? */
     if (gucAtParaIndex != 1)
     {
         return AT_FDAC_SET_FAIL;
@@ -895,11 +895,11 @@ VOS_UINT32  AT_SetFDac(VOS_UINT8 ucIndex )
         }
     }
 
-    /*AT^FDAC设置的FDAC值和AT^FWAVE设置的power值表示的含义相同，取后设置的值*/
+    /*AT^FDAC??????FDAC????AT^FWAVE??????power??????????????????????????????*/
     g_stAtDevCmdCtrl.bFdacFlag  = VOS_TRUE;
     g_stAtDevCmdCtrl.bPowerFlag = VOS_FALSE;
 
-    return AT_OK;    /* 返回命令处理挂起状态 */
+    return AT_OK;    /* ???????????????????? */
 }
 
 
@@ -909,13 +909,13 @@ VOS_UINT32 AT_SetMipiWrPara(VOS_UINT8 ucIndex)
     AT_HPA_MIPI_WR_REQ_STRU             *pstMsg;
     VOS_UINT32                          ulLength;
 
-    /* 参数检查 */
+    /* ???????? */
     if (AT_CMD_OPT_SET_PARA_CMD != g_stATParseCmd.ucCmdOptType)
     {
         return AT_CME_INCORRECT_PARAMETERS;
     }
 
-    /* 参数过多 */
+    /* ???????? */
     if (5 != gucAtParaIndex)
     {
         return AT_CME_INCORRECT_PARAMETERS;
@@ -957,10 +957,10 @@ VOS_UINT32 AT_SetMipiWrPara(VOS_UINT8 ucIndex)
         return AT_ERROR;
     }
 
-    gastAtClientTab[ucIndex].CmdCurrentOpt  = AT_CMD_MIPI_WR;                   /*设置当前操作模式 */
+    gastAtClientTab[ucIndex].CmdCurrentOpt  = AT_CMD_MIPI_WR;                   /*???????????????? */
     g_stAtDevCmdCtrl.ucIndex                = ucIndex;
 
-    return AT_WAIT_ASYNC_RETURN;                                                /* 等待异步事件返回 */
+    return AT_WAIT_ASYNC_RETURN;                                                /* ???????????????? */
 }
 
 
@@ -969,13 +969,13 @@ VOS_UINT32 AT_SetSSIWrPara(VOS_UINT8 ucIndex)
     AT_HPA_SSI_WR_REQ_STRU                  *pstMsg;
     VOS_UINT32                              ulLength;
 
-    /* 参数检查 */
+    /* ???????? */
     if (AT_CMD_OPT_SET_PARA_CMD != g_stATParseCmd.ucCmdOptType)
     {
         return AT_CME_INCORRECT_PARAMETERS;
     }
 
-    /* 参数过多 */
+    /* ???????? */
     if ( 4 != gucAtParaIndex)
     {
         return AT_CME_INCORRECT_PARAMETERS;
@@ -1015,10 +1015,10 @@ VOS_UINT32 AT_SetSSIWrPara(VOS_UINT8 ucIndex)
         return AT_ERROR;
     }
 
-    gastAtClientTab[ucIndex].CmdCurrentOpt  = AT_CMD_SSI_WR;                    /*设置当前操作模式 */
+    gastAtClientTab[ucIndex].CmdCurrentOpt  = AT_CMD_SSI_WR;                    /*???????????????? */
     g_stAtDevCmdCtrl.ucIndex                = ucIndex;
 
-    return AT_WAIT_ASYNC_RETURN;                                                /* 等待异步事件返回 */
+    return AT_WAIT_ASYNC_RETURN;                                                /* ???????????????? */
 }
 
 
@@ -1027,13 +1027,13 @@ VOS_UINT32 AT_SetSSIRdPara(VOS_UINT8 ucIndex)
     AT_HPA_SSI_RD_REQ_STRU                  *pstMsg;
     VOS_UINT32                              ulLength;
 
-    /* 参数检查 */
+    /* ???????? */
     if (AT_CMD_OPT_SET_PARA_CMD != g_stATParseCmd.ucCmdOptType)
     {
         return AT_CME_INCORRECT_PARAMETERS;
     }
 
-    /* 参数过多 */
+    /* ???????? */
     if (3 != gucAtParaIndex)
     {
         return AT_CME_INCORRECT_PARAMETERS;
@@ -1048,7 +1048,7 @@ VOS_UINT32 AT_SetSSIRdPara(VOS_UINT8 ucIndex)
       || AT_RAT_MODE_TDD_LTE == gastAtParaList[0].ulParaValue
       || AT_RAT_MODE_TDSCDMA == gastAtParaList[0].ulParaValue )
     {
-        /* 调用TL函数处理 */
+        /* ????TL???????? */
         return AT_SetTlRficSsiRdPara( ucIndex );
     }
 
@@ -1080,10 +1080,10 @@ VOS_UINT32 AT_SetSSIRdPara(VOS_UINT8 ucIndex)
         return AT_ERROR;
     }
 
-    gastAtClientTab[ucIndex].CmdCurrentOpt      = AT_CMD_SSI_RD;                /*设置当前操作模式 */
+    gastAtClientTab[ucIndex].CmdCurrentOpt      = AT_CMD_SSI_RD;                /*???????????????? */
     g_stAtDevCmdCtrl.ucIndex                    = ucIndex;
 
-    return AT_WAIT_ASYNC_RETURN;                                                /* 等待异步事件返回 */
+    return AT_WAIT_ASYNC_RETURN;                                                /* ???????????????? */
 }
 
 
@@ -1092,13 +1092,13 @@ VOS_UINT32 AT_SetMipiRdPara(VOS_UINT8 ucIndex)
     AT_HPA_MIPI_RD_REQ_STRU             *pstMsg;
     VOS_UINT32                          ulLength;
 
-    /* 参数检查 */
+    /* ???????? */
     if (AT_CMD_OPT_SET_PARA_CMD != g_stATParseCmd.ucCmdOptType)
     {
         return AT_CME_INCORRECT_PARAMETERS;
     }
 
-    /* 参数过多 */
+    /* ???????? */
     if (4 != gucAtParaIndex)
     {
         return AT_CME_INCORRECT_PARAMETERS;
@@ -1143,10 +1143,10 @@ VOS_UINT32 AT_SetMipiRdPara(VOS_UINT8 ucIndex)
         return AT_ERROR;
     }
 
-    gastAtClientTab[ucIndex].CmdCurrentOpt  = AT_CMD_MIPI_RD;                   /*设置当前操作模式 */
+    gastAtClientTab[ucIndex].CmdCurrentOpt  = AT_CMD_MIPI_RD;                   /*???????????????? */
     g_stAtDevCmdCtrl.ucIndex                = ucIndex;
 
-    return AT_WAIT_ASYNC_RETURN;                                                /* 等待异步事件返回 */
+    return AT_WAIT_ASYNC_RETURN;                                                /* ???????????????? */
 }
 
 
@@ -1155,28 +1155,28 @@ VOS_UINT32 AT_SetMipiReadPara(VOS_UINT8 ucIndex)
     AT_MTA_MIPI_READ_REQ_STRU           stMipiReadReq;
     VOS_UINT32                          ulResult;
 
-    /*局部变量初始化*/
+    /*??????????????*/
     TAF_MEM_SET_S(&stMipiReadReq, (VOS_SIZE_T)sizeof(stMipiReadReq), 0x00, (VOS_SIZE_T)sizeof(AT_MTA_MIPI_READ_REQ_STRU));
 
-    /*参数检查*/
+    /*????????*/
     if (AT_CMD_OPT_SET_PARA_CMD != g_stATParseCmd.ucCmdOptType)
     {
         return AT_CME_INCORRECT_PARAMETERS;
     }
 
-    /*参数数目不正确*/
+    /*??????????????*/
     if (7 != gucAtParaIndex )
     {
         return AT_CME_INCORRECT_PARAMETERS;
     }
 
-    /*不是非信令模式*/
+    /*??????????????*/
     if (AT_TMODE_FTM != g_stAtDevCmdCtrl.ucCurrentTMode)
     {
         return AT_DEVICE_MODE_ERROR;
     }
 
-    /*参数长度检查*/
+    /*????????????*/
     if ( (0 == gastAtParaList[0].usParaLen)
       || (0 == gastAtParaList[1].usParaLen)
       || (0 == gastAtParaList[2].usParaLen)
@@ -1188,7 +1188,7 @@ VOS_UINT32 AT_SetMipiReadPara(VOS_UINT8 ucIndex)
         return AT_CME_INCORRECT_PARAMETERS;
     }
 
-    /*填写消息参数*/
+    /*????????????*/
     stMipiReadReq.usReadType    = (VOS_UINT16)gastAtParaList[0].ulParaValue;
     stMipiReadReq.usMipiId      = (VOS_UINT16)gastAtParaList[1].ulParaValue;
     stMipiReadReq.usSlaveId     = (VOS_UINT16)gastAtParaList[2].ulParaValue;
@@ -1198,24 +1198,24 @@ VOS_UINT32 AT_SetMipiReadPara(VOS_UINT8 ucIndex)
     stMipiReadReq.usReserved1   = (VOS_UINT16)gastAtParaList[6].ulParaValue;
 
 
-    /*发送消息给MTA*/
+    /*??????????MTA*/
     ulResult = AT_FillAndSndAppReqMsg(gastAtClientTab[ucIndex].usClientId,
                                       gastAtClientTab[ucIndex].opId,
                                       ID_AT_MTA_MIPIREAD_SET_REQ,
                                       &stMipiReadReq,
                                       (VOS_SIZE_T)sizeof(stMipiReadReq),
                                       I0_UEPS_PID_MTA);
-    /*发送失败*/
+    /*????????*/
     if (TAF_SUCCESS != ulResult)
     {
         AT_WARN_LOG("AT_SetMipiReadPara: AT_FillAndSndAppReqMsg fail.");
         return AT_ERROR;
     }
 
-    /*发送成功，设置当前操作模式*/
+    /*??????????????????????????*/
     gastAtClientTab[ucIndex].CmdCurrentOpt = AT_CMD_MIPIREAD_SET;
 
-    /*等待异步处理时间返回*/
+    /*????????????????????*/
     return AT_WAIT_ASYNC_RETURN;
 }
 
@@ -1225,28 +1225,28 @@ VOS_UINT32 AT_SetPhyMipiWritePara(VOS_UINT8 ucIndex)
     AT_MTA_PHY_MIPI_WRITE_REQ_STRU      stPhyMipiWriteReq;
     VOS_UINT32                          ulResult;
 
-    /*局部变量初始化*/
+    /*??????????????*/
     TAF_MEM_SET_S(&stPhyMipiWriteReq, (VOS_SIZE_T)sizeof(stPhyMipiWriteReq), 0x00, (VOS_SIZE_T)sizeof(AT_MTA_PHY_MIPI_WRITE_REQ_STRU));
 
-    /*参数检查*/
+    /*????????*/
     if (AT_CMD_OPT_SET_PARA_CMD != g_stATParseCmd.ucCmdOptType)
     {
         return AT_CME_INCORRECT_PARAMETERS;
     }
 
-    /*参数数目不正确*/
+    /*??????????????*/
     if (6 != gucAtParaIndex )
     {
         return AT_CME_INCORRECT_PARAMETERS;
     }
 
-    /*不是非信令模式*/
+    /*??????????????*/
     if (AT_TMODE_FTM != g_stAtDevCmdCtrl.ucCurrentTMode)
     {
         return AT_DEVICE_MODE_ERROR;
     }
 
-    /*参数长度检查*/
+    /*????????????*/
     if ( (0 == gastAtParaList[0].usParaLen)
       || (0 == gastAtParaList[1].usParaLen)
       || (0 == gastAtParaList[2].usParaLen)
@@ -1257,7 +1257,7 @@ VOS_UINT32 AT_SetPhyMipiWritePara(VOS_UINT8 ucIndex)
         return AT_CME_INCORRECT_PARAMETERS;
     }
 
-    /*填写消息参数*/
+    /*????????????*/
     stPhyMipiWriteReq.usWriteType   = (VOS_UINT16)gastAtParaList[0].ulParaValue;
     stPhyMipiWriteReq.usMipiId      = (VOS_UINT16)gastAtParaList[1].ulParaValue;
     stPhyMipiWriteReq.usSlaveId     = (VOS_UINT16)gastAtParaList[2].ulParaValue;
@@ -1265,43 +1265,43 @@ VOS_UINT32 AT_SetPhyMipiWritePara(VOS_UINT8 ucIndex)
     stPhyMipiWriteReq.usMipiData    = (VOS_UINT16)gastAtParaList[4].ulParaValue;
     stPhyMipiWriteReq.usReserved1   = (VOS_UINT16)gastAtParaList[5].ulParaValue;
 
-    /*发送消息给MTA*/
+    /*??????????MTA*/
     ulResult = AT_FillAndSndAppReqMsg(gastAtClientTab[ucIndex].usClientId,
                                       gastAtClientTab[ucIndex].opId,
                                       ID_AT_MTA_PHYMIPIWRITE_SET_REQ,
                                       &stPhyMipiWriteReq,
                                       (VOS_SIZE_T)sizeof(stPhyMipiWriteReq),
                                       I0_UEPS_PID_MTA);
-    /*发送失败*/
+    /*????????*/
     if (TAF_SUCCESS != ulResult)
     {
         AT_WARN_LOG("AT_SetPhyMipiWritePara: AT_FillAndSndAppReqMsg fail.");
         return AT_ERROR;
     }
 
-    /*发送成功，设置当前操作模式*/
+    /*??????????????????????????*/
     gastAtClientTab[ucIndex].CmdCurrentOpt = AT_CMD_PHYMIPIWRITE_SET;
 
-    /*等待异步处理时间返回*/
+    /*????????????????????*/
     return AT_WAIT_ASYNC_RETURN;
 }
 
 
 VOS_UINT32  At_SetCltPara(VOS_UINT8 ucIndex)
 {
-    /* 状态检查 */
+    /* ???????? */
     if (AT_CMD_OPT_SET_PARA_CMD != g_stATParseCmd.ucCmdOptType)
     {
         return AT_CME_INCORRECT_PARAMETERS;
     }
 
-    /* 参数个数不符合要求 */
+    /* ?????????????????? */
     if (1 != gucAtParaIndex)
     {
         return AT_CME_INCORRECT_PARAMETERS;
     }
 
-    /*  不是非信令模式下发返回错误 */
+    /*  ?????????????????????????? */
     if (AT_TMODE_FTM != g_stAtDevCmdCtrl.ucCurrentTMode)
     {
         return AT_DEVICE_MODE_ERROR;
@@ -1309,7 +1309,7 @@ VOS_UINT32  At_SetCltPara(VOS_UINT8 ucIndex)
 
     g_stAtDevCmdCtrl.enCltEnableFlg = (AT_DSP_CLT_ENABLE_ENUM_UINT8) gastAtParaList[0].ulParaValue;
 
-    return AT_OK;    /* 返回命令处理处理成功 */
+    return AT_OK;    /* ???????????????????? */
 
 }
 
@@ -1318,13 +1318,13 @@ VOS_UINT32 AT_SetPdmCtrlPara(VOS_UINT8 ucIndex)
 {
     AT_HPA_PDM_CTRL_REQ_STRU                *pstMsg;
 
-    /* 参数检查 */
+    /* ???????? */
     if (AT_CMD_OPT_SET_PARA_CMD != g_stATParseCmd.ucCmdOptType)
     {
         return AT_CME_INCORRECT_PARAMETERS;
     }
 
-    /* 参数过多 */
+    /* ???????? */
     if ( 4 != gucAtParaIndex)
     {
         return AT_CME_INCORRECT_PARAMETERS;
@@ -1351,7 +1351,7 @@ VOS_UINT32 AT_SetPdmCtrlPara(VOS_UINT8 ucIndex)
         return AT_ERROR;
     }
 
-    /* 填写消息头 */
+    /* ?????????? */
     AT_CFG_MSG_HDR( pstMsg, DSP_PID_WPHY, ID_AT_HPA_PDM_CTRL_REQ );
 
     pstMsg->usMsgID                             = ID_AT_HPA_PDM_CTRL_REQ;
@@ -1367,14 +1367,14 @@ VOS_UINT32 AT_SetPdmCtrlPara(VOS_UINT8 ucIndex)
         return AT_ERROR;
     }
 
-    gastAtClientTab[ucIndex].CmdCurrentOpt      = AT_CMD_PDM_CTRL;                /*设置当前操作模式 */
+    gastAtClientTab[ucIndex].CmdCurrentOpt      = AT_CMD_PDM_CTRL;                /*???????????????? */
     g_stAtDevCmdCtrl.ucIndex                    = ucIndex;
 
-    return AT_WAIT_ASYNC_RETURN;                                                /* 等待异步事件返回 */
+    return AT_WAIT_ASYNC_RETURN;                                                /* ???????????????? */
 }
 
 /*****************************************************************************
-  4 查询函数实现
+  4 ????????????
 *****************************************************************************/
 
 
@@ -1393,7 +1393,7 @@ VOS_UINT32  At_QryFChanPara(VOS_UINT8 ucIndex )
         return AT_DEVICE_MODE_ERROR;
     }
 
-    /* 查询当前FCHAN的设置 */
+    /* ????????FCHAN?????? */
     usLength =  (TAF_UINT16)At_sprintf(AT_CMD_MAX_LEN,(TAF_CHAR *)pgucAtSndCodeAddr,
                                        (TAF_CHAR*)pgucAtSndCodeAddr, "%s:",
                                        g_stParseContext[ucIndex].pstCmdElement->pszCmdName);
@@ -1414,7 +1414,7 @@ VOS_UINT32  At_QryFTxonPara(VOS_UINT8 ucIndex )
 {
     TAF_UINT16                 usLength;
 
-    /*添加 LTE 模的接口分支 */
+    /*???? LTE ???????????? */
     if ((AT_RAT_MODE_FDD_LTE == g_stAtDevCmdCtrl.ucDeviceRatMode)
       ||(AT_RAT_MODE_TDD_LTE == g_stAtDevCmdCtrl.ucDeviceRatMode))
     {
@@ -1425,7 +1425,7 @@ VOS_UINT32  At_QryFTxonPara(VOS_UINT8 ucIndex )
     {
         return AT_DEVICE_MODE_ERROR;
     }
-    /* 查询当前DAC的设置 */
+    /* ????????DAC?????? */
     usLength =  (TAF_UINT16)At_sprintf(AT_CMD_MAX_LEN,(TAF_CHAR *)pgucAtSndCodeAddr,
                                        (TAF_CHAR*)pgucAtSndCodeAddr, "%s:",
                                        g_stParseContext[ucIndex].pstCmdElement->pszCmdName);
@@ -1443,20 +1443,20 @@ VOS_UINT32  At_QryFRxonPara(VOS_UINT8 ucIndex)
 {
     VOS_UINT16                          usLength;
 
-    /* 添加LTE 模的接口分支 */
+    /* ????LTE ???????????? */
     if ((AT_RAT_MODE_FDD_LTE == g_stAtDevCmdCtrl.ucDeviceRatMode)
       ||(AT_RAT_MODE_TDD_LTE == g_stAtDevCmdCtrl.ucDeviceRatMode))
     {
         return atQryFRXONPara(ucIndex);
     }
 
-    /*当前不为非信令模式*/
+    /*??????????????????*/
     if (AT_TMODE_FTM != g_stAtDevCmdCtrl.ucCurrentTMode)
     {
         return AT_DEVICE_MODE_ERROR;
     }
 
-    /* 查询当前接收机开关状态 */
+    /* ?????????????????????? */
     usLength =  (VOS_UINT16)At_sprintf(AT_CMD_MAX_LEN,
                                        (VOS_CHAR *)pgucAtSndCodeAddr,
                                        (VOS_CHAR*)pgucAtSndCodeAddr, "%s:%d",
@@ -1479,7 +1479,7 @@ VOS_UINT32 AT_QryFpowdetTPara(VOS_UINT8 ucIndex)
 
     ucIsLteFlg = VOS_FALSE;
 
-    /*判断当前接入模式，只支持W*/
+    /*????????????????????????W*/
     if ( (AT_RAT_MODE_WCDMA != g_stAtDevCmdCtrl.ucDeviceRatMode)
       && (AT_RAT_MODE_CDMA != g_stAtDevCmdCtrl.ucDeviceRatMode)
       && (AT_RAT_MODE_GSM != g_stAtDevCmdCtrl.ucDeviceRatMode)
@@ -1489,7 +1489,7 @@ VOS_UINT32 AT_QryFpowdetTPara(VOS_UINT8 ucIndex)
         return AT_DEVICE_MODE_ERROR;
     }
 
-    /* 申请AT_PHY_POWER_DET_REQ_STRU消息 */
+    /* ????AT_PHY_POWER_DET_REQ_STRU???? */
     ulLength = sizeof(AT_PHY_POWER_DET_REQ_STRU) - VOS_MSG_HEAD_LENGTH;
     /*lint -save -e516 */
     pstMsg   = (AT_PHY_POWER_DET_REQ_STRU *)PS_ALLOC_MSG(WUEPS_PID_AT, ulLength);
@@ -1500,7 +1500,7 @@ VOS_UINT32 AT_QryFpowdetTPara(VOS_UINT8 ucIndex)
         return AT_ERROR;
     }
 
-    /* CDMA的话，发送给UPHY_PID_CSDR_1X_CM */
+    /* CDMA????????????UPHY_PID_CSDR_1X_CM */
     if (AT_RAT_MODE_CDMA == g_stAtDevCmdCtrl.ucDeviceRatMode)
     {
         pstMsg->ulReceiverPid = UPHY_PID_CSDR_1X_CM;
@@ -1524,7 +1524,7 @@ VOS_UINT32 AT_QryFpowdetTPara(VOS_UINT8 ucIndex)
         pstMsg->usMsgID       = ID_AT_PHY_POWER_DET_REQ;
         pstMsg->usRsv         = 0;
 
-        /* 向对应PHY发送消息 */
+        /* ??????PHY???????? */
         ulResult = PS_SEND_MSG(WUEPS_PID_AT, pstMsg);
     }
     else
@@ -1545,11 +1545,11 @@ VOS_UINT32 AT_QryFpowdetTPara(VOS_UINT8 ucIndex)
         return AT_ERROR;
     }
 
-    /* 设置当前操作类型 */
+    /* ???????????????? */
     gastAtClientTab[ucIndex].CmdCurrentOpt = AT_CMD_FPOWDET_QRY;
     g_stAtDevCmdCtrl.ucIndex               = ucIndex;
 
-    /* 返回命令处理挂起状态 */
+    /* ???????????????????? */
     return AT_WAIT_ASYNC_RETURN;
 }
 
@@ -1565,7 +1565,7 @@ VOS_UINT32 AT_QryFPllStatusPara(VOS_UINT8 ucIndex)
     {
         return atQryFPllStatusPara(ucIndex);
     }
-    /*判断当前接入模式，只支持G/W*/
+    /*????????????????????????G/W*/
     if (AT_RAT_MODE_WCDMA == g_stAtDevCmdCtrl.ucDeviceRatMode)
     {
         ulReceiverPid = AT_GetDestPid(ucIndex, I0_DSP_PID_WPHY);
@@ -1583,7 +1583,7 @@ VOS_UINT32 AT_QryFPllStatusPara(VOS_UINT8 ucIndex)
         return AT_DEVICE_MODE_ERROR;
     }
 
-    /* 申请AT_PHY_RF_PLL_STATUS_REQ_STRU消息 */
+    /* ????AT_PHY_RF_PLL_STATUS_REQ_STRU???? */
     ulLength = sizeof(AT_PHY_RF_PLL_STATUS_REQ_STRU) - VOS_MSG_HEAD_LENGTH;
     /*lint -save -e516 */
     pstMsg   = (AT_PHY_RF_PLL_STATUS_REQ_STRU *)PS_ALLOC_MSG(WUEPS_PID_AT, ulLength);
@@ -1594,25 +1594,25 @@ VOS_UINT32 AT_QryFPllStatusPara(VOS_UINT8 ucIndex)
         return AT_ERROR;
     }
 
-    /* 填充消息 */
+    /* ???????? */
     pstMsg->ulReceiverPid = ulReceiverPid;
     pstMsg->usMsgID       = usMsgId;
     pstMsg->usRsv1        = 0;
     pstMsg->usDspBand     = g_stAtDevCmdCtrl.stDspBandArfcn.usDspBand;
     pstMsg->usRsv2        = 0;
 
-    /* 向对应PHY发送消息 */
+    /* ??????PHY???????? */
     if (VOS_OK != PS_SEND_MSG(WUEPS_PID_AT, pstMsg))
     {
         AT_WARN_LOG("AT_QryFPllStatusPara: Send msg fail!");
         return AT_ERROR;
     }
 
-    /* 设置当前操作类型 */
+    /* ???????????????? */
     gastAtClientTab[ucIndex].CmdCurrentOpt = AT_CMD_FPLLSTATUS_QRY;
     g_stAtDevCmdCtrl.ucIndex               = ucIndex;
 
-    /* 返回命令处理挂起状态 */
+    /* ???????????????????? */
     return AT_WAIT_ASYNC_RETURN;
 }
 
@@ -1636,26 +1636,26 @@ VOS_UINT32 At_QryFrssiPara(
     }
 
 
-    /*该命令需在非信令模式下使用*/
+    /*??????????????????????????*/
     if (AT_TMODE_FTM != g_stAtDevCmdCtrl.ucCurrentTMode)
     {
         return AT_DEVICE_MODE_ERROR;
     }
 
-    /*该命令需在设置非信令信道后使用*/
+    /*??????????????????????????????*/
     if (VOS_FALSE == g_stAtDevCmdCtrl.bDspLoadFlag)
     {
         return AT_CHANNEL_NOT_SET;
     }
 
-    /*该命令需要在打开接收机后使用*/
+    /*????????????????????????????*/
     if (AT_DSP_RF_SWITCH_OFF == g_stAtDevCmdCtrl.ucRxOnOff)
     {
         return AT_FRSSI_RX_NOT_OPEN;
     }
 
-    /* GDSP LOAD的情况下不支持接收机和发射机同时打开，需要判断最近一次执行的是打开接收机操作
-    还是打开发射机操作，如果是打开发射机操作，则直接返回出错无需和GDSP 交互 */
+    /* GDSP LOAD????????????????????????????????????????????????????????????????????????????
+    ??????????????????????????????????????????????????????????????GDSP ???? */
     if ((AT_TXON_OPEN == g_stAtDevCmdCtrl.ucRxonOrTxon)
      && ((AT_RAT_MODE_GSM == g_stAtDevCmdCtrl.ucDeviceRatMode)
       || (AT_RAT_MODE_EDGE == g_stAtDevCmdCtrl.ucDeviceRatMode)))
@@ -1663,7 +1663,7 @@ VOS_UINT32 At_QryFrssiPara(
         return AT_FRSSI_OTHER_ERR;
     }
 
-    /* 申请AT_HPA_RF_RX_RSSI_REQ_STRU消息 */
+    /* ????AT_HPA_RF_RX_RSSI_REQ_STRU???? */
     ulLength = sizeof(AT_HPA_RF_RX_RSSI_REQ_STRU) - VOS_MSG_HEAD_LENGTH;
     /*lint -save -e830 */
     pstMsg   = (AT_HPA_RF_RX_RSSI_REQ_STRU *)PS_ALLOC_MSG(WUEPS_PID_AT, ulLength);
@@ -1696,11 +1696,11 @@ VOS_UINT32 At_QryFrssiPara(
         return AT_FRSSI_OTHER_ERR;
     }
 
-    /* 设置当前操作类型 */
+    /* ???????????????? */
     gastAtClientTab[ucIndex].CmdCurrentOpt = AT_CMD_QUERY_RSSI;
     g_stAtDevCmdCtrl.ucIndex               = ucIndex;
 
-    return AT_WAIT_ASYNC_RETURN;    /* 返回命令处理挂起状态 */
+    return AT_WAIT_ASYNC_RETURN;    /* ???????????????????? */
 
 }
 
@@ -1717,13 +1717,13 @@ VOS_UINT32  At_QryFpaPara(VOS_UINT8 ucIndex)
 {
     VOS_UINT16                          usLength;
 
-    /*当前不为非信令模式*/
+    /*??????????????????*/
     if (AT_TMODE_FTM != g_stAtDevCmdCtrl.ucCurrentTMode)
     {
         return AT_DEVICE_MODE_ERROR;
     }
 
-    /* 查询当前发射机PA等级的设置 */
+    /* ??????????????PA?????????? */
     usLength =  (VOS_UINT16)At_sprintf(AT_CMD_MAX_LEN, (VOS_CHAR *)pgucAtSndCodeAddr,
                                        (VOS_CHAR*)pgucAtSndCodeAddr, "%s:%d",
                                        g_stParseContext[ucIndex].pstCmdElement->pszCmdName,
@@ -1740,20 +1740,20 @@ VOS_UINT32  At_QryFlnaPara(VOS_UINT8 ucIndex)
 {
     VOS_UINT16                          usLength;
 
-    /* 添加 LTE 模的接口分支 */
+    /* ???? LTE ???????????? */
     if ((AT_RAT_MODE_FDD_LTE == g_stAtDevCmdCtrl.ucDeviceRatMode)
       ||(AT_RAT_MODE_TDD_LTE == g_stAtDevCmdCtrl.ucDeviceRatMode))
     {
         return atQryFLNAPara(ucIndex);
     }
 
-    /*当前不为非信令模式*/
+    /*??????????????????*/
     if (AT_TMODE_FTM != g_stAtDevCmdCtrl.ucCurrentTMode)
     {
         return AT_DEVICE_MODE_ERROR;
     }
 
-    /* 查询当前发射机PA等级的设置 */
+    /* ??????????????PA?????????? */
     usLength =  (VOS_UINT16)At_sprintf(AT_CMD_MAX_LEN, (VOS_CHAR *)pgucAtSndCodeAddr,
                                        (VOS_CHAR*)pgucAtSndCodeAddr, "%s:%d",
                                        g_stParseContext[ucIndex].pstCmdElement->pszCmdName,
@@ -1766,23 +1766,23 @@ VOS_UINT32  At_QryFlnaPara(VOS_UINT8 ucIndex)
 }
 
 /*****************************************************************************
- 函 数 名  : AT_QryDcxotempcompPara
- 功能描述  : ^DCXOTEMPCOMP的查询命令处理函数
- 输入参数  : TAF_UINT8 ucIndex
- 输出参数  : 无
- 返 回 值  : VOS_UINT32
- 调用函数  :
- 被调函数  :
+ ?? ?? ??  : AT_QryDcxotempcompPara
+ ????????  : ^DCXOTEMPCOMP??????????????????
+ ????????  : TAF_UINT8 ucIndex
+ ????????  : ??
+ ?? ?? ??  : VOS_UINT32
+ ????????  :
+ ????????  :
 *****************************************************************************/
 VOS_UINT32  AT_QryDcxotempcompPara(VOS_UINT8 ucIndex)
 {
 
-    /* 参数检查 */
+    /* ???????? */
     if (AT_CMD_OPT_READ_CMD != g_stATParseCmd.ucCmdOptType)
     {
         return AT_ERROR;
     }
-    /*  不是非信令模式下发返回错误 */
+    /*  ?????????????????????????? */
     if (AT_TMODE_FTM != g_stAtDevCmdCtrl.ucCurrentTMode)
     {
         return AT_DEVICE_MODE_ERROR;
@@ -1807,7 +1807,7 @@ VOS_UINT32  AT_QryFDac(VOS_UINT8 ucIndex )
         return AT_DEVICE_MODE_ERROR;
     }
 
-    /* 查询当前DAC的设置 */
+    /* ????????DAC?????? */
     usLength =  (TAF_UINT16)At_sprintf(AT_CMD_MAX_LEN,(TAF_CHAR *)pgucAtSndCodeAddr,
                                        (TAF_CHAR*)pgucAtSndCodeAddr, "%s:",
                                        g_stParseContext[ucIndex].pstCmdElement->pszCmdName);
@@ -1826,7 +1826,7 @@ VOS_UINT32  At_QryCltInfo(VOS_UINT8 ucIndex)
 
     usLength = 0;
 
-    /* 如果记录有效，则上报查询结果 */
+    /* ???????????????????????????? */
     if (VOS_TRUE == g_stAtDevCmdCtrl.stCltInfo.ulInfoAvailableFlg)
     {
 
@@ -1835,21 +1835,21 @@ VOS_UINT32  At_QryCltInfo(VOS_UINT8 ucIndex)
                                            (VOS_CHAR *)pgucAtSndCodeAddr + usLength,
                                             "%s%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
                                             "^CLTINFO: ",
-                                            g_stAtDevCmdCtrl.stCltInfo.shwGammaReal,          /* 反射系数实部 */
-                                            g_stAtDevCmdCtrl.stCltInfo.shwGammaImag,          /* 反射系数虚部 */
-                                            g_stAtDevCmdCtrl.stCltInfo.ushwGammaAmpUc0,       /* 驻波检测场景0反射系数幅度 */
-                                            g_stAtDevCmdCtrl.stCltInfo.ushwGammaAmpUc1,       /* 驻波检测场景1反射系数幅度 */
-                                            g_stAtDevCmdCtrl.stCltInfo.ushwGammaAmpUc2,       /* 驻波检测场景2反射系数幅度 */
-                                            g_stAtDevCmdCtrl.stCltInfo.ushwGammaAntCoarseTune,/* 粗调格点位置 */
-                                            g_stAtDevCmdCtrl.stCltInfo.ulwFomcoarseTune,      /* 粗调FOM值 */
-                                            g_stAtDevCmdCtrl.stCltInfo.ushwCltAlgState,       /* 闭环算法收敛状态 */
-                                            g_stAtDevCmdCtrl.stCltInfo.ushwCltDetectCount,    /* 闭环收敛总步数 */
+                                            g_stAtDevCmdCtrl.stCltInfo.shwGammaReal,          /* ???????????? */
+                                            g_stAtDevCmdCtrl.stCltInfo.shwGammaImag,          /* ???????????? */
+                                            g_stAtDevCmdCtrl.stCltInfo.ushwGammaAmpUc0,       /* ????????????0???????????? */
+                                            g_stAtDevCmdCtrl.stCltInfo.ushwGammaAmpUc1,       /* ????????????1???????????? */
+                                            g_stAtDevCmdCtrl.stCltInfo.ushwGammaAmpUc2,       /* ????????????2???????????? */
+                                            g_stAtDevCmdCtrl.stCltInfo.ushwGammaAntCoarseTune,/* ???????????? */
+                                            g_stAtDevCmdCtrl.stCltInfo.ulwFomcoarseTune,      /* ????FOM?? */
+                                            g_stAtDevCmdCtrl.stCltInfo.ushwCltAlgState,       /* ???????????????? */
+                                            g_stAtDevCmdCtrl.stCltInfo.ushwCltDetectCount,    /* ?????????????? */
                                             g_stAtDevCmdCtrl.stCltInfo.ushwDac0,              /* DAC0 */
                                             g_stAtDevCmdCtrl.stCltInfo.ushwDac1,              /* DAC1 */
                                             g_stAtDevCmdCtrl.stCltInfo.ushwDac2,              /* DAC2 */
                                             g_stAtDevCmdCtrl.stCltInfo.ushwDac3);             /* DAC3 */
 
-        /* 上报后本地记录就无效 */
+        /* ???????????????????? */
         g_stAtDevCmdCtrl.stCltInfo.ulInfoAvailableFlg = VOS_FALSE;
     }
 
@@ -1891,7 +1891,7 @@ VOS_UINT32 At_TestFdacPara(VOS_UINT8 ucIndex)
 
 
 /*****************************************************************************
-  5 其它旧函数实现
+  5 ??????????????
 *****************************************************************************/
 
 
@@ -1925,7 +1925,7 @@ VOS_VOID AT_GetTseLrfLoadDspInfo(
     DRV_AGENT_TSELRF_SET_REQ_STRU      *pstTseLrf
 )
 {
-    /* ^TSELRF命令设置的射频通路编号为GSM且当前已经LOAD了该通路，无需LOAD */
+    /* ^TSELRF????????????????????????GSM??????????LOAD??????????????LOAD */
     if (AT_TSELRF_PATH_GSM == enPath)
     {
         if ((AT_RAT_MODE_GSM == g_stAtDevCmdCtrl.ucDeviceRatMode)
@@ -1942,7 +1942,7 @@ VOS_VOID AT_GetTseLrfLoadDspInfo(
         return;
     }
 
-    /* ^TSELRF命令设置的射频通路编号为WCDMA主集且当前已经LOAD了该通路，无需LOAD */
+    /* ^TSELRF????????????????????????WCDMA??????????????LOAD??????????????LOAD */
     if (AT_TSELRF_PATH_WCDMA_PRI == enPath)
     {
         if (((AT_RAT_MODE_WCDMA == g_stAtDevCmdCtrl.ucDeviceRatMode)
@@ -1981,19 +1981,19 @@ VOS_UINT32 AT_SetTlRficSsiRdPara(VOS_UINT8 ucIndex)
     VOS_UINT32                          ulResult;
     AT_MTA_RFICSSIRD_REQ_STRU           stRficSsiRdReq;
 
-    /* 通道检查 */
+    /* ???????? */
     if (VOS_FALSE == AT_IsApPort(ucIndex))
     {
         return AT_ERROR;
     }
 
-    /* 初始化 */
+    /* ?????? */
     TAF_MEM_SET_S(&stRficSsiRdReq, sizeof(stRficSsiRdReq), 0x00, sizeof(stRficSsiRdReq));
 
     stRficSsiRdReq.usChannelNo            = ( VOS_UINT16 )gastAtParaList[1].ulParaValue;
     stRficSsiRdReq.usRficReg              = ( VOS_UINT16 )gastAtParaList[2].ulParaValue;
 
-    /* 发送消息 */
+    /* ???????? */
     ulResult = AT_FillAndSndAppReqMsg(gastAtClientTab[ucIndex].usClientId,
                                       gastAtClientTab[ucIndex].opId,
                                       ID_AT_MTA_RFICSSIRD_QRY_REQ,
@@ -2007,7 +2007,7 @@ VOS_UINT32 AT_SetTlRficSsiRdPara(VOS_UINT8 ucIndex)
         return AT_ERROR;
     }
 
-    /* 设置AT模块实体的状态为等待异步返回 */
+    /* ????AT???????????????????????????? */
     gastAtClientTab[ucIndex].CmdCurrentOpt = AT_CMD_RFICSSIRD_SET;
     g_stAtDevCmdCtrl.ucIndex                    = ucIndex;
 

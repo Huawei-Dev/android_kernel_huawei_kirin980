@@ -67,8 +67,8 @@ typedef struct
 }IMEI_STRU;
 
 /*****************************************************************************
- 结构名    : RESUME_FLAG_STRU
- 结构说明  : RESUME_FLAG结构
+ ??????    : RESUME_FLAG_STRU
+ ????????  : RESUME_FLAG????
 *****************************************************************************/
 typedef struct
 {
@@ -76,18 +76,18 @@ typedef struct
 }RESUME_FLAG_STRU;
 
 /*****************************************************************************
- 结构名    : LED_CONTROL_NV_STRU
- 结构说明  : LED_CONTROL_NV结构 ID=7
+ ??????    : LED_CONTROL_NV_STRU
+ ????????  : LED_CONTROL_NV???? ID=7
 *****************************************************************************/
 typedef struct
 {
-    u8   ucLedColor;      /*三色灯颜色，对应LED_COLOR的值*/
-    u8   ucTimeLength;    /*该配置持续的时间长度，单位100ms*/
+    u8   ucLedColor;      /*????????????????LED_COLOR????*/
+    u8   ucTimeLength;    /*??????????????????????????100ms*/
 }LED_CONTROL_NV_STRU;
 
 /*****************************************************************************
- 结构名    : LED_CONTROL_STRU
- 结构说明  : LED_CONTROL结构
+ ??????    : LED_CONTROL_STRU
+ ????????  : LED_CONTROL????
 *****************************************************************************/
 typedef struct
 {
@@ -95,8 +95,8 @@ typedef struct
 }LED_CONTROL_STRU;
 
 /*****************************************************************************
- 结构名    : LED_CONTROL_STRU_ARRAY
- 结构说明  : 三色灯状态序列单元结构
+ ??????    : LED_CONTROL_STRU_ARRAY
+ ????????  : ??????????????????????
 *****************************************************************************/
 typedef struct
 {
@@ -110,8 +110,8 @@ typedef struct
 }NV_VERSION_NO_STRU;
 
 /*****************************************************************************
- 结构名    : USIM_TEMP_SENSOR_TABLE
- 结构说明  : USIM_TEMP_SENSOR_TABLE结构
+ ??????    : USIM_TEMP_SENSOR_TABLE
+ ????????  : USIM_TEMP_SENSOR_TABLE????
 *****************************************************************************/
 typedef struct
 {
@@ -120,8 +120,8 @@ typedef struct
 }USIM_TEMP_SENSOR_TABLE;
 
 /*****************************************************************************
- 结构名    : USIM_TEMP_SENSOR_TABLE_STRU
- 结构说明  : USIM_TEMP_SENSOR_TABLE结构
+ ??????    : USIM_TEMP_SENSOR_TABLE_STRU
+ ????????  : USIM_TEMP_SENSOR_TABLE????
 *****************************************************************************/
 typedef struct
 {
@@ -129,8 +129,8 @@ typedef struct
 }USIM_TEMP_SENSOR_TABLE_STRU;
 
 /*****************************************************************************
- 结构名    : NV_AT_SHELL_OPEN_FLAG_STRU
- 结构说明  : NV_AT_SHELL_OPEN_FLAG结构 ID=33
+ ??????    : NV_AT_SHELL_OPEN_FLAG_STRU
+ ????????  : NV_AT_SHELL_OPEN_FLAG???? ID=33
 *****************************************************************************/
 typedef struct
 {
@@ -138,18 +138,18 @@ typedef struct
 }NV_AT_SHELL_OPEN_FLAG_STRU;
 
 /*****************************************************************************
- 结构名    : NV_NPNP_CONFIG_INFO
- 结构说明  : NV_NPNP_CONFIG_INFO ID=67
+ ??????    : NV_NPNP_CONFIG_INFO
+ ????????  : NV_NPNP_CONFIG_INFO ID=67
 *****************************************************************************/
 typedef struct
 {
-    u32 npnp_open_flag;                           /* NPNP 特性一级NV开关, 0为未开启不可以使用, 1为开启可以使用 */
-    u32 npnp_enable_flag;                         /* NPNP 特性二级NV项, 0为特性未使能, 1为特性使能             */
+    u32 npnp_open_flag;                           /* NPNP ????????NV????, 0??????????????????, 1?????????????? */
+    u32 npnp_enable_flag;                         /* NPNP ????????NV??, 0????????????, 1??????????             */
 }NV_NPNP_CONFIG_INFO;
 
 /*****************************************************************************
- 结构名    : NV_FACTORY_INFO_I_STRU
- 结构说明  : NV_FACTORY_INFO_I结构 ID=114
+ ??????    : NV_FACTORY_INFO_I_STRU
+ ????????  : NV_FACTORY_INFO_I???? ID=114
 *****************************************************************************/
 #define NV_FACTORY_INFO_I_SIZE    (78)
 typedef struct
@@ -158,8 +158,8 @@ typedef struct
 }NV_FACTORY_INFO_I_STRU;
 
 /*****************************************************************************
- 结构名    : NV_SCI_CFG_STRU
- 结构说明  : NV_SCI_CFG结构 ID=128
+ ??????    : NV_SCI_CFG_STRU
+ ????????  : NV_SCI_CFG???? ID=128
 *****************************************************************************/
 typedef struct
 {
@@ -169,33 +169,33 @@ typedef struct
 
 typedef struct
 {
-    u8 ucAlmStatus; /* 告警状态,默认0:close;1:open  */
-    u8 ucAlmLevel;  /* 故障&告警级别*/
+    u8 ucAlmStatus; /* ????????,????0:close;1:open  */
+    u8 ucAlmLevel;  /* ????&????????*/
     u8 aucReportBitMap[2];
 }NV_ID_ERR_LOG_CTRL_INFO_STRU;
 
 
 typedef struct
 {
-    u32                          ulAlarmid;        /* 告警标识 */
-    u32                          ulAlarmidDetail;  /* 告警相关性，32bit，每个bit代表一种相关性，0代表和该相关性无关 */
+    u32                          ulAlarmid;        /* ???????? */
+    u32                          ulAlarmidDetail;  /* ????????????32bit??????bit????????????????0?????????????????? */
 }OM_ALARM_ID_DETAIL_STRU;
 
 
 typedef struct
 {
-    OM_ALARM_ID_DETAIL_STRU          astOmAlarmidRelationship[40]; /* 预设40组 */
+    OM_ALARM_ID_DETAIL_STRU          astOmAlarmidRelationship[40]; /* ????40?? */
 }NV_ALARM_ID_RELATIONSHIP_STRU;
 
 
 typedef struct
 {
-    u32                          ulFTMDetail; /* 工程模式相关性，32bit，每个bit代表一种相关性，0代表和该相关性无关 */
+    u32                          ulFTMDetail; /* ????????????????32bit??????bit????????????????0?????????????????? */
 }NV_ID_FTM_DETAIL_STRU;
 
 /*****************************************************************************
- 结构名    : NV_THERMAL_TSENSOR_CONFIG_STRU
- 结构说明  : NV_THERMAL_TSENSOR_CONFIG结构 ID=9213
+ ??????    : NV_THERMAL_TSENSOR_CONFIG_STRU
+ ????????  : NV_THERMAL_TSENSOR_CONFIG???? ID=9213
 *****************************************************************************/
 typedef struct
 {
@@ -217,8 +217,8 @@ typedef struct
 
 
 /*****************************************************************************
- 结构名    : NV_THERMAL_BAT_CONFIG_STRU
- 结构说明  : NV_THERMAL_BAT_CONFIG结构 ID=9214
+ ??????    : NV_THERMAL_BAT_CONFIG_STRU
+ ????????  : NV_THERMAL_BAT_CONFIG???? ID=9214
 *****************************************************************************/
 typedef struct
 {
@@ -233,8 +233,8 @@ typedef struct
 }NV_THERMAL_BAT_CONFIG_STRU;
 
 /*****************************************************************************
- 结构名    : NV_THERMAL_HKADC_CONFIG
- 结构说明  : NV_THERMAL_HKADC_CONFIG结构 ID=9232
+ ??????    : NV_THERMAL_HKADC_CONFIG
+ ????????  : NV_THERMAL_HKADC_CONFIG???? ID=9232
 *****************************************************************************/
 typedef struct
 {
@@ -250,8 +250,8 @@ typedef struct
 }NV_THERMAL_HKADC_CONFIG;
 
 /*****************************************************************************
- 结构名    : NV_THERMAL_HKADC_CONFIG_STRU
- 结构说明  : NV_THERMAL_HKADC_CONFIG结构 ID=9215
+ ??????    : NV_THERMAL_HKADC_CONFIG_STRU
+ ????????  : NV_THERMAL_HKADC_CONFIG???? ID=9215
 *****************************************************************************/
 typedef struct
 {
@@ -259,8 +259,8 @@ typedef struct
 }NV_THERMAL_HKADC_CONFIG_STRU;
 
 /*****************************************************************************
- 结构名    : NV_KADC_PHYTOLOGICAL_CONFIGTCXO_CFG_STRU
- 结构说明  : NV_KADC_PHYTOLOGICAL_CONFIGTCXO_CFG结构 ID=9216
+ ??????    : NV_KADC_PHYTOLOGICAL_CONFIGTCXO_CFG_STRU
+ ????????  : NV_KADC_PHYTOLOGICAL_CONFIGTCXO_CFG???? ID=9216
 *****************************************************************************/
 typedef struct
 {
@@ -268,8 +268,8 @@ typedef struct
 }NV_KADC_PHYTOLOGICAL_CONFIGTCXO_CFG_STRU;
 
 /*****************************************************************************
- 结构名    : NV_TCXO_CFG_STRU
- 结构说明  : NV_TCXO_CFG结构 ID=9217
+ ??????    : NV_TCXO_CFG_STRU
+ ????????  : NV_TCXO_CFG???? ID=9217
 *****************************************************************************/
 typedef struct
 {
@@ -284,8 +284,8 @@ typedef struct
 }NV_UART_SWITCH_STRU;
 
 /*****************************************************************************
- 结构名    : NV_HUAWEI_PCCW_HS_HSPA_BLUE_STRU
- 结构说明  : NV_HUAWEI_PCCW_HS_HSPA_BLUE结构 ID=50032
+ ??????    : NV_HUAWEI_PCCW_HS_HSPA_BLUE_STRU
+ ????????  : NV_HUAWEI_PCCW_HS_HSPA_BLUE???? ID=50032
 *****************************************************************************/
 typedef struct
 {

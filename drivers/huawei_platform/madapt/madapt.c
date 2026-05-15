@@ -153,7 +153,7 @@ struct madapt_file_stru_ex {
 struct madapt_mbn_file_head {
 	unsigned int    mgic_number;
 	unsigned int    data_len;
-	unsigned int    reserve[2];   //具体内容暂不关注
+	unsigned int    reserve[2];   //????????????????
 };
 
 struct madapt_item_hdr_type {
@@ -1043,7 +1043,7 @@ static int get_commbin_last_modify_time(void)
 	}
 
 	modify_time = file_inode(fp)->i_mtime.tv_sec;
-	hwlog_info("get common bin file modify time：%lu\n", modify_time);
+	hwlog_info("get common bin file modify time??%lu\n", modify_time);
 	filp_close(fp, NULL);
 
 	return BSP_ERR_MADAPT_OK;

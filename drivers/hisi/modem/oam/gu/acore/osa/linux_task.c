@@ -93,7 +93,7 @@
 
 
 /*****************************************************************************
-    协议栈打印打点方式下的.C文件宏定义
+    ??????????????????????.C??????????
 *****************************************************************************/
 #define    THIS_FILE_ID        PS_FILE_ID_V_TASK_C
 #define    THIS_MODU           mod_pam_osa
@@ -129,7 +129,7 @@ VOS_UINT32 g_acVosTaskCtrlBuf[VOS_TASK_CTRL_BUF_SIZE/4];
 
 typedef VOS_INT (*LINUX_START_ROUTINE)( VOS_VOID * );
 
-/* 自旋锁，用来作task的临界资源保护 */
+/* ??????????????task?????????????? */
 VOS_SPINLOCK             g_stVosTaskSpinLock;
 
 VOS_INT VOS_LinuxTaskEntry( VOS_VOID * pulArg );
