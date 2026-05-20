@@ -2129,6 +2129,11 @@ irqreturn_t dptx_irq(int irq, void *dev)
 	}
 
 	dptx = &(hisifd->dp);
+	
+	if (!dptx->dptx_enable) {
+		HISI_FB_INFO("[DP] skip DPTX irq while dptx is off.\n");
+		return IRQ_HANDLED;
+	}
 
 	ists = dptx_readl(dptx, DPTX_ISTS);
 	ien = dptx_readl(dptx, DPTX_IEN);
