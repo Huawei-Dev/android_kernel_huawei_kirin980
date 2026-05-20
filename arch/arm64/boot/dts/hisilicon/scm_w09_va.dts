@@ -23433,7 +23433,7 @@
 		smp_stop_cpu_bit_mask = <0x0 0x2>;
 		stop_cpu_bus_node_name = "sys_bus";
 		noc_acpu_init_flow_array = <0x3e0000 0x20000>;
-		platform_id = <0x80>;
+		platform_id = <0x800>;
 		faulten_default_enable;
 		error_enable;
 		noc_timeout_enable;
