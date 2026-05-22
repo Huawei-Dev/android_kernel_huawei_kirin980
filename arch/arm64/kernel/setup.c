@@ -204,6 +204,23 @@ static void *__init find_builtin_custom_dtb(void)
 	return dtb;
 }
 
+static void __init remove_cmdline_token(char *cmdline, const char *token)
+{
+	char *p;
+	size_t len;
+
+	p = strstr(cmdline, token);
+	if (!p)
+		return;
+
+	len = strlen(token);
+
+	if (p[len] == ' ')
+		len++;
+
+	memmove(p, p + len, strlen(p + len) + 1);
+}
+
 static int __init builtin_dtb_copy_chosen_props(void *dst_fdt, void *src_fdt)
 {
 	int src_chosen, dst_chosen;
@@ -224,10 +241,18 @@ static int __init builtin_dtb_copy_chosen_props(void *dst_fdt, void *src_fdt)
 		return -ENOENT;
 
 	prop = fdt_getprop(src_fdt, src_chosen, "bootargs", &len);
-	if (prop) {
-		ret = fdt_setprop(dst_fdt, dst_chosen, "bootargs", prop, len);
-		if (ret)
-			return ret;
+	if (prop && len > 0) {
+	char bootargs[COMMAND_LINE_SIZE];
+
+	memset(bootargs, 0, sizeof(bootargs));
+	strlcpy(bootargs, prop, min_t(int, len, COMMAND_LINE_SIZE));
+	remove_cmdline_token(bootargs, "androidboot.swtype=factory");
+	remove_cmdline_token(bootargs, "setup_logctl=1");
+	remove_cmdline_token(bootargs, "product_phase=pre_delivery");
+	ret = fdt_setprop(dst_fdt, dst_chosen, "bootargs",
+			  bootargs, strlen(bootargs) + 1);
+	if (ret)
+		return ret;
 	}
 
 	prop = fdt_getprop(src_fdt, src_chosen, "linux,initrd-start", &len);
