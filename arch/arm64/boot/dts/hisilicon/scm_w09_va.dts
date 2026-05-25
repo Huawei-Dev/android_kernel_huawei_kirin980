@@ -1782,28 +1782,28 @@
 			opp6 {
 				opp-supported-hw = <0x3>;
 				opp-hz = <0x0 0x4ef9e540>;
-				opp-microvolt = "\0\f5";
+				opp-microvolt = <0xc3500>;
 				opp-microamp = <0x9088>;
 				clock-latency-ns = <0x1e8480>;
 			};
 			opp7 {
 				opp-supported-hw = <0x3>;
 				opp-hz = <0x0 0x54b2bd40>;
-				opp-microvolt = "\0\f5";
+				opp-microvolt = <0xc3500>;
 				opp-microamp = <0xa7f8>;
 				clock-latency-ns = <0x1e8480>;
 			};
 			opp8 {
 				opp-supported-hw = <0x3>;
 				opp-hz = <0x0 0x5a6b9540>;
-				opp-microvolt = "\0\f5";
+				opp-microvolt = <0xc3500>;
 				opp-microamp = <0xc350>;
 				clock-latency-ns = <0x1e8480>;
 			};
 			opp9 {
 				opp-supported-hw = <0x3>;
 				opp-hz = <0x0 0x60246d40>;
-				opp-microvolt = "\0\f5";
+				opp-microvolt = <0xc3500>;
 				opp-microamp = <0xe290>;
 				clock-latency-ns = <0x1e8480>;
 			};
@@ -1872,28 +1872,28 @@
 			opp6 {
 				opp-supported-hw = <0x3>;
 				opp-hz = <0x0 0x5390d280>;
-				opp-microvolt = "\0\f5";
+				opp-microvolt = <0xc3500>;
 				opp-microamp = <0x11558>;
 				clock-latency-ns = <0x1e8480>;
 			};
 			opp7 {
 				opp-supported-hw = <0x3>;
 				opp-hz = <0x0 0x5a6b9540>;
-				opp-microvolt = "\0\f5";
+				opp-microvolt = <0xc3500>;
 				opp-microamp = <0x14820>;
 				clock-latency-ns = <0x1e8480>;
 			};
 			opp8 {
 				opp-supported-hw = <0x3>;
 				opp-hz = <0x0 0x5f028280>;
-				opp-microvolt = "\0\f5";
+				opp-microvolt = <0xc3500>;
 				opp-microamp = <0x17318>;
 				clock-latency-ns = <0x1e8480>;
 			};
 			opp9 {
 				opp-supported-hw = <0x3>;
 				opp-hz = <0x0 0x63996fc0>;
-				opp-microvolt = "\0\f5";
+				opp-microvolt = <0xc3500>;
 				opp-microamp = <0x19a28>;
 				clock-latency-ns = <0x1e8480>;
 			};
@@ -1927,42 +1927,42 @@
 			opp1 {
 				opp-supported-hw = <0x3>;
 				opp-hz = <0x0 0x5f028280>;
-				opp-microvolt = "\0\f5";
+				opp-microvolt = <0xc3500>;
 				opp-microamp = <0x1ccf0>;
 				clock-latency-ns = <0x1e8480>;
 			};
 			opp2 {
 				opp-supported-hw = <0x3>;
 				opp-hz = <0x0 0x63996fc0>;
-				opp-microvolt = "\0\f5";
+				opp-microvolt = <0xc3500>;
 				opp-microamp = <0x23668>;
 				clock-latency-ns = <0x1e8480>;
 			};
 			opp3 {
 				opp-supported-hw = <0x3>;
 				opp-hz = <0x0 0x695247c0>;
-				opp-microvolt = "\0\f5";
+				opp-microvolt = <0xc3500>;
 				opp-microamp = <0x28870>;
 				clock-latency-ns = <0x1e8480>;
 			};
 			opp4 {
 				opp-supported-hw = <0x3>;
 				opp-hz = <0x0 0x6f0b1fc0>;
-				opp-microvolt = "\0\f5";
+				opp-microvolt = <0xc3500>;
 				opp-microamp = <0x2ee00>;
 				clock-latency-ns = <0x1e8480>;
 			};
 			opp5 {
 				opp-supported-hw = <0x3>;
 				opp-hz = <0x0 0x74c3f7c0>;
-				opp-microvolt = "\0\f5";
+				opp-microvolt = <0xc3500>;
 				opp-microamp = <0x35b60>;
 				clock-latency-ns = <0x1e8480>;
 			};
 			opp6 {
 				opp-supported-hw = <0x3>;
 				opp-hz = <0x0 0x795ae500>;
-				opp-microvolt = "\0\f5";
+				opp-microvolt = <0xc3500>;
 				opp-microamp = <0x3b920>;
 				clock-latency-ns = <0x1e8480>;
 			};
@@ -14193,7 +14193,7 @@
 			hisilicon,sensitive-volt = <0x0 0x1 0x3>;
 			hisilicon,set_divider_rate = <0x2>;
 			low_temperature_property;
-			hisilicon,low-temperature-freq = "\0\aS";
+			hisilicon,low-temperature-freq = <0x75300>;
 			hisilicon,clk-avs-id = <0x5>;
 			clock-output-names = "clk_venc";
 			clock-friend-names = "clk_vencfreq";
@@ -14256,7 +14256,7 @@
 			hisilicon,sensitive-freq = <0x5dc00 0x75300>;
 			hisilicon,sensitive-volt = <0x0 0x1 0x3>;
 			low_temperature_property;
-			hisilicon,low-temperature-freq = "\0\aS";
+			hisilicon,low-temperature-freq = <0x75300>;
 			clock-output-names = "clk_fd_func";
 			clock-friend-names = "clk_fd_funcfreq";
 			phandle = <0x5c4>;
@@ -14286,7 +14286,7 @@
 			hisilicon,sensitive-freq = <0x65518 0x75300>;
 			hisilicon,sensitive-volt = <0x0 0x1 0x3>;
 			low_temperature_property;
-			hisilicon,low-temperature-freq = "\0\aS";
+			hisilicon,low-temperature-freq = <0x75300>;
 			hisilicon,clk-avs-id = <0x7>;
 			clock-output-names = "clk_ivpdsp_core";
 			clock-friend-names = "clk_ivpdsp_corefreq";
@@ -14393,7 +14393,7 @@
 			hisilicon,sensitive-freq = <0x75300 0x87410>;
 			hisilicon,sensitive-volt = <0x0 0x1 0x3>;
 			low_temperature_property;
-			hisilicon,low-temperature-freq = "\0\aS";
+			hisilicon,low-temperature-freq = <0x75300>;
 			clock-output-names = "clk_fdai_func";
 			clock-friend-names = "clk_fdai_funcfreq";
 			phandle = <0x220>;
@@ -19323,7 +19323,7 @@
 	soft_isc {
 		compatible = "hisi,soft-isc";
 		iscd_enable = <0x1>;
-		iscd_ocv_min = "\0=\t";
+		iscd_ocv_min = <0x3d0900>;
 		iscd_batt_temp_min = <0x64>;
 		iscd_batt_temp_max = <0x1f4>;
 		iscd_batt_temp_diff_max = <0x64>;
