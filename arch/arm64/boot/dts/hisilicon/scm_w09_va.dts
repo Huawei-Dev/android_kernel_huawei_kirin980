@@ -1476,7 +1476,7 @@
 		hota {
 			reg = <0x0 0xaa200000 0x0 0x10000000>;
 			no-map;
-			status = "disabled";
+			status = "ok";
 		};
 		dtb {
 			reg = <0x0 0x66000000 0x0 0x200000>;
