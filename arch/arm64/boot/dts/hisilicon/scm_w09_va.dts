@@ -1,6 +1,11 @@
 /dts-v1/;
 
 / {
+	hisi,boardname = "SCM_W09_VA";
+	hisi,product_id = <0xffffffff>;
+	hisi,product_name = "SCM-W09";
+	hisi,modem_id = <0xffffffff>;
+	hisi,boardid = <0x8 0x1 0x0 0x2>;
 	#address-cells = <0x2>;
 	#size-cells = <0x2>;
 	model = "kirin980";
@@ -9,6 +14,7 @@
 	hisi,chipid = <0x6 0x8 0x0 0x1>;
 	hisi,dynamic_rxdphy_enable = <0x1>;
 	hisi,chiptype = "kirin980_cs";
+
 	huawei,lcd_config {
 		phandle = <0x2bd>;
 		compatible = "simple-bus";
@@ -424,7 +430,7 @@
 			lcd-kit,vss-support = <0x0>;
 		};
 		lcd_kit_scm_inx_nt35523_10p7 {
-			status = "disabled";
+			status = "ok";
 			phandle = <0x2e9>;
 			compatible = "inx-nt35523-10p7-1600p-video";
 			lcd-kit,panel-name = "INX_NT35523 10p7 VIDEO TFT 1600 x 2560";
@@ -1244,7 +1250,7 @@
 		};
 	};
 	huawei,lcd_panel {
-		lcd_panel_type = "auo_otm1901a_5p2_1080p_video";
+		lcd_panel_type = "inx-nt35523-10p7-1600p-video";
 		fastboot_record_bit = <0x0>;
 		phandle = <0x30e>;
 		compatible = "huawei,lcd_panel_type";
@@ -1257,7 +1263,7 @@
 	};
 	memory@0 {
 		device_type = "memory";
-		reg = <0x0 0x400000 0x0 0xbfe00000>;
+		reg = <0x0 0x0 0x0 0xe0000000 0x3 0xe0000000 0x0 0x20000000>;
 	};
 	reserved-memory {
 		#address-cells = <0x2>;
@@ -1428,7 +1434,7 @@
 		};
 		logo-buffer {
 			reg = <0x0 0x36500000 0x0 0x3f00000>;
-			status = "disabled";
+			status = "ok";
 			visible_to_users;
 		};
 		fastboot-cma-mem {
@@ -19897,7 +19903,7 @@
 		#address-cells = <0x2>;
 		#size-cells = <0x2>;
 		compatible = "hisilicon,hisifb";
-		fastboot_enable_flag = <0x0>;
+		fastboot_enable_flag = <0x1>;
 		fake_lcd_flag = <0x0>;
 		iommus = <0x2a2>;
 		dss_base_phy = <0xe8600000>;
@@ -21878,7 +21884,7 @@
 	};
 	psci {
 		compatible = "arm,psci";
-		method = "smc";
+		method = "hvc";
 		cpu_suspend = <0xc4000001>;
 		cpu_off = <0x84000002>;
 		cpu_on = <0xc4000003>;
