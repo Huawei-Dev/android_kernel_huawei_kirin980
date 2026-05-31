@@ -55,6 +55,7 @@ source "drivers/huawei_platform/wakeup/Kconfig"
 source "drivers/huawei_platform/multichip_skytone/Kconfig"
 
 source "drivers/huawei_platform/switch/Kconfig"
+source "drivers/huawei_platform/storage_rofa/Kconfig"
 endif #HUAWEI_PLATFORM
 
 endmenu

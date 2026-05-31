@@ -51,3 +51,4 @@ obj-$(CONFIG_WAKEUP) += wakeup/
 obj-$(CONFIG_MULTICHIP_SKYTONE) += multichip_skytone/
 
 obj-$(CONFIG_SWITCH)        += switch/
+obj-$(CONFIG_HUAWEI_STORAGE_ROFA) += storage_rofa/
