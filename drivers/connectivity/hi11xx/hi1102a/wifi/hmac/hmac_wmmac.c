@@ -9,7 +9,7 @@ extern "C" {
 
 
 /*****************************************************************************
-  1 头文件包含
+  1 ??????????
 *****************************************************************************/
 #ifdef _PRE_WLAN_FEATURE_WMMAC
 #include "hmac_wmmac.h"
@@ -22,12 +22,12 @@ extern "C" {
 #define THIS_FILE_ID OAM_FILE_ID_HMAC_WMMAC_C
 
 /*****************************************************************************
-  2 全局变量定义
+  2 ????????????
 *****************************************************************************/
 
 
 /*****************************************************************************
-  3 函数实现
+  3 ????????
 *****************************************************************************/
 OAL_STATIC oal_uint32  hmac_mgmt_tx_delts(hmac_vap_stru *pst_hmac_vap, hmac_user_stru *pst_hmac_user, mac_wmm_tspec_stru *pst_delts_args);
 
@@ -53,13 +53,13 @@ OAL_STATIC oal_uint16  hmac_mgmt_encap_addts_req(
     /*                Set the fields in the frame header                     */
     /*************************************************************************/
 
-    /* Frame Control Field 中只需要设置Type/Subtype值，其他设置为0 */
+    /* Frame Control Field ????????????Type/Subtype??????????????0 */
     mac_hdr_set_frame_control(puc_data, WLAN_PROTOCOL_VERSION | WLAN_FC0_TYPE_MGT | WLAN_FC0_SUBTYPE_ACTION);
 
     /* DA is address of STA requesting association */
     oal_set_mac_addr(puc_data + 4, pst_vap->st_vap_base_info.auc_bssid);
 
-    /* SA的值为dot11MACAddress的值 */
+    /* SA??????dot11MACAddress???? */
     oal_set_mac_addr(puc_data + 10, pst_vap->st_vap_base_info.pst_mib_info->st_wlan_mib_sta_config.auc_dot11StationID);
 
     oal_set_mac_addr(puc_data + 16, pst_vap->st_vap_base_info.auc_bssid);
@@ -74,31 +74,31 @@ OAL_STATIC oal_uint16  hmac_mgmt_encap_addts_req(
     /*                                                                       */
     /*************************************************************************/
 
-    /* 将索引指向frame body起始位置 */
+    /* ??????????frame body???????? */
     us_index = MAC_80211_FRAME_LEN;
 
-    /* 设置Category */
+    /* ????Category */
     puc_data[us_index++] = MAC_ACTION_CATEGORY_WMMAC_QOS;
 
-    /* 设置Action */
+    /* ????Action */
     puc_data[us_index++] = MAC_WMMAC_ACTION_ADDTS_REQ;
 
-    /* 设置Dialog Token */
+    /* ????Dialog Token */
     puc_data[us_index++] = pst_vap->uc_ts_dialog_token;
 
-    /* Status 固定值为0 */
+    /* Status ????????0 */
     puc_data[us_index++] = 0;
 
-    /* 设置WMM AC参数 */
+    /* ????WMM AC???? */
     us_index += mac_set_wmmac_ie_sta((oal_void *)pst_vap, puc_data + us_index, pst_addts_args);
 
-    /* 返回的帧长度中不包括FCS */
+    /* ????????????????????FCS */
     return us_index;
 }
 
 OAL_STATIC oal_uint32  hmac_mgmt_tx_addts_req_timeout(oal_void *p_arg)
 {
-    hmac_vap_stru                      *pst_vap = OAL_PTR_NULL;         /* vap指针 */
+    hmac_vap_stru                      *pst_vap = OAL_PTR_NULL;         /* vap???? */
     hmac_user_stru                     *pst_hmac_user = OAL_PTR_NULL;
     mac_ts_stru                        *pst_ts_args = OAL_PTR_NULL;
     mac_wmm_tspec_stru                  st_addts_args;
@@ -130,7 +130,7 @@ OAL_STATIC oal_uint32  hmac_mgmt_tx_addts_req_timeout(oal_void *p_arg)
         return OAL_SUCC;
     }
 
-    /* 生成DELTS帧,只需要改变TSID */
+    /* ????DELTS??,??????????TSID */
     st_addts_args.ts_info.bit_tsid      = pst_ts_args->uc_tsid;
     st_addts_args.ts_info.bit_user_prio = pst_ts_args->uc_up;
 
@@ -148,7 +148,7 @@ OAL_STATIC oal_uint32  hmac_mgmt_tx_addts_req(
     mac_device_stru            *pst_device = OAL_PTR_NULL;
     oal_netbuf_stru            *pst_addts_req = OAL_PTR_NULL;
     oal_uint16                  us_frame_len;
-    frw_event_mem_stru         *pst_event_mem = OAL_PTR_NULL;      /* 申请事件返回的内存指针 */
+    frw_event_mem_stru         *pst_event_mem = OAL_PTR_NULL;      /* ?????????????????????? */
     oal_uint32                  ul_ret;
 #if (_PRE_MULTI_CORE_MODE_OFFLOAD_DMAC == _PRE_MULTI_CORE_MODE)
     mac_tx_ctl_stru            *pst_tx_ctl;
@@ -160,7 +160,7 @@ OAL_STATIC oal_uint32  hmac_mgmt_tx_addts_req(
     mac_ts_stru                *pst_ts = OAL_PTR_NULL;
 
     pst_mac_vap = &(pst_hmac_vap->st_vap_base_info);
-    /* 确定vap处于工作状态 */
+    /* ????vap???????????? */
     if (MAC_VAP_STATE_BUTT == pst_mac_vap->en_vap_state)
     {
         OAM_WARNING_LOG1(pst_mac_vap->uc_vap_id, OAM_SF_WMMAC, "{hmac_mgmt_tx_addts_req:: vap has been down/del, vap_state[%d].}",
@@ -168,7 +168,7 @@ OAL_STATIC oal_uint32  hmac_mgmt_tx_addts_req(
         return OAL_FAIL;
     }
 
-    /* 获取device结构 */
+    /* ????device???? */
     pst_device = mac_res_get_dev(pst_mac_vap->uc_device_id);
     if (OAL_PTR_NULL == pst_device)
     {
@@ -176,7 +176,7 @@ OAL_STATIC oal_uint32  hmac_mgmt_tx_addts_req(
         return OAL_ERR_CODE_PTR_NULL;
     }
 
-    /* 申请ADDTS_REQ管理帧内存 */
+    /* ????ADDTS_REQ?????????? */
     pst_addts_req = OAL_MEM_NETBUF_ALLOC(OAL_NORMAL_NETBUF, WLAN_MEM_NETBUF_SIZE2, OAL_NETBUF_PRIORITY_MID);
     if (OAL_PTR_NULL == pst_addts_req)
     {
@@ -197,11 +197,11 @@ OAL_STATIC oal_uint32  hmac_mgmt_tx_addts_req(
     pst_hmac_vap->uc_ts_dialog_token++;
     uc_ac_num = WLAN_WME_TID_TO_AC(pst_addts_args->ts_info.bit_user_prio);
 
-    /* 调用封装管理帧接口 */
+    /* ?????????????????? */
     us_frame_len = hmac_mgmt_encap_addts_req(pst_hmac_vap,oal_netbuf_data(pst_addts_req), pst_addts_args);
 
     memset_s((oal_uint8*)&st_wlan_ctx_action, OAL_SIZEOF(st_wlan_ctx_action), 0, OAL_SIZEOF(st_wlan_ctx_action));
-    /* 赋值要传入Dmac的信息 */
+    /* ??????????Dmac?????? */
     st_wlan_ctx_action.us_frame_len        = us_frame_len;
     st_wlan_ctx_action.uc_hdr_len          = MAC_80211_FRAME_LEN;
     st_wlan_ctx_action.en_action_category  = MAC_ACTION_CATEGORY_WMMAC_QOS;
@@ -255,7 +255,7 @@ OAL_STATIC oal_uint32  hmac_mgmt_tx_addts_req(
 
     FRW_EVENT_FREE(pst_event_mem);
 
-    /* 更新对应的TS信息 */
+    /* ??????????TS???? */
     pst_ts = &(pst_hmac_user->st_user_base_info.st_ts_info[uc_ac_num]);
 
     if(MAC_TS_SUCCESS == pst_ts->en_ts_status)
@@ -269,7 +269,7 @@ OAL_STATIC oal_uint32  hmac_mgmt_tx_addts_req(
     pst_ts->uc_tsid             = pst_addts_args->ts_info.bit_tsid;
 
 #if defined(_PRE_PRODUCT_ID_HI110X_HOST)
-    /* 启动ADDTS REQ超时计时器 */
+    /* ????ADDTS REQ?????????? */
     FRW_TIMER_CREATE_TIMER(&pst_ts->st_addts_timer,
                            hmac_mgmt_tx_addts_req_timeout,
                            WLAN_ADDTS_TIMEOUT,
@@ -307,16 +307,16 @@ OAL_STATIC oal_uint16  hmac_mgmt_encap_addts_rsp(hmac_vap_stru     *pst_vap,
     /*************************************************************************/
     mac_rx_get_sa((mac_ieee80211_frame_stru *)puc_addts_req, &puc_sa);
 
-    /* 拷贝整个ADDTS REQ帧 */
+    /* ????????ADDTS REQ?? */
     oal_memcopy(puc_data, puc_addts_req, us_frame_len);
 
-    /* Frame Control Field 中只需要设置Type/Subtype值，其他设置为0 */
+    /* Frame Control Field ????????????Type/Subtype??????????????0 */
     mac_hdr_set_frame_control(puc_data, WLAN_PROTOCOL_VERSION | WLAN_FC0_TYPE_MGT | WLAN_FC0_SUBTYPE_ACTION);
 
     /* DA is ADDTS Request frame's SA */
     oal_set_mac_addr(puc_data + 4, puc_sa);
 
-    /* SA的值为dot11MACAddress的值 */
+    /* SA??????dot11MACAddress???? */
     oal_set_mac_addr(puc_data + 10, pst_vap->st_vap_base_info.pst_mib_info->st_wlan_mib_sta_config.auc_dot11StationID);
     oal_set_mac_addr(puc_data + 16, pst_vap->st_vap_base_info.pst_mib_info->st_wlan_mib_sta_config.auc_dot11StationID);
 
@@ -330,21 +330,21 @@ OAL_STATIC oal_uint16  hmac_mgmt_encap_addts_rsp(hmac_vap_stru     *pst_vap,
     /*                                                                       */
     /*************************************************************************/
 
-    /* 将索引指向frame body起始位置 */
+    /* ??????????frame body???????? */
     us_index = MAC_80211_FRAME_LEN;
 
-    /* 设置Category */
+    /* ????Category */
     puc_data[us_index++] = MAC_ACTION_CATEGORY_WMMAC_QOS;
 
-    /* 设置Action */
+    /* ????Action */
     puc_data[us_index++] = MAC_WMMAC_ACTION_ADDTS_RSP;
 
-    /* 设置Dialog Token */
+    /* ????Dialog Token */
     us_index++;
 
-    puc_data[us_index++] = 0; /* Status 为Succ */
+    puc_data[us_index++] = 0; /* Status ??Succ */
 
-    /* 返回的帧长度中不包括FCS */
+    /* ????????????????????FCS */
     return us_frame_len;
 }
 
@@ -372,14 +372,14 @@ OAL_STATIC oal_uint16  hmac_mgmt_encap_delts(hmac_vap_stru    *pst_vap,
     /*                Set the fields in the frame header                     */
     /*************************************************************************/
 
-    /* Frame Control Field 中只需要设置Type/Subtype值，其他设置为0 */
+    /* Frame Control Field ????????????Type/Subtype??????????????0 */
     mac_hdr_set_frame_control(puc_data, WLAN_PROTOCOL_VERSION | WLAN_FC0_TYPE_MGT | WLAN_FC0_SUBTYPE_ACTION);
     if (IS_STA(&(pst_vap->st_vap_base_info)))
     {
         /* DA is address of STA requesting association */
         oal_set_mac_addr(puc_data + 4, pst_vap->st_vap_base_info.auc_bssid);
 
-        /* SA的值为dot11MACAddress的值 */
+        /* SA??????dot11MACAddress???? */
         oal_set_mac_addr(puc_data + 10, pst_vap->st_vap_base_info.pst_mib_info->st_wlan_mib_sta_config.auc_dot11StationID);
         oal_set_mac_addr(puc_data + 16, pst_vap->st_vap_base_info.auc_bssid);
     }
@@ -388,7 +388,7 @@ OAL_STATIC oal_uint16  hmac_mgmt_encap_delts(hmac_vap_stru    *pst_vap,
         /* DA is puc_addr, user's address */
         oal_set_mac_addr(puc_data + 4, puc_addr);
 
-        /* SA的值为dot11MACAddress的值 */
+        /* SA??????dot11MACAddress???? */
         oal_set_mac_addr(puc_data + 10, pst_vap->st_vap_base_info.pst_mib_info->st_wlan_mib_sta_config.auc_dot11StationID);
         oal_set_mac_addr(puc_data + 16, pst_vap->st_vap_base_info.pst_mib_info->st_wlan_mib_sta_config.auc_dot11StationID);
 
@@ -404,29 +404,29 @@ OAL_STATIC oal_uint16  hmac_mgmt_encap_delts(hmac_vap_stru    *pst_vap,
     /*                                                                       */
     /*************************************************************************/
 
-    /* 将索引指向frame body起始位置 */
+    /* ??????????frame body???????? */
     us_index = MAC_80211_FRAME_LEN;
 
-    /* 设置Category */
+    /* ????Category */
     puc_data[us_index++] = MAC_ACTION_CATEGORY_WMMAC_QOS;
 
-    /* 设置Action */
+    /* ????Action */
     puc_data[us_index++] = MAC_WMMAC_ACTION_DELTS;
 
-    /* 设置Dialog Token */
+    /* ????Dialog Token */
     puc_data[us_index++] = 0;
 
-    puc_data[us_index++] = 0; /* Status 固定值为0 */
+    puc_data[us_index++] = 0; /* Status ????????0 */
 
     memset_s(&st_addts_args, OAL_SIZEOF(st_addts_args), 0, OAL_SIZEOF(st_addts_args));
     st_addts_args.ts_info.bit_tsid = uc_tsid;
 
-    /* 设置WMM AC参数，除了TSID，delts其他值均为0 */
+    /* ????WMM AC??????????TSID??delts??????????0 */
     us_ie_len = mac_set_wmmac_ie_sta((oal_void *)pst_vap, puc_data + us_index, &st_addts_args);
 
     us_index += us_ie_len;
 
-    /* 返回的帧长度中不包括FCS */
+    /* ????????????????????FCS */
     return us_index;
 }
 
@@ -440,7 +440,7 @@ OAL_STATIC oal_uint32  hmac_mgmt_tx_delts(
     mac_vap_stru               *pst_mac_vap;
     oal_netbuf_stru            *pst_delts = OAL_PTR_NULL;
     oal_uint16                  us_frame_len;
-    frw_event_mem_stru         *pst_event_mem = OAL_PTR_NULL;      /* 申请事件返回的内存指针 */
+    frw_event_mem_stru         *pst_event_mem = OAL_PTR_NULL;      /* ?????????????????????? */
     oal_uint32                  ul_ret;
 #if (_PRE_MULTI_CORE_MODE_OFFLOAD_DMAC == _PRE_MULTI_CORE_MODE)
     mac_tx_ctl_stru            *pst_tx_ctl;
@@ -451,13 +451,13 @@ OAL_STATIC oal_uint32  hmac_mgmt_tx_delts(
     oal_uint8                   uc_ac_num = 0;
 
     pst_mac_vap = &(pst_hmac_vap->st_vap_base_info);
-    /* 确定vap处于工作状态 */
+    /* ????vap???????????? */
     if (MAC_VAP_STATE_BUTT == pst_mac_vap->en_vap_state)
     {
         OAM_WARNING_LOG1(pst_mac_vap->uc_vap_id, OAM_SF_WMMAC, "{hmac_mgmt_tx_delts:: vap has been down/del, vap_state[%d].}",pst_mac_vap->en_vap_state);
         return OAL_FAIL;
     }
-    /* 遍历所有AC，找到对应TSID的AC和UP */
+    /* ????????AC??????????TSID??AC??UP */
     if (IS_STA(&pst_hmac_vap->st_vap_base_info))
     {
         for (uc_ac_num = 0; uc_ac_num < WLAN_WME_AC_BUTT; uc_ac_num++)
@@ -468,21 +468,21 @@ OAL_STATIC oal_uint32  hmac_mgmt_tx_delts(
                 {
                     continue;
                 }
-                /* 如果找到了对应的TSID，则以对应的UP发送,更新对应的TS信息 */
+                /* ????????????????TSID????????????UP????,??????????TS???? */
                 pst_hmac_user->st_user_base_info.st_ts_info[uc_ac_num].en_ts_status = MAC_TS_INIT;
                 pst_hmac_user->st_user_base_info.st_ts_info[uc_ac_num].uc_tsid      = 0xFF;
                 pst_delts_args->ts_info.bit_user_prio = pst_hmac_user->st_user_base_info.st_ts_info[uc_ac_num].uc_up;
                 break;
             }
         }
-        /* 如果没找到，delts默认以up7发送 */
+        /* ????????????delts??????up7???? */
         if(WLAN_WME_AC_BUTT == uc_ac_num)
         {
             pst_delts_args->ts_info.bit_user_prio = 0x7;
         }
     }
 
-    /* 申请DELTS管理帧内存 */
+    /* ????DELTS?????????? */
     pst_delts = OAL_MEM_NETBUF_ALLOC(OAL_NORMAL_NETBUF, WLAN_MEM_NETBUF_SIZE2, OAL_NETBUF_PRIORITY_MID);
     if (OAL_PTR_NULL == pst_delts)
     {
@@ -501,7 +501,7 @@ OAL_STATIC oal_uint32  hmac_mgmt_tx_delts(
     OAL_NETBUF_PREV(pst_delts) = OAL_PTR_NULL;
     OAL_NETBUF_NEXT(pst_delts) = OAL_PTR_NULL;
 
-    /* 调用封装管理帧接口 */
+    /* ?????????????????? */
     us_frame_len = hmac_mgmt_encap_delts(pst_hmac_vap,
                                          oal_netbuf_data(pst_delts),
                                          pst_hmac_user->st_user_base_info.auc_user_mac_addr,
@@ -509,7 +509,7 @@ OAL_STATIC oal_uint32  hmac_mgmt_tx_delts(
 
     memset_s((oal_uint8*)&st_wlan_ctx_action, OAL_SIZEOF(st_wlan_ctx_action), 0, OAL_SIZEOF(st_wlan_ctx_action));
 
-    /* 赋值要传入Dmac的信息 */
+    /* ??????????Dmac?????? */
     st_wlan_ctx_action.us_frame_len        = us_frame_len;
     st_wlan_ctx_action.uc_hdr_len          = MAC_80211_FRAME_LEN;
     st_wlan_ctx_action.en_action_category  = MAC_ACTION_CATEGORY_WMMAC_QOS;
@@ -560,7 +560,7 @@ OAL_STATIC oal_uint32  hmac_mgmt_tx_delts(
 
     if (IS_STA(&pst_hmac_vap->st_vap_base_info)&& (uc_ac_num < WLAN_WME_AC_BUTT))
     {
-        /* 更新对应的TS信息 */
+        /* ??????????TS???? */
 
         pst_hmac_user->st_user_base_info.st_ts_info[uc_ac_num].en_ts_status = MAC_TS_INIT;
         pst_hmac_user->st_user_base_info.st_ts_info[uc_ac_num].uc_tsid      = 0xFF;
@@ -606,17 +606,17 @@ oal_uint32  hmac_mgmt_rx_addts_rsp(
     pst_tspec_info = (mac_wmm_tspec_stru *)(puc_payload + 12);
     uc_user_prio = pst_tspec_info->ts_info.bit_user_prio;
 
-    /* 协议支持tid为0~15,02只支持tid0~7 */
+    /* ????????tid??0~15,02??????tid0~7 */
     if(uc_user_prio >= WLAN_TID_MAX_NUM)
     {
-        /* 对于tid > 7的resp直接忽略 */
+        /* ????tid > 7??resp???????? */
         OAM_WARNING_LOG3(pst_mac_vap->uc_vap_id, OAM_SF_WMMAC, "{hmac_mgmt_rx_addts_rsp::addts rsp tsid[%d]} token[%d] status[%d]", uc_user_prio, puc_payload[2], puc_payload[3]);
         return OAL_SUCC;
     }
     uc_ac_num = WLAN_WME_TID_TO_AC(uc_user_prio);
     uc_tsid = pst_tspec_info->ts_info.bit_tsid;
 
-    /* 获得之前保存的ts信息 */
+    /* ??????????????ts???? */
     pst_ts   = &(pst_hmac_user->st_user_base_info.st_ts_info[uc_ac_num]);
     uc_dialog_token = puc_payload[2];
 
@@ -651,10 +651,10 @@ oal_uint32  hmac_mgmt_rx_addts_rsp(
     FRW_TIMER_IMMEDIATE_DESTROY_TIMER(&pst_ts->st_addts_timer);
 #endif
 
-    /* 如果对应TSID的TS未建立，则发送DELTS */
+    /* ????????TSID??TS??????????????DELTS */
     if(MAC_TS_INIT == pst_ts->en_ts_status)
     {
-         /* 发送DELTS帧 */
+         /* ????DELTS?? */
          st_tspec_args.ts_info.bit_tsid       = uc_tsid;
          st_tspec_args.ts_info.bit_user_prio  = uc_user_prio;
          st_tspec_args.ts_info.bit_acc_policy = 1;
@@ -662,7 +662,7 @@ oal_uint32  hmac_mgmt_rx_addts_rsp(
          return OAL_SUCC;
     }
 
-    /* 根据ADDTS RSP信息，更新dmac TS状态 */
+    /* ????ADDTS RSP??????????dmac TS???? */
     if(MAC_SUCCESSFUL_STATUSCODE == puc_payload[3])
     {
         pst_ts->en_ts_status = MAC_TS_SUCCESS;
@@ -720,17 +720,17 @@ oal_uint32  hmac_mgmt_rx_delts(
     pst_tspec_info = (mac_wmm_tspec_stru *)(puc_payload + 12);
     uc_tsid        = pst_tspec_info->ts_info.bit_tsid;
 
-    /* 协议支持tid为0~15,02只支持tid0~7 */
+    /* ????????tid??0~15,02??????tid0~7 */
     if(uc_tsid >= WLAN_TID_MAX_NUM)
     {
-        /* 对于tid > 7的resp直接忽略 */
+        /* ????tid > 7??resp???????? */
         OAM_WARNING_LOG3(pst_mac_vap->uc_vap_id, OAM_SF_WMMAC, "{hmac_mgmt_rx_delts::tsid[%d]} token[%d] status[%d]", uc_tsid, puc_payload[2], puc_payload[3]);
         return OAL_SUCC;
     }
-    /* 遍历所有AC，找到对应的TSID，清空TS信息 */
+    /* ????????AC????????????TSID??????TS???? */
     for(uc_ac_num = 0; uc_ac_num < WLAN_WME_AC_BUTT; uc_ac_num++)
     {
-        /* 获得之前保存的ts信息 */
+        /* ??????????????ts???? */
         pst_ts   = &(pst_hmac_user->st_user_base_info.st_ts_info[uc_ac_num]);
         if(pst_ts->uc_tsid != uc_tsid)
         {
@@ -738,7 +738,7 @@ oal_uint32  hmac_mgmt_rx_delts(
             continue;
         }
 
-        /* 清空已保存的TS信息 */
+        /* ????????????TS???? */
         if (pst_ts->st_addts_timer.en_is_registerd == OAL_TRUE)
         {
             FRW_TIMER_IMMEDIATE_DESTROY_TIMER(&(pst_ts->st_addts_timer));
@@ -798,7 +798,7 @@ oal_uint32  hmac_mgmt_rx_addts_req_frame(hmac_vap_stru *pst_hmac_vap, oal_netbuf
         return OAL_ERR_CODE_PTR_NULL;
     }
 
-    /* 申请ADDTS_RSP管理帧内存 */
+    /* ????ADDTS_RSP?????????? */
     pst_addts_rsp = OAL_MEM_NETBUF_ALLOC(OAL_NORMAL_NETBUF, WLAN_MEM_NETBUF_SIZE2, OAL_NETBUF_PRIORITY_MID);
     if (OAL_PTR_NULL == pst_addts_rsp)
     {
@@ -815,7 +815,7 @@ oal_uint32  hmac_mgmt_rx_addts_req_frame(hmac_vap_stru *pst_hmac_vap, oal_netbuf
     OAL_NETBUF_PREV(pst_addts_rsp) = OAL_PTR_NULL;
     OAL_NETBUF_NEXT(pst_addts_rsp) = OAL_PTR_NULL;
 
-    /* 调用封装管理帧接口 */
+    /* ?????????????????? */
     us_frame_len = hmac_mgmt_encap_addts_rsp(pst_hmac_vap, oal_netbuf_data(pst_addts_rsp), oal_netbuf_data(pst_netbuf), pst_rx_ctrl->st_rx_info.us_frame_len);
     if (0 == us_frame_len)
     {
@@ -824,8 +824,8 @@ oal_uint32  hmac_mgmt_rx_addts_req_frame(hmac_vap_stru *pst_hmac_vap, oal_netbuf
         return OAL_FAIL;
     }
 
-    pst_tx_ctl->us_mpdu_len     = us_frame_len;               /* dmac发送需要的mpdu长度 */
-    pst_tx_ctl->us_tx_user_idx  = us_user_idx;                /* 发送完成需要获取user结构体 */
+    pst_tx_ctl->us_mpdu_len     = us_frame_len;               /* dmac??????????mpdu???? */
+    pst_tx_ctl->us_tx_user_idx  = us_user_idx;                /* ????????????????user?????? */
 
     oal_netbuf_put(pst_addts_rsp, us_frame_len);
 
@@ -865,7 +865,7 @@ oal_uint32  hmac_config_addts_req(mac_vap_stru *pst_mac_vap, oal_uint16 us_len, 
         return OAL_ERR_CODE_PTR_NULL;
     }
 
-    /* 获取用户对应的索引 */
+    /* ?????????????????? */
     pst_hmac_user = (hmac_user_stru *)mac_res_get_hmac_user(pst_mac_vap->uc_assoc_vap_id);
     if (OAL_PTR_NULL == pst_hmac_user)
     {
@@ -873,7 +873,7 @@ oal_uint32  hmac_config_addts_req(mac_vap_stru *pst_mac_vap, oal_uint16 us_len, 
         return OAL_ERR_CODE_PTR_NULL;
     }
 
-    /*判断对应AC的ACM位，只有该AC的ACM为1时，才允许建立TS。 */
+    /*????????AC??ACM??????????AC??ACM??1??????????????TS?? */
     uc_ac = WLAN_WME_TID_TO_AC(pst_addts_req->ts_info.bit_user_prio);
     if (!pst_hmac_vap->st_vap_base_info.pst_mib_info->st_wlan_mib_qap_edac[uc_ac].en_dot11QAPEDCATableMandatory)
     {
@@ -893,7 +893,7 @@ oal_uint32  hmac_config_addts_req(mac_vap_stru *pst_mac_vap, oal_uint16 us_len, 
     st_addts_args.ul_min_phy_rate        = pst_addts_req->ul_min_phy_rate;
     st_addts_args.us_surplus_bw          = pst_addts_req->us_surplus_bw;
 
-    /* 发送ADDTS REQ，建立TS */
+    /* ????ADDTS REQ??????TS */
     return hmac_mgmt_tx_addts_req(pst_hmac_vap, pst_hmac_user, &st_addts_args);
 }
 
@@ -920,7 +920,7 @@ oal_uint32  hmac_config_delts(mac_vap_stru *pst_mac_vap, oal_uint16 us_len, oal_
         return OAL_ERR_CODE_PTR_NULL;
     }
 
-    /* 获取用户对应的索引 */
+    /* ?????????????????? */
     pst_hmac_user = (hmac_user_stru *)mac_res_get_hmac_user(pst_mac_vap->uc_assoc_vap_id);
     if (OAL_PTR_NULL == pst_hmac_user)
     {
@@ -946,7 +946,7 @@ oal_uint32  hmac_config_wmmac_switch(mac_vap_stru *pst_mac_vap, oal_uint16 us_le
 
     g_en_wmmac_switch = uc_wmmac_switch;
     OAM_WARNING_LOG2(pst_mac_vap->uc_vap_id, OAM_SF_WMMAC, "{hmac_config_wmmac_switch::wmmac_switch is open/close = %d.vap mode = %d}",g_en_wmmac_switch,pst_mac_vap->en_vap_mode);
-    /* TBD 后续功能需要时，需要增加关闭WMMAC开关时，删除所有VAP的所有用户的TS */
+    /* TBD ????????????????????????????WMMAC????????????????VAP????????????TS */
 
     pst_hmac_user = (hmac_user_stru *)mac_res_get_hmac_user(pst_mac_vap->uc_assoc_vap_id);
     if (OAL_PTR_NULL == pst_hmac_user)
@@ -957,7 +957,7 @@ oal_uint32  hmac_config_wmmac_switch(mac_vap_stru *pst_mac_vap, oal_uint16 us_le
 
     pst_mac_user = &(pst_hmac_user->st_user_base_info);
 
-    /* 关闭wmmac开关时，需要删除user下所有的TS信息 */
+    /* ????wmmac????????????????user????????TS???? */
     if(!g_en_wmmac_switch)
     {
         for(uc_ac_idx = 0;uc_ac_idx < WLAN_WME_AC_BUTT; uc_ac_idx++)
@@ -982,7 +982,7 @@ oal_uint32  hmac_config_wmmac_switch(mac_vap_stru *pst_mac_vap, oal_uint16 us_le
 
 #if (_PRE_MULTI_CORE_MODE_OFFLOAD_DMAC == _PRE_MULTI_CORE_MODE)
     /***************************************************************************
-    抛事件到DMAC层, 同步DMAC数据
+    ????????DMAC??, ????DMAC????
     ***************************************************************************/
     ul_ret = hmac_config_send_event(pst_mac_vap, WLAN_CFGID_WMMAC_SWITCH, us_len, puc_param);
     if (OAL_UNLIKELY(OAL_SUCC != ul_ret))
@@ -1023,10 +1023,10 @@ oal_uint32  hmac_tx_mgmt_reassoc_req(hmac_vap_stru *pst_hmac_vap_sta)
 
     memset_s(oal_netbuf_cb(pst_asoc_req_frame), OAL_NETBUF_CB_SIZE(), 0, OAL_NETBUF_CB_SIZE());
 
-    /* 将mac header清零 */
+    /* ??mac header???? */
     memset_s((oal_uint8 *)oal_netbuf_header(pst_asoc_req_frame), MAC_80211_FRAME_LEN, 0, MAC_80211_FRAME_LEN);
 
-    /* 组帧 (Re)Assoc_req_Frame */
+    /* ???? (Re)Assoc_req_Frame */
     puc_curr_bssid = pst_hmac_vap_sta->st_vap_base_info.auc_bssid;
 
     ul_asoc_frame_len = hmac_mgmt_encap_asoc_req_sta(pst_hmac_vap_sta,(oal_uint8 *)(OAL_NETBUF_HEADER(pst_asoc_req_frame)), puc_curr_bssid);
@@ -1052,7 +1052,7 @@ oal_uint32  hmac_tx_mgmt_reassoc_req(hmac_vap_stru *pst_hmac_vap_sta)
     pst_tx_ctl->us_mpdu_len       = (oal_uint16)ul_asoc_frame_len;
     pst_tx_ctl->us_tx_user_idx    = pst_hmac_user_ap->st_user_base_info.us_assoc_id;
 
-    /* 抛事件让DMAC将该帧发送 */
+    /* ????????DMAC?????????? */
     ul_ret = hmac_tx_mgmt_send_event(&(pst_hmac_vap_sta->st_vap_base_info), pst_asoc_req_frame, (oal_uint16)ul_asoc_frame_len);
     if (OAL_SUCC != ul_ret)
     {

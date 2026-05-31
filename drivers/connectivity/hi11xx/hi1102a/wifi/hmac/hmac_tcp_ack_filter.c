@@ -9,7 +9,7 @@ extern "C" {
 
 
 /*****************************************************************************
-  1 头文件包含
+  1 ??????????
 *****************************************************************************/
 #include "hmac_tcp_ack_filter.h"
 #include "hmac_edca_opt.h"
@@ -20,7 +20,7 @@ extern "C" {
 #define THIS_FILE_ID OAM_FILE_ID_HMAC_TCP_ACK_FILTER_C
 
 /*****************************************************************************
-  2 全局变量定义
+  2 ????????????
 *****************************************************************************/
 oal_bool_enum_uint8 g_en_tcp_ack_filter_switch = OAL_TRUE;
 oal_bool_enum_uint8 g_tcp_ack_filter_enable = OAL_FALSE;
@@ -33,7 +33,7 @@ oal_uint32 g_ul_5G_tx_large_pps_th = 20000;
 /* {tx_large_pps, rx_large_pps, tx_small_pps, rx_small_pps}  */
 oal_uint16 g_aus_tcp_ack_filter_th[WLAN_BAND_BUTT][4] = {{4000, 500, 200, 500}, {20000, 1500, 500, 1500}};
 /*****************************************************************************
-  3 函数实现
+  3 ????????
 *****************************************************************************/
 
 oal_void hmac_set_filter_switch_cnt(oal_uint8 uc_filter_switch_cnt)
@@ -103,7 +103,7 @@ OAL_STATIC mac_tcp_ack_record_stru *hmac_tcp_ack_record_get(oal_netbuf_stru *pst
 
     us_netbuf_origin_len = us_frame_len - uc_tcp_ack_info_size;
 
-    /* tcp ack info位于netbuf data末尾 */
+    /* tcp ack info????netbuf data???? */
     pst_tcp_ack_info = (mac_tcp_ack_record_stru *) ((oal_uint8 *) oal_netbuf_data(pst_netbuf) + us_netbuf_origin_len);
 
     return pst_tcp_ack_info;
@@ -125,13 +125,13 @@ oal_void hmac_rx_process_tcp_ack_record(hmac_vap_stru *pst_hmac_vap, oal_netbuf_
         return;
     }
 
-    /* 更新BA */
+    /* ????BA */
     hmac_rx_tcp_ack_update_ba(pst_tcp_ack_record);
 
-    /* 更新小包rx pkt数量 */
+    /* ????????rx pkt???? */
     hmac_rx_tcp_ack_update_pkt(pst_tcp_ack_record);
 
-    /* tcp ack过滤信息更新收尾操作 */
+    /* tcp ack???????????????????? */
     hmac_rx_process_tcp_ack_record_post_do(pst_netbuf);
 }
 
@@ -144,7 +144,7 @@ OAL_STATIC oal_uint32 hmac_sync_tcp_ack_filter_switch(mac_vap_stru *pst_mac_vap,
     g_uc_filter_switch_cnt = 0;
 
     /***************************************************************************
-                    抛事件到DMAC层, 开启/关闭tcp ack过滤功能
+                    ????????DMAC??, ????/????tcp ack????????
     ***************************************************************************/
     ul_ret = hmac_config_send_event(pst_mac_vap, WLAN_CFGID_TCP_ACK_FILTER_SWITCH, OAL_SIZEOF(oal_bool_enum_uint8), &en_tcp_ack_filter);
     if (OAL_UNLIKELY(OAL_SUCC != ul_ret))
@@ -162,10 +162,10 @@ OAL_STATIC oal_bool_enum_uint8 hmac_get_tcp_ack_filter_status(mac_vap_stru *pst_
     wlan_channel_bandwidth_enum_uint8 en_bandwidth = pst_mac_vap->st_channel.en_bandwidth;
     wlan_channel_band_enum_uint8      en_band      = pst_mac_vap->st_channel.en_band;
 
-    /* 目前只考虑2.4G 20M和5G 80M两种场景 */
+    /* ??????????2.4G 20M??5G 80M???????? */
     if ((en_band == WLAN_BAND_2G && en_bandwidth == WLAN_BAND_WIDTH_20M) ||
         (en_band == WLAN_BAND_5G && en_bandwidth >= WLAN_BAND_WIDTH_80PLUSPLUS)) {
-        /* 不同频段下tcp tx跑流标准不同 */
+        /* ??????????tcp tx???????????? */
         if (ul_tx_large_pps > g_aus_tcp_ack_filter_th[en_band][0] &&
             ul_tx_small_pps < g_aus_tcp_ack_filter_th[en_band][2] &&
             ul_rx_large_pps + ul_rx_small_pps > g_aus_tcp_ack_filter_th[en_band][1] + g_aus_tcp_ack_filter_th[en_band][3]) {
@@ -206,7 +206,7 @@ OAL_STATIC oal_bool_enum_uint8 hmac_tcp_ack_filter_change_state(oal_bool_enum_ui
 
     g_uc_filter_switch_cnt++;
 
-    /* 尝试开启时直接开启; 尝试关闭时连续3次与原状态不一致才关闭 */
+    /* ??????????????????; ??????????????3?????????????????????? */
     return en_tcp_ack_filter || g_uc_filter_switch_cnt >= MAX_TCP_ACK_FILTER_SWITCH_CNT;
 }
 
