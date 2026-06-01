@@ -105,7 +105,9 @@ struct kbase_aliased {
  * updated as part of the change.
  *
  * @kref: number of users of this alloc
- * @gpu_mappings: count number of times mapped on the GPU
+ * @gpu_mappings: count number of times mapped ont the GPU. Indicating the number
+ *                of references there are to the physical pages from different
+ *                GPU VA regions.
  * @nents: 0..N
  * @pages: N elements, only 0..nents are valid
  * @mappings: List of CPU mappings of this physical memory allocation.
@@ -338,6 +340,14 @@ struct kbase_va_region {
  * e.g. in infinite cache simulation.
  */
 #define KBASE_REG_VA_FREED (1ul << 26)
+
+/* Region is transient mapped into kernel space. */
+#ifdef CONFIG_GPU_GMC_GENERIC
+#define KBASE_REG_TRANSIENT_KERNEL_MAPPING (1ul << 28)
+#define KBASE_REG_NO_GMC (KBASE_REG_DONT_NEED | KBASE_REG_NO_USER_FREE | \
+	KBASE_REG_PERMANENT_KERNEL_MAPPING | \
+	KBASE_REG_TRANSIENT_KERNEL_MAPPING)
+#endif
 
 /* Scramble memory */
 #define KBASE_REG_SCRAMBLE_BIT        (1ul << 31)
@@ -594,6 +604,9 @@ static inline int kbase_reg_prepare_native(struct kbase_va_region *reg,
 	mutex_unlock(&kctx->jit_evict_lock);
 
 	reg->flags &= ~KBASE_REG_FREE;
+
+	if (group_id != BASE_MEM_GROUP_DEFAULT)
+		kbase_ctx_flag_set(kctx, KCTX_LAST_BUFFER);
 
 	return 0;
 }
@@ -906,6 +919,18 @@ int kbase_mem_pool_grow(struct kbase_mem_pool *pool, size_t nr_to_grow);
  * If @new_size < @cur_size, shrink the pool by freeing pages to the kernel.
  */
 void kbase_mem_pool_trim(struct kbase_mem_pool *pool, size_t new_size);
+
+#ifdef CONFIG_MALI_LAST_BUFFER
+/**
+ * kbase_mem_pool_detach - Detach the pool from last buffer.
+ * @pool:     Memory pool to detach
+ *
+ * Only the device pool can detach, it will detach all the pages in @pool from last
+ * buffer and spill the pages to the pool with group id 0. If overspill, free the remaining
+ * pages to the kernel.
+ */
+int kbase_mem_pool_detach(struct kbase_mem_pool *pool);
+#endif
 
 /**
  * kbase_mem_pool_mark_dying - Mark that this pool is dying

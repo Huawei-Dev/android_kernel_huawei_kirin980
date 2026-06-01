@@ -1216,8 +1216,9 @@ int kbase_gpu_mmap(struct kbase_context *kctx, struct kbase_va_region *reg, u64 
 						alloc->imported.alias.aliased[i].length);
 				if (err)
 					goto bad_insert;
-
-				kbase_mem_phy_alloc_gpu_mapped(alloc->imported.alias.aliased[i].alloc);
+					/* Note: mapping count is tracked at alisa
+					 * creation time
+					 */
 			} else {
 				err = kbase_mmu_insert_single_page(kctx,
 					reg->start_pfn + i * stride,
@@ -1275,13 +1276,6 @@ bad_insert:
 				 reg->start_pfn, reg->nr_pages,
 				 kctx->as_nr);
 
-	if (reg->gpu_alloc->type == KBASE_MEM_TYPE_ALIAS) {
-		KBASE_DEBUG_ASSERT(reg->gpu_alloc->imported.alias.aliased);
-		while (i--)
-			if (reg->gpu_alloc->imported.alias.aliased[i].alloc)
-				kbase_mem_phy_alloc_gpu_unmapped(reg->gpu_alloc->imported.alias.aliased[i].alloc);
-	}
-
 	kbase_remove_va_region(reg);
 
 	return err;
@@ -1320,10 +1314,9 @@ int kbase_gpu_munmap(struct kbase_context *kctx, struct kbase_va_region *reg)
 	/* Update tracking, and other cleanup, depending on memory type. */
 	switch (reg->gpu_alloc->type) {
 	case KBASE_MEM_TYPE_ALIAS:
-		KBASE_DEBUG_ASSERT(reg->gpu_alloc->imported.alias.aliased);
-		for (i = 0; i < reg->gpu_alloc->imported.alias.nents; i++)
-			if (reg->gpu_alloc->imported.alias.aliased[i].alloc)
-				kbase_mem_phy_alloc_gpu_unmapped(reg->gpu_alloc->imported.alias.aliased[i].alloc);
+		/* We mark the source allocs as unmapped from the GPU when
+		 * putting reg's allocs
+		 */
 		break;
 	case KBASE_MEM_TYPE_IMPORTED_USER_BUF: {
 			struct kbase_alloc_import_user_buf *user_buf =
@@ -2310,7 +2303,9 @@ int kbase_free_phy_pages_helper(
 	start_free = alloc->pages + alloc->nents - nr_pages_to_free;
 
 	syncback = alloc->properties & KBASE_MEM_PHY_ALLOC_ACCESSED_CACHED;
-	kbase_gmc_invalidate_alloc(alloc->imported.native.kctx, start_free, nr_pages_to_free);
+	if (!reclaimed)
+		kbase_gmc_invalidate_alloc(alloc->imported.native.kctx,
+			start_free, nr_pages_to_free);
 
 	/* pad start_free to a valid start location */
 	while (nr_pages_to_free && is_huge(*start_free) &&
@@ -2467,7 +2462,9 @@ void kbase_free_phy_pages_helper_locked(struct kbase_mem_phy_alloc *alloc,
 	start_free = pages;
 
 	syncback = alloc->properties & KBASE_MEM_PHY_ALLOC_ACCESSED_CACHED;
-	kbase_gmc_invalidate_alloc(alloc->imported.native.kctx, start_free, nr_pages_to_free);
+	if (!reclaimed)
+		kbase_gmc_invalidate_alloc(alloc->imported.native.kctx,
+			start_free, nr_pages_to_free);
 
 	/* pad start_free to a valid start location */
 	while (nr_pages_to_free && is_huge(*start_free) &&
@@ -2585,8 +2582,10 @@ void kbase_mem_kref_free(struct kref *kref)
 		aliased = alloc->imported.alias.aliased;
 		if (aliased) {
 			for (i = 0; i < alloc->imported.alias.nents; i++)
-				if (aliased[i].alloc)
+				if (aliased[i].alloc) {
+					kbase_mem_phy_alloc_gpu_unmapped(aliased[i].alloc);
 					kbase_mem_phy_alloc_put(aliased[i].alloc);
+				}
 			vfree(aliased);
 		}
 		break;
@@ -3316,10 +3315,11 @@ struct kbase_va_region *kbase_jit_allocate(struct kbase_context *kctx,
 	 */
 	if (info->usage_id != 0) {
 		/* First scan for an allocation with the same usage ID */
-		struct kbase_va_region *walker;
+		struct kbase_va_region *walker = NULL;
+		struct kbase_va_region *tmp = NULL;
 		size_t current_diff = SIZE_MAX;
 
-		list_for_each_entry(walker, &kctx->jit_pool_head, jit_node) {
+		list_for_each_entry_safe(walker, tmp, &kctx->jit_pool_head, jit_node) {
 
 			if (walker->jit_usage_id == info->usage_id &&
 					walker->jit_bin_id == info->bin_id &&
@@ -3356,10 +3356,11 @@ struct kbase_va_region *kbase_jit_allocate(struct kbase_context *kctx,
 		/* No allocation with the same usage ID, or usage IDs not in
 		 * use. Search for an allocation we can reuse.
 		 */
-		struct kbase_va_region *walker;
+		struct kbase_va_region *walker = NULL;
+		struct kbase_va_region *tmp = NULL;
 		size_t current_diff = SIZE_MAX;
 
-		list_for_each_entry(walker, &kctx->jit_pool_head, jit_node) {
+		list_for_each_entry_safe(walker, tmp, &kctx->jit_pool_head, jit_node) {
 
 			if (walker->jit_bin_id == info->bin_id &&
 					meet_size_and_tiler_align_top_requirements(

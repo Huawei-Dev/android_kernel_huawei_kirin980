@@ -40,6 +40,22 @@ config MALI_TRYM
         tristate "Mali tTRx configs"
         default n
 
+config MALI_NATT
+        tristate "Mali tNAx configs"
+        default n
+
+config MALI_ODIN
+        tristate "Mali tODx configs"
+        default n
+
+config MALI_ODIN_LEX
+        tristate "Mali tODx_LEX configs"
+        default n
+
+config MALI_ODIN_LEX_BASE
+        tristate "Mali tODx_LEX_base configs"
+        default n
+
 menu "ARM GPU Configuration"
 
 if MALI_HEIMDALL
@@ -88,12 +104,24 @@ source "drivers/gpu/arm/bifrost-r18p0-01rel0/Kconfig"
 endif
 
 if MALI_BORR
-source "drivers/gpu/arm/valhall-r18p0-01bet0/Kconfig"
-#source "drivers/gpu/arm/bifrost-r16p0-00cet5/Kconfig"
 endif
 
 if MALI_TRYM
-source "drivers/gpu/arm/valhall-r18p0-01bet0/Kconfig"
+endif
+
+if MALI_NATT
+endif
+
+if MALI_ODIN
+source "drivers/gpu/arm/valhall-r27p0-01eac0/Kconfig"
+endif
+
+if MALI_ODIN_LEX
+source "drivers/gpu/arm/valhall-r27p0-01eac0/Kconfig"
+endif
+
+if MALI_ODIN_LEX_BASE
+source "drivers/gpu/arm/valhall-r27p0-01eac0-base/Kconfig"
 endif
 
 endmenu

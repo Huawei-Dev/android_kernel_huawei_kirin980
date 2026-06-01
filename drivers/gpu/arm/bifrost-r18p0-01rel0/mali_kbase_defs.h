@@ -712,6 +712,7 @@ struct kbase_jd_atom {
 
 	u32 ticks;
 	int sched_priority;
+	int sched_throttle;
 
 	int poking;
 
@@ -760,7 +761,7 @@ struct kbase_jd_atom {
 
 	u32 age;
 	bool soft_job_queued;
-#ifdef CONFIG_HISI_GPU_AI_FENCE_INFO
+#ifdef CONFIG_GPU_AI_FENCE_INFO
 	/* GPU AI frequency schedule target frame flag,true for egl swap buffer path */
 	bool ai_freq_flag;
 #endif
@@ -1848,8 +1849,8 @@ struct kbase_device {
 	int policy_count;
 
 	struct {
-		u8 counter[SLOT_RB_SIZE];
-		struct kbase_context *last_two_context_per_slot[SLOT_RB_SIZE][SLOT_RB_SIZE];
+		u8 counter[JOB_SLOT_NUM];
+		struct kbase_context *last_two_context_per_slot[JOB_SLOT_NUM][SLOT_RB_SIZE];
 	} force_l2_flush;
 
 	/* refcount for regulator,
@@ -1860,7 +1861,7 @@ struct kbase_device {
 
 	bool as_stuck_hard_reset;
 
-#ifdef CONFIG_HISI_GPU_AI_FENCE_INFO
+#ifdef CONFIG_GPU_AI_FENCE_INFO
 	/* GPU AI frequency schedule specific pid to collect fence info */
 	pid_t game_pid;
 	/* GPU AI frequency schedule fence trigger out counter */
@@ -1878,6 +1879,9 @@ struct kbase_device {
 
 	/* flag to indicate last buffer is enabled or not. */
 	u32 lb_enabled;
+
+	/* shader core mask from dts*/
+	u32 shader_present_lo_cfg;
 };
 
 #ifdef CONFIG_HUAWEI_DSM
@@ -2048,6 +2052,7 @@ enum kbase_context_flags {
 	KCTX_PULLED_SINCE_ACTIVE_JS0 = 1U << 12,
 	KCTX_PULLED_SINCE_ACTIVE_JS1 = 1U << 13,
 	KCTX_PULLED_SINCE_ACTIVE_JS2 = 1U << 14,
+	KCTX_LAST_BUFFER = 1U << 15,
 };
 
 struct kbase_sub_alloc {

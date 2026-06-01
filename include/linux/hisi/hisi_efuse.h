@@ -95,6 +95,9 @@ struct tag_efusec_data {
 #define EFUSE_HISEE_LENGTH_BYTES           8
 #define EFUSE_DIEID_LENGTH_BYTES           20
 #define EFUSE_CHIPID_LENGTH_BYTES          8
+
+#define EFUSE_PARTIAL_PASS_LENGTH_BYTES    3
+
 #define EFUSE_AUTHKEY_LENGTH_BYTES         8
 #define EFUSE_SECDBG_LENGTH_BYTES          4
 #define EFUSE_THERMAL_LENGTH_BYTES         8
@@ -115,6 +118,7 @@ s32 get_efuse_deskew_value(u8 *buf, u32 size, u32 timeout);
 s32 hisi_efuse_read_value(u32 *buf, u32 buf_size, u32 func_id);
 s32 hisi_efuse_write_value(u32 *buf, u32 buf_size, u32 func_id);
 s32 get_efuse_avs_value(u8 *buf, u32 buf_size, u32 timeout);
+s32 get_partial_pass_info(u8 *buf, u32 size, u32 timeout);
 #else
 static inline s32 get_efuse_dieid_value(u8 *buf, u32 size, u32 timeout)
 {
@@ -172,6 +176,10 @@ static inline s32 hisi_efuse_write_value(u32 *buf, u32 buf_size, u32 func_id)
 }
 
 static inline s32 get_efuse_avs_value(u8 *buf, u32 buf_size, u32 timeout)
+{
+	return OK;
+}
+static inline s32 get_partial_pass_info(u8 *buf, u32 size, u32 timeout)
 {
 	return OK;
 }

@@ -64,7 +64,10 @@ static struct gmc_storage_handle *gmc_storage_handle_create(void)
 {
 	struct gmc_storage_handle *handle;
 
-	handle = kmem_cache_alloc(gmc_storage_handle_cache, GFP_KERNEL);
+	handle = (struct gmc_storage_handle *)kmem_cache_alloc(
+		gmc_storage_handle_cache,
+		GFP_KERNEL);
+
 	if (handle == NULL) {
 		pr_err("Unable to allocate storage handle.\n");
 		return ERR_PTR(-ENOMEM);
@@ -185,11 +188,8 @@ static int store_data(struct gmc_storage *storage, u8 *buff, unsigned int size,
 	void *zpagep = NULL;
 	int ret;
 
-	spin_lock(&storage->zpool_lock);
 	ret = zpool_malloc(storage->zpool, size, __GFP_NORETRY | __GFP_NOWARN,
 		handlep);
-	spin_unlock(&storage->zpool_lock);
-
 	if (ret)
 		return ret;
 

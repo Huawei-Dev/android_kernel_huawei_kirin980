@@ -15,10 +15,10 @@ struct kbase_fence_info {
         u64 signaled_seqno;
 };
 
-#ifdef CONFIG_HISI_GPU_AI_FENCE_INFO
+#ifdef CONFIG_GPU_AI_FENCE_INFO
 int mali_kbase_report_fence_info(struct kbase_fence_info *fence);
 #else
-static inline int mali_kbase_report_fence_info(struct kbase_fence_info *fence) { return -1; };
+inline int mali_kbase_report_fence_info(struct kbase_fence_info *fence) { return -1; };
 #endif
 
 #endif /* HISI_GPU_HOOK_H */
