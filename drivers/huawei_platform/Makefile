@@ -53,3 +53,4 @@ obj-$(CONFIG_MULTICHIP_SKYTONE) += multichip_skytone/
 obj-$(CONFIG_SWITCH)        += switch/
 obj-$(CONFIG_HUAWEI_STORAGE_ROFA) += storage_rofa/
 obj-$(CONFIG_HISI_SPMI)		+= spmi_hisi/
+obj-$(CONFIG_HW_ZEROHUNG) += hwzerohung/
