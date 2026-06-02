@@ -282,6 +282,5 @@ source security/mdpp_selftest/Kconfig
 source security/hw_root_scan/Kconfig
 source security/kernel_stp/Kconfig
 source security/hwaa/Kconfig
-source security/sop/Kconfig
 endmenu
 
