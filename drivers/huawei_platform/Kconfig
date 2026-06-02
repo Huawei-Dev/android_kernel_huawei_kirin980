@@ -49,7 +49,6 @@ source "drivers/huawei_platform/kirin_chipsets/Kconfig"
 source "drivers/huawei_platform/vendor_exception/Kconfig"
 source "drivers/huawei_platform/card_tray/Kconfig"
 source "drivers/huawei_platform/rmeminspect/Kconfig"
-source "drivers/huawei_platform/pmeminfo/Kconfig"
 source "drivers/huawei_platform/wakeup/Kconfig"
 source "drivers/huawei_platform/multichip_skytone/Kconfig"
 
