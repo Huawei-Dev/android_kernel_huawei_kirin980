@@ -13,7 +13,7 @@
 #include <linux/ip.h>
 #include <linux/ipv6.h>
 #include <net/tcp.h>
-#include "hw_packet_filter_bypass.h"
+#include <hwnet/booster/hw_packet_filter_bypass.h>
 
 #define ASSIGN_SHORT(p, val) (*(s16 *)(p) = (val))
 #define ASSIGN_LONG(p, val) (*(s64 *)(p) = (val))
@@ -32,8 +32,6 @@ void booster_update_tcp_statistics(u_int8_t af, struct sk_buff *skb,
 	int proto;
 
 	if (skb == NULL)
-		return;
-	if (!is_ds_rnic(out) && !is_ds_rnic(in))
 		return;
 	if (af == AF_INET6)
 		proto = ipv6_find_hdr(skb, &thoff, -1, NULL, NULL);
