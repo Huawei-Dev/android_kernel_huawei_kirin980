@@ -2713,6 +2713,28 @@ static inline void f2fs_change_bit(unsigned int nr, char *addr)
 /* Flags that are appropriate for non-directories/regular files. */
 #define F2FS_OTHER_FLMASK	(F2FS_NODUMP_FL | F2FS_NOATIME_FL | FS_UNRM_FL)
 
+
+#ifdef CONFIG_ACM
+#define F2FS_UNRM_PHOTO_FL	0x00000002
+#define F2FS_UNRM_VIDEO_FL	0x00100000
+#define F2FS_UNRM_DMD_PHOTO_FL	0x02000000
+#define F2FS_UNRM_DMD_VIDEO_FL	0x04000000
+
+/* User visible flags */
+#define F2FS_FL_USER_VISIBLE		(0x30CBDFFF | F2FS_UNRM_VIDEO_FL | \
+					 F2FS_UNRM_DMD_PHOTO_FL | \
+					 F2FS_UNRM_DMD_VIDEO_FL)
+/* User modifiable flags */
+#define F2FS_FL_USER_MODIFIABLE		(0x204BC0FF | F2FS_UNRM_VIDEO_FL | \
+					 F2FS_UNRM_DMD_VIDEO_FL | \
+					 F2FS_UNRM_DMD_PHOTO_FL)
+void acm_f2fs_init_cache(void);
+void acm_f2fs_free_cache(void);
+#else
+#define F2FS_FL_USER_VISIBLE		0x30CBDFFF /* User visible flags */
+#define F2FS_FL_USER_MODIFIABLE		0x204BC0FF /* User modifiable flags */
+#endif
+
 static inline __u32 f2fs_mask_flags(umode_t mode, __u32 flags)
 {
 	if (S_ISDIR(mode))
