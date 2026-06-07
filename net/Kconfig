@@ -91,6 +91,12 @@ source "net/netlabel/Kconfig"
 
 endif # if INET
 
+config ANDROID_PARANOID_NETWORK
+	bool "Only allow certain groups to create sockets"
+	default y
+	help
+		none
+
 config NETWORK_SECMARK
 	bool "Security Marking"
 	help
@@ -245,6 +251,14 @@ config RFS_ACCEL
 	depends on RPS
 	select CPU_RMAP
 	default y
+
+config HISI_RFS_RPS_MATCH
+	bool "Hisilicon rfs rps match"
+	depends on RPS
+	default n
+	---help---
+	  If the desired CPU (where last recvmsg was done) is not in rps map table,
+	  do not set it in rps flow table.
 
 config XPS
 	bool
