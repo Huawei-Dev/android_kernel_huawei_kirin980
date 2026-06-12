@@ -20,7 +20,6 @@
 #include <linux/ion-iommu.h>
 #endif
 #include "hisi_fb.h"
-#include <linux/hisi/hisi_lb.h>
 
 #define CACHE_WB_SIZE (1080*2244*4)
 extern uint32_t g_dss_chn_sid_num[DSS_CHN_MAX_DEFINE];

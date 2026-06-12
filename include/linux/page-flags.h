@@ -113,9 +113,6 @@ enum pageflags {
 	PG_young,
 	PG_idle,
 #endif
-#ifdef CONFIG_HISI_LB
-	PG_lb,
-#endif
 #ifdef CONFIG_ZRAM_NON_COMPRESS
 	PG_non_compress,
 #endif
@@ -395,10 +392,6 @@ TESTPAGEFLAG(Young, young, PF_ANY)
 SETPAGEFLAG(Young, young, PF_ANY)
 TESTCLEARFLAG(Young, young, PF_ANY)
 PAGEFLAG(Idle, idle, PF_ANY)
-#endif
-
-#ifdef CONFIG_HISI_LB
-PAGEFLAG(LB, lb, PF_ANY)
 #endif
 
 /*

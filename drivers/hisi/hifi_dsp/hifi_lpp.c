@@ -35,9 +35,7 @@
 #include <linux/types.h>
 
 #include <asm/memory.h>
-/*lint -e451*/
 #include <asm/types.h>
-/*lint +e451*/
 #include <asm/io.h>
 
 #ifdef CONFIG_HUAWEI_DSM
@@ -56,9 +54,24 @@
 #include <dsm/dsm_pub.h>
 #include "usbaudio_ioctl.h"
 #include "soundtrigger_socdsp_mailbox.h"
-#include "hisi_lb.h"
 
-/*lint -e1058*/
+enum lb_pid {
+	PID_BY_PASS = 0,
+
+	PID_CAMAIP = 1,
+	PID_GPUFBO  = 2,
+	PID_GPUTXT  = 3,
+	PID_IDISPLAY= 4,
+	PID_NPU     = 5,
+	PID_VIDEO   = 6,
+	PID_CAMTOF = 7,
+	PID_TINY    = 8,
+	PID_AUDIO   = 9,
+	PID_VOICE   = 10,
+
+	PID_MAX,
+};
+
 #define DTS_COMP_HIFIDSP_NAME "hisilicon,k3hifidsp"
 #define FILE_PROC_DIRECTORY "hifidsp"
 #define SEND_MSG_TO_HIFI mailbox_send_msg
@@ -66,7 +79,7 @@
 #define FPGA_TIMEOUT_LEN_MS 10000
 #define ASIC_TIMEOUT_LEN_MS 2000
 
-static DEFINE_SEMAPHORE(s_misc_sem);/*lint !e64 !e570 !e651*/
+static DEFINE_SEMAPHORE(s_misc_sem);
 
 LIST_HEAD(recv_sync_work_queue_head);
 LIST_HEAD(recv_proc_work_queue_head);
@@ -184,18 +197,12 @@ static unsigned int get_syscache_pid(unsigned int session)
 
 void hifi_reset_release_syscache(void)
 {
-	int ret = 0;
 	unsigned int i;
 
 	for (i = 0; i < SYSCACHE_SESSION_CNT; i++) {
 		if (!g_request_flag[i])
 			continue;
 
-		ret = lb_release_quota(get_syscache_pid(i));
-		if (ret) {
-			loge("hifi reset release syscache fail. ret %d pid %u\n", ret, get_syscache_pid(i));
-			return;
-		}
 		g_request_flag[i] = false;
 		logi("hifi reset release syscache success\n");
 	}
@@ -203,7 +210,6 @@ void hifi_reset_release_syscache(void)
 
 static void hifi_misc_set_audio_syscache_quota(int8_t *data, unsigned int size)
 {
-	int ret = 0;
 	unsigned int pid = 0;
 	struct syscache_quota_msg *msg = NULL;
 
@@ -227,18 +233,8 @@ static void hifi_misc_set_audio_syscache_quota(int8_t *data, unsigned int size)
 	pid = get_syscache_pid(msg->session);
 
 	if (msg->msg_type == SYSCACHE_QUOTA_REQUEST) {
-		ret = lb_request_quota(pid);
-		if (ret) {
-			loge("request syscache fail. ret %d pid %u\n", ret, pid);
-			return;
-		}
 		g_request_flag[msg->session] = true;
 	} else {
-		ret = lb_release_quota(pid);
-		if (ret) {
-			loge("release syscache fail. ret %d pid %u\n", ret, pid);
-			return;
-		}
 		g_request_flag[msg->session] = false;
 	}
 

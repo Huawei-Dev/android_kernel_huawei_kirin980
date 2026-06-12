@@ -26,9 +26,6 @@
 #define _MEMORY_GROUP_MANAGER_H_
 
 #include <mali_malisw.h>
-#ifdef CONFIG_MALI_LAST_BUFFER
-#include <linux/hisi/hisi_lb.h>
-#endif
 
 #if (KERNEL_VERSION(4, 17, 0) > LINUX_VERSION_CODE)
 #define vm_fault_t int
