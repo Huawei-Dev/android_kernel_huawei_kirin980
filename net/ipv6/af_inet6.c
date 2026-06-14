@@ -288,11 +288,6 @@ lookup_protocol:
 		}
 	}
 out:
-#ifdef CONFIG_CGROUP_BPF
-	if (!err)
-		get_task_comm(sk->sk_process_name, current->group_leader);
-#endif
-
 	return err;
 out_rcu_unlock:
 	rcu_read_unlock();
