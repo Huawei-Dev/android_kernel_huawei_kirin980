@@ -2680,11 +2680,11 @@ static inline void blk_lld_idle_notify(struct blk_dev_lld *lld)
 {
 }
 #endif /* CONFIG_HISI_BLK */
-static void blk_mq_tagset_tz_ctrl_register(
+static inline void blk_mq_tagset_tz_ctrl_register(
 	struct blk_mq_tag_set *tag_set, lld_tz_ctrl_fn func)
 {
 }
-static void blk_mq_tagset_tz_query_register(
+static inline void blk_mq_tagset_tz_query_register(
 	struct blk_mq_tag_set *tag_set, lld_tz_query_fn func)
 {
 }
