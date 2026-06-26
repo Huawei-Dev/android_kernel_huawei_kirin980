@@ -3510,10 +3510,10 @@ OAL_STATIC oal_uint32 hwifi_config_nvram_second_coefficient_check(oal_uint8 *puc
 
     /* ?????????????? */
     if (hwifi_config_sepa_coefficient_from_param(puc_cust_nvram_info, l_nv_params, &us_nv_param_num,
-                                                 OAL_SIZEOF(l_nv_params) / OAL_SIZEOF(oal_int16)) != OAL_SUCC ||
+                                                 OAL_SIZEOF(l_nv_params) / OAL_SIZEOF(l_nv_params[0])) != OAL_SUCC ||
         (us_nv_param_num % DY_CALI_PARAMS_TIMES) ||
         hwifi_config_sepa_coefficient_from_param(puc_ini_pa_params, l_ini_params, &us_ini_param_num,
-                                                 OAL_SIZEOF(l_ini_params) / OAL_SIZEOF(oal_int16)) != OAL_SUCC ||
+                                                 OAL_SIZEOF(l_ini_params) / OAL_SIZEOF(l_ini_params[0])) != OAL_SUCC ||
         (us_ini_param_num % DY_CALI_PARAMS_TIMES) || (us_nv_param_num != us_ini_param_num)) {
         OAM_ERROR_LOG2(0, OAM_SF_CUSTOM,
             "hwifi_config_nvram_second_coefficient_check::nvram or ini is unsuitable,num of nv and ini[%d %d]!",
