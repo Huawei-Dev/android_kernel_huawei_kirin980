@@ -59,7 +59,10 @@ extern "C"
 
 typedef int (*FUNCPTR_1)(int);
 typedef int  (*pFUNCPTR)(void);
-typedef void (*VOIDFUNCPTR)(unsigned int );
+#ifndef __VOIDFUNCPTR_TYPE_DEFINED__
+#define __VOIDFUNCPTR_TYPE_DEFINED__
+typedef void (*VOIDFUNCPTR)(unsigned int);
+#endif
 
 #ifdef __cplusplus
 }

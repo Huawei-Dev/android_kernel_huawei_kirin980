@@ -251,7 +251,10 @@ typedef struct
 typedef unsigned int (*PPM_DisconnectTLPortFuc)(void);
 typedef unsigned int (*CPM_RCV_FUNC)(unsigned char *pucData, unsigned int ulLen);
 /* ?????????????????????????????????????????????? */
+#ifndef __SCM_DECODERDESTFUCN_TYPE_DEFINED__
+#define __SCM_DECODERDESTFUCN_TYPE_DEFINED__
 typedef void (*SCM_DECODERDESTFUCN)(SOCP_DECODER_DST_ENUM_U32 enChanID,unsigned char *pucData, unsigned int ulSize, unsigned char *pucRBData, unsigned int ulRBSize);
+#endif
 typedef unsigned int (*DRV_DIAG_SERVICE_FUNC)(void *pData);
 
 void mdrv_PPM_RegDisconnectCb(PPM_DisconnectTLPortFuc cb);
