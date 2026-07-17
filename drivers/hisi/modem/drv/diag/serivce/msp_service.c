@@ -88,7 +88,7 @@ u32 msp_ServiceProc(SOCP_DECODER_DST_ENUM_U32 enChanID,u8 *pucData, u32 ulSize,u
 
     diag_PTR(EN_DIAG_PTR_MSP_SERVICE_1, 1, 0, 0);
 
-    /*入参检查*/
+    /*????????*/
     ulTotalLen = ulSize + ulRBSize;
     if(!ulTotalLen)
     {
@@ -105,7 +105,7 @@ u32 msp_ServiceProc(SOCP_DECODER_DST_ENUM_U32 enChanID,u8 *pucData, u32 ulSize,u
 
     memcpy_s(pData, ulTotalLen, pucData, ulSize);
 
-    /*回卷指针可能为空*/
+    /*????????????????*/
     if((NULL != pucRBData)&&(0 != ulRBSize))
     {
         memcpy_s(pData + ulSize, ulTotalLen - ulSize, pucRBData, ulRBSize);
@@ -113,7 +113,7 @@ u32 msp_ServiceProc(SOCP_DECODER_DST_ENUM_U32 enChanID,u8 *pucData, u32 ulSize,u
 
     diag_PTR(EN_DIAG_PTR_MSP_SERVICE_2, 1, 0, 0);
 
-    /*消息数据大小必须要大于service头长度*/
+    /*??????????????????????service??????*/
     if( ulTotalLen < sizeof(diag_service_head_stru))
     {
         osl_free(pData);

@@ -364,7 +364,7 @@ int hisi_receive_casd_func(void * buf, int para)
     unsigned int header_len = 0;
 
     g_at_cmd_type = HISEE_AT_CASD;
-    /* 只要接收过CASD AT命令，就不bypass写CASD */
+    /* ??????????CASD AT??????????bypass??CASD */
     set_bypass_casd(false);
 
     if (NULL == buf) {
@@ -428,7 +428,7 @@ int hisi_verify_casd_func(void * buf, int para)
     size_t casd_size;
 
     g_at_cmd_type = HISEE_AT_VERIFYCASD;
-    /* 只要接收过CASD AT命令，就不bypass写CASD */
+    /* ??????????CASD AT??????????bypass??CASD */
     set_bypass_casd(false);
 
     if (NULL == buf) {

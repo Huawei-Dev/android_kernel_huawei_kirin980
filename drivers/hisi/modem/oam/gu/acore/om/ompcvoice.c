@@ -49,12 +49,12 @@
 
 
 /*****************************************************************************
-  1 头文件包含
+  1 ??????????
 *****************************************************************************/
 #include "omringbuffer.h"
 #include "omprivate.h"
 #include "CbtCpm.h"
-/* HIFI 上移 */
+/* HIFI ???? */
 #include "PamOamSpecTaskDef.h"
 #include "pamappom.h"
 #include "CbtPpm.h"

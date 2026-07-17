@@ -138,7 +138,7 @@
  */
 #define STMVL53L1_CFG_ROI_DEBUG	0
 
-/** @} */ /* ingroup vl53l1_mod_dbg*/
+/** @}??*/ /* ingroup vl53l1_mod_dbg*/
 
 /* #define DEBUG_TIME_LOG */
 

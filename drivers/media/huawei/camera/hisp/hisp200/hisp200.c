@@ -1127,7 +1127,7 @@ static int hisp200_config(hisp_intf_t *i, void *cfg)
     case HISP_CONFIG_FREE_MEM:
         rc = hisp200_free_r8isp_addr(cfg);
         break;
-//Func-》FE， Func2-》SRT， Func3-》CRAW/CBE， func4-》VRAW/VBE
+//Func-???FE??? Func2-???SRT??? Func3-???CRAW/CBE??? func4-???VRAW/VBE
     case HISP_CONFIG_ISP_TURBO:
         cam_debug("%s HISP_CONFIG_ISP_TURBO", __func__);
         rc = hisp_set_clk_rate(ISPFUNC_CLK, 480000000);

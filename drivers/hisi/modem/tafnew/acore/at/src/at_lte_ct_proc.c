@@ -74,7 +74,7 @@
 
 #include "AtMtCommFun.h"
 
-/*lint -e767 原因:Log打印*/
+/*lint -e767 ????:Log????*/
 #define    THIS_FILE_ID        MSP_FILE_ID_AT_LTE_CT_PROC_C
 /*lint +e767 */
 
@@ -82,11 +82,11 @@ extern AT_DEVICE_CMD_CTRL_STRU                 g_stAtDevCmdCtrl;
 
 /******************************************************************************
  */
-/* 功能描述: 打开上行信道
+/* ????????: ????????????
  */
 /*
  */
-/* 参数说明:
+/* ????????:
  */
 /*   ulIndex [in] ...
  */
@@ -94,7 +94,7 @@ extern AT_DEVICE_CMD_CTRL_STRU                 g_stAtDevCmdCtrl;
  */
 /*
  */
-/* 返 回 值:
+/* ?? ?? ??:
  */
 /*    TODO: ...
  */
@@ -105,7 +105,7 @@ VOS_UINT32 atSetFTXONPara(VOS_UINT8 ucClientId)
     FTM_SET_TXON_REQ_STRU stFTXONSetReq = {(FTM_TXON_SWT_ENUM)0, };
     VOS_UINT32 ulRst;
 
-    // 参数检查
+    // ????????
 
 
     if(AT_CMD_OPT_SET_PARA_CMD != g_stATParseCmd.ucCmdOptType)
@@ -124,7 +124,7 @@ VOS_UINT32 atSetFTXONPara(VOS_UINT8 ucClientId)
     }
 
     stFTXONSetReq.enSwtich          = (FTM_TXON_SWT_ENUM)(gastAtParaList[0].ulParaValue);
-    /* 只有在^FTXON=1 时才下发 */
+    /* ??????^FTXON=1 ???????? */
     if (EN_FTM_TXON_UL_RFBBP_OPEN == stFTXONSetReq.enSwtich )
     {
         stFTXONSetReq.enCltEnableFlg    = (FTM_CLT_ENABLE_ENUM_UINT8)g_stAtDevCmdCtrl.enCltEnableFlg;
@@ -135,10 +135,10 @@ VOS_UINT32 atSetFTXONPara(VOS_UINT8 ucClientId)
 
     if(AT_SUCCESS == ulRst)
     {
-        /* 设置当前操作类型
+        /* ????????????????
  */
         gastAtClientTab[ucClientId].CmdCurrentOpt = AT_CMD_FTXON_SET;
-        return AT_WAIT_ASYNC_RETURN;    /* 返回命令处理挂起状态
+        return AT_WAIT_ASYNC_RETURN;    /* ????????????????????
  */
     }
 
@@ -162,11 +162,11 @@ VOS_UINT32 atSetFTXONParaCnfProc(VOS_UINT8 ucClientId, VOS_VOID *pMsgBlock)
 
 /******************************************************************************
  */
-/* 功能描述: 查询上行信道打开状态
+/* ????????: ????????????????????
  */
 /*
  */
-/* 参数说明:
+/* ????????:
  */
 /*   ulIndex [in] ...
  */
@@ -174,7 +174,7 @@ VOS_UINT32 atSetFTXONParaCnfProc(VOS_UINT8 ucClientId, VOS_VOID *pMsgBlock)
  */
 /*
  */
-/* 返 回 值:
+/* ?? ?? ??:
  */
 /*    TODO: ...
  */
@@ -273,11 +273,11 @@ VOS_UINT32 atQryFPllStatusParaCnfProc(VOS_UINT8 ucClientId, VOS_VOID *pMsgBlock)
 
 /******************************************************************************
  */
-/* 功能描述: 打开下行信道
+/* ????????: ????????????
  */
 /*
  */
-/* 参数说明:
+/* ????????:
  */
 /*   ulIndex [in] ...
  */
@@ -285,7 +285,7 @@ VOS_UINT32 atQryFPllStatusParaCnfProc(VOS_UINT8 ucClientId, VOS_VOID *pMsgBlock)
  */
 /*
  */
-/* 返 回 值:
+/* ?? ?? ??:
  */
 /*    TODO: ...
  */
@@ -296,7 +296,7 @@ VOS_UINT32 atSetFRXONPara(VOS_UINT8 ucClientId)
     FTM_SET_RXON_REQ_STRU stFRXONSetReq = {0};
     VOS_UINT32 ulRst;
 
-    /* 参数检查
+    /* ????????
  */
     if(AT_CMD_OPT_SET_PARA_CMD != g_stATParseCmd.ucCmdOptType)
     {
@@ -321,10 +321,10 @@ VOS_UINT32 atSetFRXONPara(VOS_UINT8 ucClientId)
 
     if(AT_SUCCESS == ulRst)
     {
-        /* 设置当前操作类型
+        /* ????????????????
  */
         gastAtClientTab[ucClientId].CmdCurrentOpt = AT_CMD_FRXON_SET;
-        return AT_WAIT_ASYNC_RETURN;    /* 返回命令处理挂起状态
+        return AT_WAIT_ASYNC_RETURN;    /* ????????????????????
  */
     }
 
@@ -348,11 +348,11 @@ VOS_UINT32 atSetFRXONParaCnfProc(VOS_UINT8 ucClientId, VOS_VOID *pMsgBlock)
 
 /******************************************************************************
  */
-/* 功能描述: 查询下行信道开启状态
+/* ????????: ????????????????????
  */
 /*
  */
-/* 参数说明:
+/* ????????:
  */
 /*   ulIndex [in] ...
  */
@@ -360,7 +360,7 @@ VOS_UINT32 atSetFRXONParaCnfProc(VOS_UINT8 ucClientId, VOS_VOID *pMsgBlock)
  */
 /*
  */
-/* 返 回 值:
+/* ?? ?? ??:
  */
 /*    TODO: ...
  */
@@ -416,11 +416,11 @@ VOS_UINT32 atQryFRXONParaCnfProc(VOS_UINT8 ucClientId, VOS_VOID *pMsgBlock)
 
 /******************************************************************************
  */
-/* 功能描述: 设置非信令的信道
+/* ????????: ????????????????
  */
 /*
  */
-/* 参数说明:
+/* ????????:
  */
 /*   ulIndex [in] ...
  */
@@ -428,7 +428,7 @@ VOS_UINT32 atQryFRXONParaCnfProc(VOS_UINT8 ucClientId, VOS_VOID *pMsgBlock)
  */
 /*
  */
-/* 返 回 值:
+/* ?? ?? ??:
  */
 /*    TODO: ...
  */
@@ -438,7 +438,7 @@ VOS_UINT32 atSetFCHANPara(VOS_UINT8 ucClientId)
 {
     FTM_SET_FCHAN_REQ_STRU stFCHANSetReq = {(FCHAN_MODE_ENUM)0, };
     VOS_UINT32 ulRst;
-    /* 参数检查
+    /* ????????
  */
     if(AT_CMD_OPT_SET_PARA_CMD != g_stATParseCmd.ucCmdOptType)
     {
@@ -482,10 +482,10 @@ VOS_UINT32 atSetFCHANPara(VOS_UINT8 ucClientId)
 
     if(AT_SUCCESS == ulRst)
     {
-        /* 设置当前操作类型
+        /* ????????????????
  */
         gastAtClientTab[ucClientId].CmdCurrentOpt = AT_CMD_FCHAN_SET;
-        return AT_WAIT_ASYNC_RETURN;    /* 返回命令处理挂起状态
+        return AT_WAIT_ASYNC_RETURN;    /* ????????????????????
  */
     }
 
@@ -516,11 +516,11 @@ VOS_UINT32 atSetFCHANParaCnfProc(VOS_UINT8 ucClientId, VOS_VOID *pMsgBlock)
 
 /******************************************************************************
  */
-/* 功能描述:
+/* ????????:
  */
 /*
  */
-/* 参数说明:
+/* ????????:
  */
 /*   ulIndex [in] ...
  */
@@ -528,7 +528,7 @@ VOS_UINT32 atSetFCHANParaCnfProc(VOS_UINT8 ucClientId, VOS_VOID *pMsgBlock)
  */
 /*
  */
-/* 返 回 值:
+/* ?? ?? ??:
  */
 /*    TODO: ...
  */
@@ -539,7 +539,7 @@ VOS_UINT32 atSetFWAVEPara(VOS_UINT8 ucClientId)
     VOS_UINT32 ulRst;
     FTM_SET_FWAVE_REQ_STRU stFWaveSetReq = { 0 };
 
-    /* 参数检查
+    /* ????????
  */
     if(AT_CMD_OPT_SET_PARA_CMD != g_stATParseCmd.ucCmdOptType)
     {
@@ -570,10 +570,10 @@ VOS_UINT32 atSetFWAVEPara(VOS_UINT8 ucClientId)
 
     if(AT_SUCCESS == ulRst)
     {
-        /* 设置当前操作类型
+        /* ????????????????
  */
         gastAtClientTab[ucClientId].CmdCurrentOpt = AT_CMD_FWAVE_SET;
-        return AT_WAIT_ASYNC_RETURN;    /* 返回命令处理挂起状态
+        return AT_WAIT_ASYNC_RETURN;    /* ????????????????????
  */
     }
 
@@ -595,13 +595,13 @@ VOS_UINT32 atSetFWAVEParaCnfProc(VOS_UINT8 ucClientId, VOS_VOID *pMsgBlock)
 
 /*******************************************************************************/
 
-/* 功能描述: 查询非信令的信道 */
+/* ????????: ???????????????? */
 
-/* 参数说明:*/
+/* ????????:*/
 
 /*   ulIndex [in] ... */
 
-/* 返 回 值: */
+/* ?? ?? ??: */
 
 /*    TODO: ... */
 /*******************************************************************************/
@@ -655,11 +655,11 @@ VOS_UINT32 atQryFCHANParaCnfProc(VOS_UINT8 ucClientId, VOS_VOID *pMsgBlock)
 
 /******************************************************************************
  */
-/* 功能描述: AT^TSELRF  选择射频通路指令
+/* ????????: AT^TSELRF  ????????????????
  */
 /*
  */
-/* 参数说明:
+/* ????????:
  */
 /*   ulIndex [in] ...
  */
@@ -667,7 +667,7 @@ VOS_UINT32 atQryFCHANParaCnfProc(VOS_UINT8 ucClientId, VOS_VOID *pMsgBlock)
  */
 /*
  */
-/* 返 回 值:
+/* ?? ?? ??:
  */
 /*    TODO: ...
  */
@@ -724,7 +724,7 @@ VOS_UINT32 atSetTselrfPara(VOS_UINT8 ucClientId)
         if(ulRst == ERR_MSP_SUCCESS)
         /*lint +e774*/
         {
-            /*WIFI未Enable直接返回失败*/
+            /*WIFI??Enable????????????*/
             if(VOS_FALSE == (VOS_UINT32)WIFI_GET_STATUS())
             {
                 return AT_ERROR;
@@ -783,10 +783,10 @@ VOS_UINT32 atSetTselrfPara(VOS_UINT8 ucClientId)
 
     if(AT_SUCCESS == ulRst)
     {
-        /* 设置当前操作类型
+        /* ????????????????
  */
         gastAtClientTab[ucClientId].CmdCurrentOpt = AT_CMD_TSELRF_SET;
-        return AT_WAIT_ASYNC_RETURN;    /* 返回命令处理挂起状态
+        return AT_WAIT_ASYNC_RETURN;    /* ????????????????????
  */
     }
 
@@ -810,11 +810,11 @@ VOS_UINT32 atSetTselrfParaCnfProc(VOS_UINT8 ucClientId, VOS_VOID *pMsgBlock)
 
 /******************************************************************************
  */
-/* 功能描述: AT^TSELRF  选择射频通路指令
+/* ????????: AT^TSELRF  ????????????????
  */
 /*
  */
-/* 参数说明:
+/* ????????:
  */
 /*   ulIndex [in] ...
  */
@@ -822,7 +822,7 @@ VOS_UINT32 atSetTselrfParaCnfProc(VOS_UINT8 ucClientId, VOS_VOID *pMsgBlock)
  */
 /*
  */
-/* 返 回 值:
+/* ?? ?? ??:
  */
 /*    TODO: ...
  */
@@ -832,7 +832,7 @@ VOS_UINT32 atSetTselrfParaCnfProc(VOS_UINT8 ucClientId, VOS_VOID *pMsgBlock)
 VOS_UINT32 atQryTselrfPara(VOS_UINT8 ucClientId)
 {
 /*
-平台不提供该接口，由产品线实现。具体使用如下三个NV项获取:
+????????????????????????????????????????????????NV??????:
 10000 NV_WG_RF_MAIN_BAND
 0xD22C NV_ID_UE_CAPABILITY
 0xD304 EN_NV_ID_TDS_SUPPORT_FREQ_BAND
@@ -841,11 +841,11 @@ VOS_UINT32 atQryTselrfPara(VOS_UINT8 ucClientId)
 }
 /******************************************************************************
  */
-/* 功能描述: 设置接收机LNA的等级
+/* ????????: ??????????LNA??????
  */
 /*
  */
-/* 参数说明:
+/* ????????:
  */
 /*   ulIndex [in] ...
  */
@@ -853,7 +853,7 @@ VOS_UINT32 atQryTselrfPara(VOS_UINT8 ucClientId)
  */
 /*
  */
-/* 返 回 值:
+/* ?? ?? ??:
  */
 /*    TODO: ...
  */
@@ -864,7 +864,7 @@ VOS_UINT32 atSetFLNAPara(VOS_UINT8 ucClientId)
     FTM_SET_AAGC_REQ_STRU stFLNASetReq = {0};
     VOS_UINT32 ulRst;
 
-    /* 参数检查
+    /* ????????
  */
     if(AT_CMD_OPT_SET_PARA_CMD != g_stATParseCmd.ucCmdOptType)
     {
@@ -888,10 +888,10 @@ VOS_UINT32 atSetFLNAPara(VOS_UINT8 ucClientId)
 
     if(AT_SUCCESS == ulRst)
     {
-        /* 设置当前操作类型
+        /* ????????????????
  */
         gastAtClientTab[ucClientId].CmdCurrentOpt = AT_CMD_FLNA_SET;
-        return AT_WAIT_ASYNC_RETURN;    /* 返回命令处理挂起状态
+        return AT_WAIT_ASYNC_RETURN;    /* ????????????????????
  */
     }
 
@@ -916,11 +916,11 @@ VOS_UINT32 atSetFLNAParaCnfProc(VOS_UINT8 ucClientId, VOS_VOID *pMsgBlock)
 
 /******************************************************************************
  */
-/* 功能描述: 查询接收机LNA的等级
+/* ????????: ??????????LNA??????
  */
 /*
  */
-/* 参数说明:
+/* ????????:
  */
 /*   ulIndex [in] ...
  */
@@ -928,7 +928,7 @@ VOS_UINT32 atSetFLNAParaCnfProc(VOS_UINT8 ucClientId, VOS_VOID *pMsgBlock)
  */
 /*
  */
-/* 返 回 值:
+/* ?? ?? ??:
  */
 /*    TODO: ...
  */
@@ -982,13 +982,13 @@ VOS_UINT32 atQryFLNAParaCnfProc(VOS_UINT8 ucClientId, VOS_VOID *pMsgBlock)
 
 /*******************************************************************************/
 
-/* 功能描述: 查询RSSI*/
+/* ????????: ????RSSI*/
 
-/* 参数说明: */
+/* ????????: */
 
 /*   ulIndex [in] ... */
 
-/* 返 回 值: */
+/* ?? ?? ??: */
 
 /*    TODO: ... */
 
@@ -1026,7 +1026,7 @@ VOS_UINT32 atQryFRSSIParaCnfProc(VOS_UINT8 ucClientId, VOS_VOID *pMsgBlock)
 
     usLength = 0;
 
-    /* 适配V7R5版本4RX接收，GU只报一个值，其他报0，L根据FTM上报结果，支持4RX接收上报4个值，不支持时上报1个值 */
+    /* ????V7R5????4RX??????GU??????????????????0??L????FTM??????????????4RX????????4??????????????????1???? */
     usLength += (VOS_UINT16)At_sprintf(AT_CMD_MAX_LEN,
                                        (VOS_CHAR *)pgucLAtSndCodeAddr,
                                        (VOS_CHAR *)pgucLAtSndCodeAddr + usLength,
@@ -1088,7 +1088,7 @@ VOS_UINT32 AT_GetLteFeatureInfo(AT_FEATURE_SUPPORT_ST*pstFeATure)
         }
     }
 
-    /*解析获取LTE band信息
+    /*????????LTE band????
  */
     if( ucBandFlag > 0 )
     {
@@ -1140,7 +1140,7 @@ VOS_UINT32 atSetTBATPara(VOS_UINT8 ucClientId)
     VOS_UINT16 usValue = 0;
     VOS_UINT32 ulRst=0;
 
-    /* 参数检查
+    /* ????????
  */
     if(AT_CMD_OPT_SET_PARA_CMD != g_stATParseCmd.ucCmdOptType)
     {
@@ -1163,7 +1163,7 @@ VOS_UINT32 atSetTBATPara(VOS_UINT8 ucClientId)
 
     if( ucOpr == 1 )
     {
-        /*设置
+        /*????
  */
         if(0 != gastAtParaList[2].usParaLen)/* [false alarm]:fortify */
         {
@@ -1191,7 +1191,7 @@ VOS_UINT32 atSetTBATPara(VOS_UINT8 ucClientId)
     }
     else if( ucOpr == 0 )
     {
-        /*查询
+        /*????
  */
         usValue = (VOS_UINT16)gastAtParaList[2].usParaLen;/* [false alarm]:fortify */
 
@@ -1259,22 +1259,22 @@ VOS_UINT32 At_ProcLteTxCltInfoReport(VOS_VOID *pMsgBlock)
     pstpOsMsg       = (OS_MSG_STRU*)(((MsgBlock*)pMsgBlock)->aucValue);
     pstTxCltInfoInd = (FTM_CLT_INFO_IND_STRU *)pstpOsMsg->ulParam1;
 
-    /* 初始化全局变量 */
+    /* ?????????????? */
     MSP_MEMSET(&g_stAtDevCmdCtrl.stCltInfo, sizeof(g_stAtDevCmdCtrl.stCltInfo), 0x0, sizeof(AT_TX_CLT_INFO_STRU));
 
-    /* 设置CLT信息有效标志 */
+    /* ????CLT???????????? */
     g_stAtDevCmdCtrl.stCltInfo.ulInfoAvailableFlg   = VOS_TRUE;   
 
-    /* 将接入层上报的信息记录下全局变量中 */
-    g_stAtDevCmdCtrl.stCltInfo.shwGammaReal             = pstTxCltInfoInd->shwGammaReal;                 /* 反射系数实部 */  
-    g_stAtDevCmdCtrl.stCltInfo.shwGammaImag             = pstTxCltInfoInd->shwGammaImag;                 /* 反射系数虚部 */
-    g_stAtDevCmdCtrl.stCltInfo.ushwGammaAmpUc0          = pstTxCltInfoInd->ushwGammaAmpUc0;              /* 驻波检测场景0反射系数幅度 */   
-    g_stAtDevCmdCtrl.stCltInfo.ushwGammaAmpUc1          = pstTxCltInfoInd->ushwGammaAmpUc1;              /* 驻波检测场景1反射系数幅度 */
-    g_stAtDevCmdCtrl.stCltInfo.ushwGammaAmpUc2          = pstTxCltInfoInd->ushwGammaAmpUc2;              /* 驻波检测场景2反射系数幅度 */
-    g_stAtDevCmdCtrl.stCltInfo.ushwGammaAntCoarseTune   = pstTxCltInfoInd->ushwGammaAntCoarseTune;       /* 粗调格点位置 */
-    g_stAtDevCmdCtrl.stCltInfo.ulwFomcoarseTune         = pstTxCltInfoInd->ulwFomcoarseTune;             /* 粗调FOM值 */
-    g_stAtDevCmdCtrl.stCltInfo.ushwCltAlgState          = pstTxCltInfoInd->ushwCltAlgState;              /* 闭环算法收敛状态 */
-    g_stAtDevCmdCtrl.stCltInfo.ushwCltDetectCount       = pstTxCltInfoInd->ushwCltDetectCount;           /* 闭环收敛总步数 */
+    /* ?????????????????????????????????? */
+    g_stAtDevCmdCtrl.stCltInfo.shwGammaReal             = pstTxCltInfoInd->shwGammaReal;                 /* ???????????? */  
+    g_stAtDevCmdCtrl.stCltInfo.shwGammaImag             = pstTxCltInfoInd->shwGammaImag;                 /* ???????????? */
+    g_stAtDevCmdCtrl.stCltInfo.ushwGammaAmpUc0          = pstTxCltInfoInd->ushwGammaAmpUc0;              /* ????????????0???????????? */   
+    g_stAtDevCmdCtrl.stCltInfo.ushwGammaAmpUc1          = pstTxCltInfoInd->ushwGammaAmpUc1;              /* ????????????1???????????? */
+    g_stAtDevCmdCtrl.stCltInfo.ushwGammaAmpUc2          = pstTxCltInfoInd->ushwGammaAmpUc2;              /* ????????????2???????????? */
+    g_stAtDevCmdCtrl.stCltInfo.ushwGammaAntCoarseTune   = pstTxCltInfoInd->ushwGammaAntCoarseTune;       /* ???????????? */
+    g_stAtDevCmdCtrl.stCltInfo.ulwFomcoarseTune         = pstTxCltInfoInd->ulwFomcoarseTune;             /* ????FOM?? */
+    g_stAtDevCmdCtrl.stCltInfo.ushwCltAlgState          = pstTxCltInfoInd->ushwCltAlgState;              /* ???????????????? */
+    g_stAtDevCmdCtrl.stCltInfo.ushwCltDetectCount       = pstTxCltInfoInd->ushwCltDetectCount;           /* ?????????????? */
     g_stAtDevCmdCtrl.stCltInfo.ushwDac0                 = pstTxCltInfoInd->ushwDac0;                     /* DAC0 */
     g_stAtDevCmdCtrl.stCltInfo.ushwDac1                 = pstTxCltInfoInd->ushwDac1;                     /* DAC1 */
     g_stAtDevCmdCtrl.stCltInfo.ushwDac2                 = pstTxCltInfoInd->ushwDac2;                     /* DAC2 */
