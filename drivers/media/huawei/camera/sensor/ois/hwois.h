@@ -55,7 +55,7 @@ struct _tag_hw_ois_intf
 {
 	hw_ois_vtbl_t *vtbl;
     struct v4l2_subdev *subdev;
-} hw_ois_intf_t;
+};
 
 
 typedef struct _ois_t {

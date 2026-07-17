@@ -54,9 +54,9 @@ struct hw_vcm_info {
 
 struct _tag_hw_vcm_intf
 {
-	hw_vcm_vtbl_t *vtbl;
+    hw_vcm_vtbl_t *vtbl;
     struct v4l2_subdev *subdev;
-} hw_vcm_intf_t;
+};
 
 
 typedef struct _vcm_t {
