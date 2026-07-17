@@ -67,8 +67,9 @@ typedef enum {
 
 /*lint -save -e761*/
 
-#ifndef BSP_U32
-typedef unsigned int        BSP_U32;
+#ifndef BSP_U32_TYPE_DEFINED
+#define BSP_U32_TYPE_DEFINED
+typedef unsigned int BSP_U32;
 #endif
 
 #ifdef __KERNEL__

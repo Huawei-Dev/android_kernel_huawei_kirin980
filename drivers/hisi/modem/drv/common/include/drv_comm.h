@@ -71,7 +71,10 @@ typedef unsigned long long  BSP_U64;
 #else
 typedef double              BSP_U64;
 #endif
-typedef unsigned int        BSP_U32;
+#ifndef BSP_U32_TYPE_DEFINED
+#define BSP_U32_TYPE_DEFINED
+typedef unsigned int BSP_U32;
+#endif
 typedef unsigned short      BSP_U16;
 typedef unsigned char       BSP_U8;
 
