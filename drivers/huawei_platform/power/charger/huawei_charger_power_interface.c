@@ -436,7 +436,64 @@ static struct power_if_sysfs_field_info power_if_sysfs_field_tbl[] = {
 	POWER_IF_SYSFS_FIELD_RO(startup_iin_limit, STARTUP_IIN_LIMIT),
 };
 
-#define POWER_IF_ATTRS_SIZE  (ARRAY_SIZE(power_if_sysfs_field_tbl) + 1)
+/*
+ * Simple charging control interface for Lineage Health.
+ * 1 = DCP and LVC enabled
+ * 0 = DCP and LVC disabled
+ */
+static ssize_t charging_control_show(struct device *dev,
+				     struct device_attribute *attr,
+				     char *buf)
+{
+	unsigned int dcp = 0;
+	unsigned int lvc = 0;
+	int ret;
+
+	ret = power_if_operator_get(POWER_IF_OP_TYPE_DCP,
+		POWER_IF_SYSFS_ENABLE_CHARGER, &dcp);
+	if (ret)
+		return ret;
+
+	ret = power_if_operator_get(POWER_IF_OP_TYPE_LVC,
+		POWER_IF_SYSFS_ENABLE_CHARGER, &lvc);
+	if (ret)
+		return ret;
+
+	return scnprintf(buf, PAGE_SIZE, "%u\n",
+		(dcp && lvc) ? 1 : 0);
+}
+
+static ssize_t charging_control_store(struct device *dev,
+				      struct device_attribute *attr,
+				      const char *buf, size_t count)
+{
+	unsigned int enabled;
+	int ret;
+
+	ret = kstrtouint(buf, 0, &enabled);
+	if (ret)
+		return ret;
+
+	if (enabled > 1)
+		return -EINVAL;
+
+	ret = power_if_common_sysfs_set(
+		POWER_IF_OP_USER_DEFAULT,
+		POWER_IF_OP_TYPE_ALL,
+		POWER_IF_SYSFS_ENABLE_CHARGER,
+		enabled);
+
+	if (ret)
+		return ret;
+
+	return count;
+}
+
+static DEVICE_ATTR(charging_control, 0640,
+		   charging_control_show,
+		   charging_control_store);
+
+#define POWER_IF_ATTRS_SIZE  (ARRAY_SIZE(power_if_sysfs_field_tbl) + 2)
 
 static struct attribute *power_if_sysfs_attrs[POWER_IF_ATTRS_SIZE];
 
@@ -453,7 +510,10 @@ static void power_if_sysfs_init_attrs(void)
 		power_if_sysfs_attrs[s] =
 			&power_if_sysfs_field_tbl[s].attr.attr;
 
-	power_if_sysfs_attrs[e] = NULL;
+	power_if_sysfs_attrs[e] =
+		&dev_attr_charging_control.attr;
+
+	power_if_sysfs_attrs[e + 1] = NULL;
 }
 
 static struct power_if_sysfs_field_info *power_if_sysfs_field_lookup(
