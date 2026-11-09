@@ -2801,6 +2801,12 @@ dhd_set_mac_addr_handler(void *handle, void *event_info, u8 event)
 	}
 
 	dhd_net_if_lock_local(dhd);
+	if (!ifp || !dhd->pub.up ||
+    		!(dhd->dhd_state & DHD_ATTACH_STATE_WAKELOCKS_INIT)) {
+		DHD_ERROR(("%s: interface down or wakelock unavailable\n", __FUNCTION__));
+		dhd_net_if_unlock_local(dhd);
+		return;
+	}
 	DHD_OS_WAKE_LOCK(&dhd->pub);
 	DHD_PERIM_LOCK(&dhd->pub);
 
