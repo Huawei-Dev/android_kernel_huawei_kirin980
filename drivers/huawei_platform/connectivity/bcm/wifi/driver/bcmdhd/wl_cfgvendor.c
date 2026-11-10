@@ -2630,8 +2630,14 @@ static int wl_cfgvendor_set_country(struct wiphy *wiphy,
 		type = nla_type(iter);
 		switch (type) {
 			case ANDR_WIFI_ATTRIBUTE_COUNTRY:
-				memcpy(country_code, nla_data(iter),
-					MIN(nla_len(iter), WLC_CNTRY_BUF_SZ));
+			case 5: /* Country attribute from newer Android Wi-Fi HAL */
+				if (nla_len(iter) < 2 || nla_len(iter) > 3) {
+					WL_ERR(("Invalid country code length: %d\n", nla_len(iter)));
+					return -EINVAL;
+				}
+
+				memcpy(country_code, nla_data(iter), 2);
+				country_code[2] = '\0';
 				break;
 			default:
 				WL_ERR(("Unknown type: %d\n", type));
